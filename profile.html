@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seeker Dashboard | KAMAYEGA BHARAT</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root { 
+            --pri: #2563eb; --bg: #f8fafc; --txt: #1e293b; --border: #e2e8f0; --card: #ffffff;
+            --muted: #64748b; --err: #ef4444; --succ: #10b981;
+        }
+        [data-theme="dark"] {
+            --bg: #0b0f1a; --txt: #f8fafc; --border: #1e293b; --card: #161e2d;
+            --muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+        body { margin: 0; display: flex; height: 100vh; background: var(--card); overflow: hidden; color: var(--txt); }
+
+        /* LEFT SIDE: BRANDING & PROFILE */
+        .hero-side {
+            flex: 0.7; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            display: flex; flex-direction: column; padding: 40px; color: white; overflow-y: auto;
+        }
+        .hero-side h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; color: white !important; }
+        
+        /* RESTORED PROFILE BOX */
+        .profile-box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); }
+        .profile-box h3 { font-size: 1rem; margin-top: 0; color: #fff !important; }
+        .profile-box input, .profile-box textarea { 
+            width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+            color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 13px;
+        }
+        .profile-box input::placeholder, .profile-box textarea::placeholder { color: #cbd5e1; }
+        .btn-save { width: 100%; padding: 10px; background: white; color: var(--pri); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        /* RIGHT SIDE: DASHBOARD */
+        .dash-side { flex: 2; display: flex; flex-direction: column; background: var(--bg); overflow-y: auto; position: relative; }
+        
+        .dash-hdr { 
+            padding: 15px 40px; background: var(--card); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 10;
+        }
+        
+        .content-wrap { padding: 30px 40px; max-width: 1100px; margin: 0 auto; width: 100%; flex: 1; }
+
+        /* FIXED HEADINGS FOR DARK MODE */
+        h3 { color: var(--txt) !important; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
+
+        .job-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--txt); }
+        .job-info h4 { margin: 0; color: var(--pri); }
+        .job-info p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 25px; }
+        .filter-bar input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--txt); }
+
+        .btn-apply { padding: 10px 20px; background: var(--pri); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-apply.applied { background: var(--succ); cursor: default; }
+
+        /* CHAT SECTION */
+        .inbox-container { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: 450px; }
+        .app-list { border: 1px solid var(--border); border-radius: 12px; overflow-y: auto; background: var(--card); }
+        .app-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--txt); }
+        .app-item.active { border-left: 4px solid var(--pri); background: var(--bg); }
+        
+        .chat-window { border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; background: var(--card); color: var(--txt); }
+        #chatHdr { color: var(--txt) !important; padding:15px; border-bottom:1px solid var(--border); font-weight:700; display:none; justify-content:space-between; }
+        
+        .msgs { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 13px; position: relative; }
+        .msg.sent { align-self: flex-end; background: var(--pri); color: white; }
+        .msg.rec { align-self: flex-start; background: var(--card); border: 1px solid var(--border); color: var(--txt); }
+        
+        /* RESTORED TIMESTAMP */
+        .timestamp { font-size: 9px; opacity: 0.7; display: block; margin-top: 4px; }
+
+        .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
+
+        @media (max-width: 1000px) { .hero-side { display: none; } }
+    </style>
+</head>
+<body data-theme="light">
+
+<div class="hero-side">
+    <h1>KAMAYEGA BHARAT</h1>
+    <div class="profile-box">
+        <h3>👤 Your Profile</h3>
+        <textarea id="uBio" placeholder="Bio: Describe your skills..." rows="3"></textarea>
+        <input type="text" id="uResume" placeholder="Google Drive Resume Link (Max 2MB)">
+        <input type="text" id="uCert" placeholder="Google Drive Certificate Link (Max 2MB)">
+        <button class="btn-save" onclick="saveProfile()">Update Profile ✨</button>
+        <p style="font-size: 10px; margin-top: 10px; opacity: 0.8;">Note: Only Google Drive links allowed for Resume/Certs.</p>
+    </div>
+</div>
+
+<div class="dash-side">
+    <header class="dash-hdr">
+        <div style="font-weight: 700; color: var(--pri);">👋 <span id="userName">User Dashboard</span></div>
+        <div class="hdr-actions">
+            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+            <button style="background:none; border:1px solid var(--err); color:var(--err); padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="auth.signOut()">Logout</button>
+        </div>
+    </header>
+
+    <div class="content-wrap">
+        <h3>🔍 Search Local Jobs</h3>
+        <div class="filter-bar">
+            <input type="text" id="searchLoc" placeholder="City or State (e.g. Kolkata)" oninput="filterJobs()">
+            <input type="text" id="searchTitle" placeholder="Job Title" oninput="filterJobs()">
+        </div>
+
+        <div id="jobList">
+            <p style="color:var(--muted)">Finding opportunities...</p>
+        </div>
+
+        <h3 style="margin-top:50px;">📩 Messages from Employers</h3>
+        <div class="card" style="padding:10px; border: 1px solid var(--border); border-radius: 16px;">
+            <div class="inbox-container">
+                <div class="app-list" id="myAppsList"></div>
+                <div class="chat-window">
+                    <div id="chatHdr">
+                        <span id="chatWith">Employer</span>
+                        <span id="appStatus" style="font-size:11px; background:var(--bg); padding:2px 8px; border-radius:4px;">Pending</span>
+                    </div>
+                    <div class="msgs" id="msgArea">
+                        <div style="margin:auto; text-align:center; color:var(--muted); font-size:13px;">Select an application to chat</div>
+                    </div>
+                    <div id="chatInputArea" style="padding:10px; border-top:1px solid var(--border); display:none; gap:10px;">
+                        <input type="text" id="mText" placeholder="Write a message..." style="flex:1; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--txt);" onkeydown="if(event.key==='Enter') sendMsg()">
+                        <button onclick="sendMsg()" style="background:var(--pri); color:white; border:none; padding:0 15px; border-radius:8px; cursor:pointer;">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
+        authDomain: "kamayega-bharat.firebaseapp.com",
+        projectId: "kamayega-bharat",
+        storageBucket: "kamayega-bharat.appspot.com",
+        messagingSenderId: "595460672260",
+        appId: "1:595460672260:web:6584856313e2d740805e51"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let allJobs = [];
+    let myAppliedIds = [];
+    let currentAppId = null;
+    let chatListener = null;
+
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            db.collection('users').doc(user.uid).get().then(doc => {
+                const data = doc.data();
+                document.getElementById('userName').innerText = data.fullName;
+                document.getElementById('uBio').value = data.bio || "";
+                document.getElementById('uResume').value = data.resumeUrl || "";
+                document.getElementById('uCert').value = data.certUrl || "";
+            });
+            loadJobs();
+            loadApplications(user.uid);
+        } else { window.location.href = 'index.html'; }
+    });
+
+    async function saveProfile() {
+        const user = auth.currentUser;
+        const bio = document.getElementById('uBio').value;
+        const resumeUrl = document.getElementById('uResume').value;
+        const certUrl = document.getElementById('uCert').value;
+
+        if((resumeUrl && !resumeUrl.includes('drive.google.com')) || (certUrl && !certUrl.includes('drive.google.com'))) {
+            return alert("❌ Please use only Google Drive links for Resume and Certificates.");
+        }
+
+        await db.collection('users').doc(user.uid).update({ bio, resumeUrl, certUrl });
+        alert("Profile Updated Successfully! ✅");
+    }
+
+    function loadJobs() {
+        db.collection('jobs').orderBy('createdAt', 'desc').onSnapshot(snap => {
+            allJobs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            filterJobs();
+        });
+    }
+
+    function loadApplications(uid) {
+        db.collection('applications').where('seekerId', '==', uid).onSnapshot(snap => {
+            myAppliedIds = snap.docs.map(doc => doc.data().jobId);
+            const list = document.getElementById('myAppsList');
+            list.innerHTML = snap.empty ? `<p style="text-align:center; padding:20px; color:var(--muted); font-size:12px;">No applications yet</p>` : "";
+            snap.forEach(doc => {
+                const a = doc.data();
+                const div = document.createElement('div');
+                div.className = `app-item ${currentAppId === doc.id ? 'active' : ''}`;
+                div.innerHTML = `<b>${a.jobTitle}</b><br><small>${a.company} - ${a.status || 'Pending'}</small>`;
+                div.onclick = () => openChat(doc.id, a);
+                list.appendChild(div);
+            });
+            filterJobs();
+        });
+    }
+
+    function filterJobs() {
+        const loc = document.getElementById('searchLoc').value.toLowerCase();
+        const title = document.getElementById('searchTitle').value.toLowerCase();
+        const container = document.getElementById('jobList');
+        container.innerHTML = "";
+        const filtered = allJobs.filter(j => j.location.toLowerCase().includes(loc) && j.title.toLowerCase().includes(title));
+        
+        filtered.forEach(j => {
+            const isApplied = myAppliedIds.includes(j.id);
+            container.innerHTML += `
+                <div class="job-card">
+                    <div class="job-info">
+                        <h4>${j.title}</h4>
+                        <p>🏢 ${j.company} • 📍 ${j.location} • 💰 ${j.salary}</p>
+                    </div>
+                    <button class="btn-apply ${isApplied ? 'applied' : ''}" onclick="${isApplied ? '' : `applyJob('${j.id}', '${j.title}', '${j.company}', '${j.employerId}')`}">
+                        ${isApplied ? 'Applied ✅' : 'Apply Now 🚀'}
+                    </button>
+                </div>`;
+        });
+    }
+
+    async function applyJob(jobId, jobTitle, company, employerId) {
+        const user = auth.currentUser;
+        const uDoc = await db.collection('users').doc(user.uid).get();
+        if(!uDoc.data().resumeUrl) return alert("❌ Please add your Resume link in the profile section before applying!");
+
+        await db.collection('applications').add({
+            jobId, jobTitle, company, employerId,
+            seekerId: user.uid, seekerName: uDoc.data().fullName,
+            status: "Pending", appliedAt: Date.now()
+        });
+        alert("Application Sent! 🚀");
+    }
+
+    function openChat(id, data) {
+        currentAppId = id;
+        document.getElementById('chatHdr').style.display = 'flex';
+        document.getElementById('chatInputArea').style.display = 'flex';
+        document.getElementById('chatWith').innerText = data.company;
+        document.getElementById('appStatus').innerText = data.status || "Pending";
+
+        if(chatListener) chatListener();
+        chatListener = db.collection('applications').doc(id).collection('chats').orderBy('time').onSnapshot(snap => {
+            const area = document.getElementById('msgArea');
+            area.innerHTML = "";
+            snap.forEach(m => {
+                const d = m.data();
+                const isMe = d.senderId === auth.currentUser.uid;
+                area.innerHTML += `
+                    <div class="msg ${isMe ? 'sent' : 'rec'}">
+                        ${d.text}
+                        <span class="timestamp">${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        });
+    }
+
+    async function sendMsg() {
+        const text = document.getElementById('mText').value.trim();
+        if(!text || !currentAppId) return;
+        await db.collection('applications').doc(currentAppId).collection('chats').add({
+            text, senderId: auth.currentUser.uid, time: Date.now()
+        });
+        document.getElementById('mText').value = "";
+    }
+
+    function toggleTheme() {
+        document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    }
+</script>
+</body>
+</html>
