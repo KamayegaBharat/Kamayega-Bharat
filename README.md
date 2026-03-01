@@ -12,4 +12,4 @@ A localized job portal designed to connect employers and job seekers across Bhar
 - **Frontend:** HTML5, CSS3 (with Dark Mode support), JavaScript (ES6).
 - **Backend:** Firebase Authentication & Firestore Cloud Database.
 - **Hosting:** GitHub Pages.
--
+
