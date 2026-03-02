@@ -90,35 +90,53 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
 @media (max-width: 1000px) {
-  /* Hide the blue side on mobile */
-  .hero-side { display: none !important; }
-
-  /* Force the body to allow scrolling down, not sideways */
+  /* 1. Reset the layout from "Side-by-Side" to "App Stack" */
   body { 
     display: block !important; 
+    height: auto !important; 
     overflow-y: auto !important; 
     overflow-x: hidden !important;
+    background: var(--bg); /* Keeps your dark/light theme consistent */
   }
 
-  /* Fix Messaging: Stack the list and the chat box */
+  /* 2. Hide the desktop sidebar */
+  .hero-side { display: none !important; }
+
+  /* 3. The Main Container - LinkedIn style padding */
   .main-content {
+    padding: 10px !important;
+    width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    width: 100% !important;
-    height: auto !important;
   }
 
-  /* Make the chat window take the full width of the phone */
-  .chat-window {
+  /* 4. The Inbox (List of people) - Stays at the top */
+  .inbox-wrapper, .app-list {
     width: 100% !important;
-    height: 500px !important; /* Gives the chat its own scrollable area */
+    max-height: 300px !important; /* Limits height so user can reach the chat */
+    overflow-y: auto !important;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 20px;
   }
 
-  /* Make the applicant list sit on top */
-  .app-list {
+  /* 5. The Chat Window - Below the list, like an open conversation */
+  .messaging-container, .chat-window {
     width: 100% !important;
-    max-height: 300px;
-    overflow-y: auto;
+    height: 70vh !important; /* Takes up most of the screen for easy typing */
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 6. Professional Chat Bubbles */
+  .msg {
+    max-width: 85% !important; /* LinkedIn style bubbles */
+    margin-bottom: 12px !important;
+  }
+
+  /* 7. Full-width Buttons & Inputs (Easier to tap) */
+  input, button, .btn-save, .publish-btn {
+    width: 100% !important;
+    height: 48px !important; /* Standard "Tap Target" size for mobile */
   }
 }
     </style>
@@ -394,5 +412,6 @@
 </script>
 </body>
 </html>
+
 
 
