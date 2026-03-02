@@ -81,8 +81,38 @@
 
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
-        @media (max-width: 1000px) { .hero-side { display: none; } }
-    </style>
+@media (max-width: 1000px) {
+  /* Hide the blue side on mobile */
+  .hero-side { display: none !important; }
+
+  /* Force the body to allow scrolling down, not sideways */
+  body { 
+    display: block !important; 
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+  }
+
+  /* Fix Messaging: Stack the list and the chat box */
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Make the chat window take the full width of the phone */
+  .chat-window {
+    width: 100% !important;
+    height: 500px !important; /* Gives the chat its own scrollable area */
+  }
+
+  /* Make the applicant list sit on top */
+  .app-list {
+    width: 100% !important;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}    </style>
 </head>
 <body data-theme="light">
 
@@ -283,6 +313,7 @@
 </script>
 </body>
 </html>
+
 
 
 
