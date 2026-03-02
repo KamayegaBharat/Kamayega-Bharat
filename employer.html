@@ -90,37 +90,49 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
 @media (max-width: 1000px) {
-  /* 1. Reset the whole page and hide the sidebar */
-  body, html { 
+  /* 1. Force the page to be a single vertical strip */
+  body { 
     display: block !important; 
-    overflow-x: hidden !important;
-    width: 100vw !important;
+    overflow-x: hidden !important; 
+    width: 100% !important;
+    height: auto !important;
   }
-  .hero-side { display: none !important; }
 
-  /* 2. THE NUCLEAR OVERRIDE: This forces EVERY container to be 100% wide */
-  /* This specifically fixes the overlap in your last screenshot */
-  div, section, main, .main-content, .messaging-container, .inbox-wrapper {
+  /* 2. Kill the blue sidebar that keeps coming back */
+  .hero-side { 
+    display: none !important; 
+    width: 0 !important;
+  }
+
+  /* 3. Force EVERY employer container to be 100% width */
+  .main-content, 
+  .messaging-container, 
+  .inbox-wrapper,
+  .form-container,
+  .active-postings-container {
     display: block !important; 
     width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important; /* This "breaks" the fixed desktop width */
-    margin: 0 !important;
+    max-width: 100vw !important;
+    min-width: 0 !important; /* This breaks fixed widths */
     padding: 10px !important;
+    margin: 0 !important;
   }
 
-  /* 3. Re-stack the Inbox and Chat so they don't sit side-by-side */
-  .inbox-wrapper, .app-list {
-    height: 300px !important;
-    border-bottom: 2px solid #ccc;
+  /* 4. The "LinkedIn Stack": Put Inbox on top and Chat below */
+  .inbox-wrapper {
+    height: auto !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    border-bottom: 2px solid var(--border);
   }
 
   .chat-window {
-    width: 100% !important;
-    height: 500px !important;
-    margin-bottom: 150px !important; /* Protects your footer from collision */
     display: flex !important;
     flex-direction: column !important;
+    width: 100% !important;
+    height: 500px !important;
+    margin-top: 20px !important;
+    margin-bottom: 120px !important; /* Creates the gap for the footer */
   }
 }
     </style>
@@ -396,6 +408,7 @@
 </script>
 </body>
 </html>
+
 
 
 
