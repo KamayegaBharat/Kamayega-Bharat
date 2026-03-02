@@ -89,18 +89,17 @@
 
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
-@media (max-width: 1000px) {
-  /* 1. Hide the desktop sidebar */
-  .hero-side { display: none !important; }
-
-  /* 2. Reset the body to allow scrolling past the chat */
+I@media (max-width: 1000px) {
+  /* 1. Unlock the page so it can grow long enough for the footer */
   body { 
     display: block !important; 
     height: auto !important; 
     overflow-y: auto !important; 
   }
 
-  /* 3. Force vertical stack for inbox and chat */
+  .hero-side { display: none !important; }
+
+  /* 2. Force the vertical stack */
   .main-content, .messaging-container, .inbox-wrapper {
     display: flex !important;
     flex-direction: column !important;
@@ -108,17 +107,16 @@
     height: auto !important;
   }
 
-  /* 4. The FIX: Prevent the footer collision */
+  /* 3. The FIX: Create a "Safety Gap" for the footer */
   .chat-window {
     width: 100% !important;
-    height: 550px !important; /* Set a comfortable chat height */
+    height: 500px !important;
     position: relative !important; 
-    margin-bottom: 80px !important; /* This creates the "Safety Gap" for the footer */
-    display: flex !important;
-    flex-direction: column !important;
+    margin-top: 20px !important;
+    margin-bottom: 120px !important; /* This pushes the "About Us" section down */
   }
 
-  /* 5. Ensure the Inbox doesn't take too much space */
+  /* 4. Ensure the list on top doesn't hide the chat */
   .app-list {
     width: 100% !important;
     max-height: 250px !important;
@@ -398,6 +396,7 @@
 </script>
 </body>
 </html>
+
 
 
 
