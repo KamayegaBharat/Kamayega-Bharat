@@ -90,44 +90,37 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
 @media (max-width: 1000px) {
-  /* 1. Force the page to allow vertical scrolling */
+  /* 1. Reset the whole page and hide the sidebar */
   body, html { 
     display: block !important; 
-    height: auto !important; 
     overflow-x: hidden !important;
-    overflow-y: auto !important;
+    width: 100vw !important;
   }
-
-  /* 2. Hide the brand sidebar */
   .hero-side { display: none !important; }
 
-  /* 3. THE SENIOR FIX: Target every potential 'Row' container and force 'Column' */
-  /* This targets the specific Employer Dashboard structure */
-  .main-content, 
-  .messaging-container, 
-  .inbox-wrapper, 
-  [style*="display: flex"], 
-  .app-list-container {
-    display: flex !important;
-    flex-direction: column !important; /* Forces the vertical stack */
+  /* 2. THE NUCLEAR OVERRIDE: This forces EVERY container to be 100% wide */
+  /* This specifically fixes the overlap in your last screenshot */
+  div, section, main, .main-content, .messaging-container, .inbox-wrapper {
+    display: block !important; 
     width: 100% !important;
     max-width: 100% !important;
-    height: auto !important;
+    min-width: 0 !important; /* This "breaks" the fixed desktop width */
+    margin: 0 !important;
     padding: 10px !important;
   }
 
-  /* 4. Fix the widths of the Inbox and Chat so they don't overlap */
-  .app-list, .chat-window {
-    width: 100% !important;
-    min-width: 100% !important;
-    margin: 10px 0 !important;
+  /* 3. Re-stack the Inbox and Chat so they don't sit side-by-side */
+  .inbox-wrapper, .app-list {
+    height: 300px !important;
+    border-bottom: 2px solid #ccc;
   }
 
-  /* 5. Set a fixed height for the Chat and protect the Footer */
   .chat-window {
+    width: 100% !important;
     height: 500px !important;
-    margin-bottom: 120px !important; /* Huge gap to stop footer collision */
-    border: 1px solid var(--border);
+    margin-bottom: 150px !important; /* Protects your footer from collision */
+    display: flex !important;
+    flex-direction: column !important;
   }
 }
     </style>
@@ -403,6 +396,7 @@
 </script>
 </body>
 </html>
+
 
 
 
