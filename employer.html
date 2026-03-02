@@ -90,41 +90,39 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
 @media (max-width: 1000px) {
-  /* 1. Reset the whole page layout */
-  html, body {
-    overflow-x: hidden !important;
-    height: auto !important;
-    display: block !important;
-  }
+  /* 1. Hide the desktop sidebar */
+  .hero-side { display: none !important; }
 
-  /* 2. THE OVERRIDE: This forces EVERY container to stack vertically */
-  /* This kills the "sideways" effect by forcing 100% width on everything */
-  div, section, main, .main-content, .messaging-container, .inbox-wrapper {
+  /* 2. Reset the body to allow scrolling past the chat */
+  body { 
     display: block !important; 
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 10px !important;
-    box-sizing: border-box !important;
+    height: auto !important; 
+    overflow-y: auto !important; 
   }
 
-  /* 3. Re-enable Flex but in COLUMN mode for the chat box specifically */
-  .messaging-container, .chat-window {
+  /* 3. Force vertical stack for inbox and chat */
+  .main-content, .messaging-container, .inbox-wrapper {
     display: flex !important;
     flex-direction: column !important;
-    height: 600px !important; /* Fixed height so it doesn't collapse */
+    width: 100% !important;
+    height: auto !important;
   }
 
-  /* 4. Hide the blue sidebar completely on mobile */
-  .hero-side { 
-    display: none !important; 
+  /* 4. The FIX: Prevent the footer collision */
+  .chat-window {
+    width: 100% !important;
+    height: 550px !important; /* Set a comfortable chat height */
+    position: relative !important; 
+    margin-bottom: 80px !important; /* This creates the "Safety Gap" for the footer */
+    display: flex !important;
+    flex-direction: column !important;
   }
 
-  /* 5. Fix the Chat Bubbles so they don't stretch */
-  .msg {
-    width: auto !important;
-    max-width: 85% !important;
+  /* 5. Ensure the Inbox doesn't take too much space */
+  .app-list {
+    width: 100% !important;
+    max-height: 250px !important;
+    overflow-y: auto !important;
   }
 }
     </style>
@@ -400,6 +398,7 @@
 </script>
 </body>
 </html>
+
 
 
 
