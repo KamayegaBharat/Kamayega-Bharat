@@ -90,53 +90,41 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
 
 @media (max-width: 1000px) {
-  /* 1. Reset the layout from "Side-by-Side" to "App Stack" */
-  body { 
-    display: block !important; 
-    height: auto !important; 
-    overflow-y: auto !important; 
+  /* 1. Reset the whole page layout */
+  html, body {
     overflow-x: hidden !important;
-    background: var(--bg); /* Keeps your dark/light theme consistent */
+    height: auto !important;
+    display: block !important;
   }
 
-  /* 2. Hide the desktop sidebar */
-  .hero-side { display: none !important; }
-
-  /* 3. The Main Container - LinkedIn style padding */
-  .main-content {
+  /* 2. THE OVERRIDE: This forces EVERY container to stack vertically */
+  /* This kills the "sideways" effect by forcing 100% width on everything */
+  div, section, main, .main-content, .messaging-container, .inbox-wrapper {
+    display: block !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
     padding: 10px !important;
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
+    box-sizing: border-box !important;
   }
 
-  /* 4. The Inbox (List of people) - Stays at the top */
-  .inbox-wrapper, .app-list {
-    width: 100% !important;
-    max-height: 300px !important; /* Limits height so user can reach the chat */
-    overflow-y: auto !important;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 20px;
-  }
-
-  /* 5. The Chat Window - Below the list, like an open conversation */
+  /* 3. Re-enable Flex but in COLUMN mode for the chat box specifically */
   .messaging-container, .chat-window {
-    width: 100% !important;
-    height: 70vh !important; /* Takes up most of the screen for easy typing */
     display: flex !important;
     flex-direction: column !important;
+    height: 600px !important; /* Fixed height so it doesn't collapse */
   }
 
-  /* 6. Professional Chat Bubbles */
+  /* 4. Hide the blue sidebar completely on mobile */
+  .hero-side { 
+    display: none !important; 
+  }
+
+  /* 5. Fix the Chat Bubbles so they don't stretch */
   .msg {
-    max-width: 85% !important; /* LinkedIn style bubbles */
-    margin-bottom: 12px !important;
-  }
-
-  /* 7. Full-width Buttons & Inputs (Easier to tap) */
-  input, button, .btn-save, .publish-btn {
-    width: 100% !important;
-    height: 48px !important; /* Standard "Tap Target" size for mobile */
+    width: auto !important;
+    max-width: 85% !important;
   }
 }
     </style>
@@ -412,6 +400,7 @@
 </script>
 </body>
 </html>
+
 
 
 
