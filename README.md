@@ -9,7 +9,7 @@ A localized job portal designed to connect employers and job seekers across Bhar
 - **Dual Dashboards:** Custom interfaces for both Employers (Hiring) and Seekers (Working).
 
 ## 🛠️ Tech Stack
-- **Frontend:** HTML5, CSS3 (with Dark Mode support), JavaScript (ES6).
+- **Frontend:** HTML5, CSS3 (with Dark Mode support).
 - **Backend:** Firebase Authentication & Firestore Cloud Database.
 - **Hosting:** GitHub Pages.
 
