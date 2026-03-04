@@ -73,10 +73,21 @@
 @media (max-width: 768px) {
     main {
         flex-direction: column;
+        height: 100vh;
+        background: #f3f4f6; /* A light grey background for the whole page */
     }
-    .hero-side, .auth-side {
-        width: 100%;
-        min-height: 50vh;
+
+    .hero-side {
+        display: none; /* This hides the blue part on phones completely */
+    }
+
+    .auth-side {
+        width: 100% !important;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 }
     </style> 
@@ -258,6 +269,7 @@
 </main>
 </body>
 </html>
+
 
 
 
