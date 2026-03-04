@@ -55,6 +55,30 @@
         #toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 12px; color: white; display: none; z-index: 10000; font-weight: 600; }
 
         @media (max-width: 900px) { .hero-side { display: none; } }
+  
+  main {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.hero-side, .auth-side {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    main {
+        flex-direction: column;
+    }
+    .hero-side, .auth-side {
+        width: 100%;
+        min-height: 50vh;
+    }
+}
     </style> 
     <meta name="description" content="Kamayega Bharat: The fastest, most accessible platform for India's workforce.">
 </head>
@@ -234,6 +258,7 @@
 </main>
 </body>
 </html>
+
 
 
 
