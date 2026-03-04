@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamayega Bharat - Bharat Ka Apna Job Portal</title>
+    <meta name="description" content="Direct connections between workers and employers. No middlemen, no fees. Built for India.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: white; color: var(--text-main); line-height: 1.6; }
+
+        /* Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 5%; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; background: white; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.03em; }
+        .login-btn { background: var(--primary); color: white; padding: 0.7rem 1.6rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: 0.3s; }
+        .login-btn:hover { background: #1e3a8a; }
+
+        /* Hero Section */
+        .hero { padding: 100px 5% 140px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; }
+        h1 { font-size: clamp(2.5rem, 8vw, 4rem); margin: 0 0 1.5rem; letter-spacing: -0.04em; line-height: 1.1; font-weight: 800; }
+        .hero p { font-size: 1.25rem; opacity: 0.9; margin-bottom: 3rem; max-width: 700px; margin-inline: auto; }
+
+        /* Why Choose Us Section */
+        .section-padding { padding: 100px 5%; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--primary); }
+        .section-title p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .feature-card { padding: 40px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; transition: 0.3s; }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .feature-card h3 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-main); }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+
+        /* Call to Action Buttons */
+        .cta-box { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn { padding: 1.1rem 2.5rem; border-radius: 12px; font-weight: 700; text-decoration: none; min-width: 220px; text-align: center; transition: 0.2s; font-size: 1.1rem; }
+        .btn-main { background: white; color: var(--primary); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .btn-outline { border: 2px solid rgba(255,255,255,0.4); color: white; }
+
+        /* Stats Bar */
+        .stats-bar { background: var(--bg-light); display: flex; justify-content: space-around; padding: 40px 5%; flex-wrap: wrap; gap: 20px; text-align: center; }
+        .stat-item b { font-size: 2rem; color: var(--primary); display: block; }
+
+        /* Footer */
+        footer { background: var(--bg-light); padding: 80px 5% 40px; border-top: 1px solid #e2e8f0; text-align: center; }
+        .footer-nav { margin-bottom: 2.5rem; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .footer-nav a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 1rem; }
+        .footer-nav a:hover { color: var(--primary); }
+        .contact-box { background: white; padding: 1.5rem; border-radius: 12px; display: inline-block; border: 1px solid #e2e8f0; }
+        .contact-box a { color: var(--primary); font-weight: 700; text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .section-padding { padding: 60px 5%; }
+            .footer-nav { flex-direction: column; gap: 15px; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Kamayega Bharat</a>
+        <a href="login.html" class="login-btn">Login / Signup</a>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1>Bharat Ka Apna Job Portal</h1>
+            <p>We are bridging the gap between India's hardworking talent and verified employers. Simple, fast, and transparent.</p>
+            <div class="cta-box">
+                <a href="login.html" class="btn btn-main">Find a Job</a>
+                <a href="login.html" class="btn btn-outline">Post a Vacancy</a>
+            </div>
+        </section>
+
+        <div class="stats-bar">
+            <div class="stat-item"><b>500+</b><span>Active Workers</span></div>
+            <div class="stat-item"><b>100+</b><span>Verified Employers</span></div>
+            <div class="stat-item"><b>0%</b><span>Middleman Fees</span></div>
+        </div>
+
+        <section class="section-padding">
+            <div class="section-title">
+                <h2>Our Specialities</h2>
+                <p>Why thousands of people trust Kamayega Bharat</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🚀</span>
+                    <h3>Direct Connection</h3>
+                    <p>No recruitment agencies. No consultants. Talk directly to the person who is hiring you.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🛡️</span>
+                    <h3>Verified Employers</h3>
+                    <p>Every business on our platform is manually verified to ensure your safety and job security.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💰</span>
+                    <h3>Zero Commission</h3>
+                    <p>We believe your hard-earned money belongs to you. We never charge job seekers for hiring.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding" style="background: var(--bg-light);">
+            <div class="section-title">
+                <h2>Why Choose Us?</h2>
+                <p>Built with integrity, designed for India.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" style="background: white;">
+                    <h3>For Job Seekers</h3>
+                    <ul style="text-align: left; color: var(--text-muted); padding-left: 20px;">
+                        <li>Access to local jobs in your city.</li>
+                        <li>Verified phone numbers for instant calling.</li>
+                        <li>Build a professional profile in 2 minutes.</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="background: white;">
+                    <h3>For Employers</h3>
+                    <ul style="text-align: left; color: var(--text-muted); padding-left: 20px;">
+                        <li>Find skilled workers near your location.</li>
+                        <li>Screen candidates instantly via our portal.</li>
+                        <li>No expensive job posting packages.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <nav class="footer-nav">
+            <a href="legal.html">Terms & Privacy Policy</a>
+            <a href="mailto:kamayegabharat@gmail.com">Contact Support</a>
+        </nav>
+
+        <div class="contact-box">
+            24/7 Support: <a href="mailto:kamayegabharat@gmail.com">kamayegabharat@gmail.com</a>
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.85rem; color: var(--text-muted);">
+            &copy; 2026 Kamayega Bharat. Dedicated to the growth and prosperity of India.
+        </p>
+    </footer>
+
+</body>
+</html>
