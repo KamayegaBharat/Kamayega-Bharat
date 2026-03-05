@@ -3,377 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employer Panel | KAMAYEGA BHARAT</title>
+    <title>Elite Console | Kamayega Bharat</title>
     
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
     :root { 
-        --pri: #2563eb; --bg: #f8fafc; --txt: #1e293b; --border: #e2e8f0; --card: #ffffff;
-        --muted: #64748b; --err: #ef4444;
+        --pri: #0047FF; --pri-dark: #001A5E; --bg: #F8FAFC; --txt: #0F172A; 
+        --border: #E2E8F0; --card: #FFFFFF; --muted: #64748B; --err: #EF4444; --succ: #10B981;
+        --grad: linear-gradient(135deg, #0047FF 0%, #001A5E 100%);
+        --shadow: 0 10px 25px -5px rgba(0, 71, 255, 0.1);
     }
-    [data-theme="dark"] {
-        --bg: #0b0f1a; --txt: #f8fafc; --border: #1e293b; --card: #161e2d;
-        --muted: #94a3b8;
-    }
+    [data-theme="dark"] { --bg: #020617; --txt: #F8FAFC; --border: #1E293B; --card: #0F172A; --muted: #94A3B8; }
 
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s; }
+    body { background: var(--bg); color: var(--txt); min-height: 100vh; display: flex; flex-direction: column; }
+
+    aside { width: 280px; background: var(--pri-dark); color: white; display: flex; flex-direction: column; padding: 2.5rem 1.5rem; position: fixed; height: 100vh; z-index: 100; }
+    .brand { font-size: 1.5rem; font-weight: 800; margin-bottom: 3.5rem; letter-spacing: -1px; background: linear-gradient(to right, #fff, #93C5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-item { padding: 14px 18px; margin-bottom: 10px; border-radius: 14px; cursor: pointer; font-weight: 600; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 12px; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item.active { background: var(--pri); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    main { margin-left: 280px; flex-grow: 1; display: flex; flex-direction: column; }
+    .top-hdr { padding: 1.2rem 5%; background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 90; }
+    .content-body { padding: 2.5rem 5%; max-width: 1200px; width: 100%; margin: 0 auto; flex: 1; }
     
-    /* FIX 1: Allow vertical scrolling on the whole page */
-    body { margin: 0; display: flex; min-height: 100vh; background: var(--bg); overflow-x: hidden; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .hero-side {
-        flex: 0.7; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        display: flex; flex-direction: column; justify-content: center;
-        padding: 40px; color: white;
-    }
-    .hero-side h1 { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
-    .stat-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-box { padding: 1.5rem; background: var(--card); border-radius: 20px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow); }
+    .stat-box h2 { font-size: 2.2rem; color: var(--pri); margin-top: 5px; }
 
-    .dash-side { flex: 2; display: flex; flex-direction: column; background: var(--bg); position: relative; }
-    .dash-hdr { 
-        padding: 15px 40px; background: var(--card); border-bottom: 1px solid var(--border);
-        display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 10;
-    }
-    .hdr-actions { display: flex; align-items: center; gap: 20px; }
-    .content-wrap { padding: 30px 40px; max-width: 1100px; margin: 0 auto; width: 100%; flex: 1; }
+    .card { background: var(--card); padding: 2rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 2rem; }
+    input, select, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--txt); font-weight: 600; margin-bottom: 1rem; }
+    .btn-pri { width: 100%; padding: 16px; background: var(--grad); color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; }
 
-    .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border); color: var(--txt); }
-    h3 { margin-top: 0; color: var(--txt); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
+    /* BLUE MODAL FRAME */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 94, 0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .modal-box { background: var(--card); border-radius: 24px; padding: 2.5rem; max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--pri); }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
-    input, textarea, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--bg); color: var(--txt); font-size: 14px; }
-    .btn-main { width: 100%; padding: 14px; background: var(--pri); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .split-view { display: grid; grid-template-columns: 320px 1fr; height: 600px; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; background: var(--card); }
+    .list-pane { border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
+    .list-user { padding: 1.2rem; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .list-user:hover { background: rgba(0,71,255,0.05); }
+    
+    #msgArea { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg-bubble { padding: 10px 15px; border-radius: 14px; max-width: 80%; font-size: 0.9rem; font-weight: 600; }
+    .msg-me { align-self: flex-end; background: var(--pri); color: white; }
+    .msg-them { align-self: flex-start; background: var(--card); color: var(--txt); border: 1px solid var(--border); }
 
-    .job-list-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 30px; }
-    .manage-card { background: var(--card); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .manage-info h4 { margin: 0; color: var(--pri); font-size: 1rem; }
-    .manage-info p { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
-    .delete-btn { background: #fee2e2; color: #ef4444; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+    .doc-btn { padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; border: 1px solid var(--pri); color: var(--pri); background: transparent; text-decoration: none; display: none; }
+    .doc-btn:hover { background: var(--pri); color: white; }
+    .v-badge { background: #E0E7FF; color: #4338CA; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; display: none; align-items: center; gap: 4px; border: 1px solid #C7D2FE; margin-left: 10px; }
 
-    /* CHAT SECTION */
-    .inbox-container { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: 500px; }
-    .app-list { border: 1px solid var(--border); border-radius: 12px; overflow-y: auto; background: var(--card); }
-    .app-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--txt); }
-    .app-item.active { border-left: 4px solid var(--pri); background: var(--bg); }
-
-    .chat-window { border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; background: var(--card); }
-    .msgs { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
-    .msg { padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 13px; line-height: 1.4; position: relative; }
-    .msg.sent { align-self: flex-end; background: var(--pri); color: white; }
-    .msg.rec { align-self: flex-start; background: var(--card); border: 1px solid var(--border); color: var(--txt); }
-
-    .footer { padding: 40px; background: var(--card); border-top: 1px solid var(--border); color: var(--muted); display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-    .theme-toggle { background: none; border: none; cursor: pointer; font-size: 20px; }
-
-    /* MOBILE OVERRIDE */
-    @media (max-width: 1000px) {
-        body { display: block !important; overflow-y: auto !important; height: auto !important; }
-        .hero-side { display: none !important; }
-        .dash-hdr { padding: 15px 20px !important; }
-        .content-wrap { padding: 20px !important; }
-        .form-grid { grid-template-columns: 1fr !important; }
-        
-        /* FIX 2: Corrected class name from .inbox-wrapper to .inbox-container */
-        .inbox-container { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            height: auto !important; 
-        }
-        
-        .app-list { height: 250px !important; margin-bottom: 15px; }
-        
-        /* FIX 3: Push the footer down */
-        .chat-window { 
-            height: 500px !important; 
-            margin-bottom: 80px !important; 
-        }
-        
-        .footer { grid-template-columns: 1fr !important; gap: 20px !important; padding-bottom: 60px !important; }
-    }
-</style>
+    footer { padding: 4rem 5%; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; }
+    .foot-link { color: var(--pri); text-decoration: none; font-weight: 700; margin-right: 20px; }
+    </style>
 </head>
 <body data-theme="light">
 
-<div class="hero-side">
-    <h1>KAMAYEGA BHARAT</h1>
-    <p>Empowering Bharat's workforce by connecting local talent with verified opportunities.</p>
-    
-    <div class="stat-card">
-        <small>Active Postings</small>
-        <div id="jobCount" style="font-size: 1.5rem; font-weight: 800;">0</div>
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="color: var(--pri);">Confirm Action</h3>
+            <p id="modalText" style="margin: 1.5rem 0; font-weight: 600; color: var(--muted);"></p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeModal()" style="flex:1; padding:12px; border-radius:12px; border:1px solid var(--border); cursor:pointer; font-weight:700;">Cancel</button>
+                <button id="confirmBtn" style="flex:1; padding:12px; border-radius:12px; background:var(--pri); color:white; border:none; cursor:pointer; font-weight:700;">Confirm</button>
+            </div>
+        </div>
     </div>
-    <div class="stat-card">
-        <small>Total Applicants</small>
-        <div id="appCount" style="font-size: 1.5rem; font-weight: 800;">0</div>
-    </div>
-</div>
 
-<div class="dash-side">
-    <header class="dash-hdr">
-        <div style="font-weight: 700; color: var(--pri);">🏢 <span id="employerName">Employer Dashboard</span></div>
-        <div class="hdr-actions">
-            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-            <button style="background:none; border:1px solid var(--err); color:var(--err); padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="auth.signOut()">Logout</button>
-        </div>
-    </header>
+    <aside>
+        <div class="brand">Kamayega Bharat</div>
+        <nav>
+            <button class="nav-item active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+            <button class="nav-item" onclick="switchTab('profile', this)">🏢 Company Profile</button>
+            <button class="nav-item" onclick="switchTab('jobs', this)">💼 My Job Posts</button>
+            <button class="nav-item" onclick="switchTab('messages', this)">📩 Messages</button>
+            <button class="nav-item" onclick="switchTab('workers', this)">🔍 Worker Database</button>
+        </nav>
+    </aside>
 
-    <div class="content-wrap">
-        <div class="card">
-            <h3><span>📝</span> Create a New Job Post</h3>
-            <div class="form-grid">
-                <input type="text" id="jTitle" placeholder="Job Title (e.g. Sales Executive)">
-                <input type="text" id="jCompany" placeholder="Hiring Company Name">
+    <main>
+        <header class="top-hdr">
+            <div style="font-weight: 800; display:flex; align-items:center;">
+                🏢 <span id="employerName">Welcome...</span>
+                <span id="hdrBadge" class="v-badge">VERIFIED ✅</span>
             </div>
-            <div class="form-grid">
-                <input type="text" id="jSalary" placeholder="Salary (e.g. ₹20,000)">
-                <select id="jType">
-                    <option value="Full-Time">Full-Time</option>
-                    <option value="Part-Time">Part-Time</option>
-                    <option value="Remote">Remote</option>
-                </select>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
+                <button onclick="triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button>
             </div>
-            <div class="form-grid">
-                <input type="text" id="jLoc" placeholder="Job Location (City,State)">
-                <input type="text" id="jDeadline" placeholder="Deadline (Optional)">
-            </div>
-            <textarea id="jDesc" placeholder="Requirements & Job Description..." rows="3"></textarea>
-            <button class="btn-main" onclick="postJob()">Publish Vacancy 🚀</button>
-        </div>
+        </header>
 
-        <h3><span>📋</span> My Active Postings</h3>
-        <div id="myJobsContainer" class="job-list-grid">
-            <p style="color:var(--muted); font-size:13px;">Loading jobs...</p>
-        </div>
-
-        <h3 style="margin-top:40px;"><span>📩</span> Applicant Inbox & Messaging</h3>
-        <div class="card" style="padding: 10px;">
-            <div class="inbox-container">
-                <div class="app-list" id="appList">
-                    <p style="text-align:center; padding:20px; color:var(--muted); font-size:12px;">No applications yet</p>
+        <section class="content-body">
+            <div id="dashboard" class="tab-content active">
+                <div class="stat-grid">
+                    <div class="stat-box"><small>Active Postings</small><h2 id="jobCount">0</h2></div>
+                    <div class="stat-box"><small>New Applications</small><h2 id="appCount">0</h2></div>
+                    <div class="stat-box"><small>Verified Workers</small><h2>4.5k+</h2></div>
                 </div>
-                <div class="chat-window">
-                    <div id="chatHdr" style="padding:15px; border-bottom:1px solid var(--border); font-weight:700; display:none; flex-direction:column; gap:8px; color: var(--txt);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="card">
+                    <h3>🚀 Quick Post Vacancy</h3><br>
+                    <input type="text" id="jTitle" placeholder="Job Role">
+                    <input type="text" id="jCompany" placeholder="Company Name">
+                    <input type="text" id="jSalary" placeholder="Monthly Salary">
+                    <input type="text" id="jLoc" placeholder="Location">
+                    <textarea id="jDesc" rows="3" placeholder="Job Description"></textarea>
+                    <button class="btn-pri" onclick="postJob()">Publish to Marketplace</button>
+                </div>
+            </div>
+
+            <div id="profile" class="tab-content">
+                <div class="card">
+                    <h3>🏢 Company Verification</h3><br>
+                    <input type="text" id="pReg" placeholder="Registration No (GST/License)">
+                    <input type="file" id="vDoc">
+                    <button class="btn-pri" onclick="uploadVerification()">Submit for Review</button>
+                    <p id="vStatus" style="margin-top:20px; font-weight:700; color: var(--muted);">Status: Not Started</p>
+                </div>
+            </div>
+
+            <div id="messages" class="tab-content">
+                <div class="split-view">
+                    <div class="list-pane" id="appList"></div>
+                    <div style="display:flex; flex-direction:column; flex:1; background:var(--bg);">
+                        <div id="chatHdr" style="padding:1rem; background:var(--card); border-bottom:1px solid var(--border); display:none; justify-content:space-between; align-items:center;">
                             <div>
-                                <span id="activeName">Candidate</span>
-                                <select id="statusUpdate" class="status-select" onchange="updateStatus()">
-                                    <option value="Pending">Pending</option>
-                                    <option value="Shortlisted">Shortlisted</option>
-                                    <option value="Hired">Hired</option>
-                                    <option value="Rejected">Rejected</option>
-                                </select>
+                                <h4 id="activeUserName">Select User</h4>
+                                <p id="activeJobTitle" style="font-size:0.75rem; color:var(--pri); font-weight:700;"></p>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <a id="resBtn" class="doc-btn" target="_blank">📄 View Resume</a>
+                                    <a id="certBtn" class="doc-btn" target="_blank">🏅 View Certificate</a>
+                                </div>
                             </div>
-                            <div id="docLinks" style="display:flex; gap:10px;"></div>
+                            <select id="hiringStatus" onchange="updateStatus()" style="width:auto; margin:0; padding:5px 10px; font-size:0.8rem;">
+                                <option value="Pending">Pending</option>
+                                <option value="Shortlisted">Shortlisted</option>
+                                <option value="Hired">Hired</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
                         </div>
-                        <div id="activeBio" style="font-size:12px; font-weight:400; color:var(--muted); font-style:italic;"></div>
-                    </div>
-                    
-                    <div class="msgs" id="msgArea">
-                        <div style="margin:auto; text-align:center; color:var(--muted); font-size:13px;">Select an applicant to message</div>
-                    </div>
-                    <div id="chatInputArea" style="padding:10px; border-top:1px solid var(--border); display:none; gap:10px;">
-                        <input type="text" id="mText" placeholder="Write a message..." style="margin:0" onkeydown="if(event.key==='Enter') sendMsg()">
-                        <button onclick="sendMsg()" style="background:var(--pri); color:white; border:none; padding:0 15px; border-radius:8px; cursor:pointer;">Send</button>
+                        <div id="msgArea"></div>
+                        <div id="inputBar" style="padding:1rem; background:var(--card); border-top:1px solid var(--border); display:none; gap:10px;">
+                            <input type="text" id="mText" placeholder="Type a message..." style="margin:0;">
+                            <button onclick="sendMsg()" class="btn-pri" style="width:auto; padding:0 20px;">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <footer class="footer">
-        <div>
-            <h4>About Kamayega Bharat</h4>
-            <p>Our name says it all: <b>Kamayega Bharat</b>. We digitize local employment, connecting every hand in Bharat to meaningful work.</p>
-        </div>
-        <div>
-            <h4>Contact & Support</h4>
-            <p>Report bugs or glitches to: <a href="mailto:kamayegabharat@gmail.com">kamayegabharat@gmail.com</a></p>
-        </div>
-    </footer>
-</div>
+            <div id="workers" class="tab-content">
+                <h3>🔍 Local Talent Search</h3>
+                <input type="text" id="wSkill" placeholder="Search by Skill..." onkeyup="filterWorkers()" style="margin-top:1.5rem;">
+                <div id="workerList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem;"></div>
+            </div>
 
-<script>
-    // --- FIREBASE CONFIG ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
-        authDomain: "kamayega-bharat.firebaseapp.com",
-        projectId: "kamayega-bharat",
-        storageBucket: "kamayega-bharat.appspot.com",
-        messagingSenderId: "595460672260",
-        appId: "1:595460672260:web:6584856313e2d740805e51"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+            <div id="jobs" class="tab-content">
+                <h3>📋 Active Vacancies</h3>
+                <div id="myJobsContainer" style="margin-top:1.5rem;"></div>
+            </div>
+        </section>
 
-    let currentAppId = null;
-    let chatListener = null;
+        <footer>
+            <div>
+                <h4 style="color:var(--pri); margin-bottom:1rem;">Kamayega Bharat</h4>
+                <p>#1 trusted platform for local employment in India. Connecting verified hands to meaningful work since 2026.</p>
+                <p style="margin-top:2rem; font-size:0.8rem; opacity:0.5;">© 2026 Kamayega Bharat.</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom:1rem;">Quick Links</h4>
+                <div style="margin-bottom:1rem;">
+                    <a href="#" class="foot-link">Terms & Privacy</a>
+                    <a href="#" class="foot-link">Contact Us</a>
+                </div>
+                <p>Support: <b>kamayegabharat@gmail.com</b></p>
+            </div>
+        </footer>
+    </main>
 
-    function toggleTheme() {
-        const body = document.body;
-        const newTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        body.setAttribute('data-theme', newTheme);
-    }
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
+            authDomain: "kamayega-bharat.firebaseapp.com",
+            projectId: "kamayega-bharat",
+            storageBucket: "kamayega-bharat.appspot.com",
+            messagingSenderId: "595460672260",
+            appId: "1:595460672260:web:6584856313e2d740805e51"
+        };
 
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            db.collection('users').doc(user.uid).get().then(doc => {
-                if(doc.exists) document.getElementById('employerName').innerText = doc.data().fullName;
+        let auth, db, storage, currentAppId = null, isVerified = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth(); db = firebase.firestore(); storage = firebase.storage();
+            auth.onAuthStateChanged(user => {
+                if(user) {
+                    db.collection('users').doc(user.uid).onSnapshot(doc => { 
+                        if(doc.exists) {
+                            const data = doc.data();
+                            document.getElementById('employerName').innerText = data.fullName;
+                            
+                            // Verification Logic Fixed
+                            isVerified = (data.verificationStatus === 'verified');
+                            document.getElementById('hdrBadge').style.display = isVerified ? 'inline-flex' : 'none';
+                            
+                            const vS = document.getElementById('vStatus');
+                            if(isVerified) vS.innerHTML = "Status: <span style='color:var(--succ)'>Verified ✅</span>";
+                            else if(data.verificationStatus === 'pending') vS.innerHTML = "Status: <span style='color:#EAB308'>Pending Review...</span>";
+                            else vS.innerHTML = "Status: <span style='color:var(--muted)'>Not Started</span>";
+                        }
+                    });
+                    loadData(user.uid);
+                } else { window.location.href = 'index.html'; }
             });
-            loadStats(user.uid);
-            loadMyJobs(user.uid);
-            listenToApps(user.uid);
-        } else { window.location.href = 'index.html'; }
-    });
+        });
 
-    // FEATURE 1: ADDED STRICT FORM VALIDATION
-    async function postJob() {
-        const title = document.getElementById('jTitle').value.trim();
-        const company = document.getElementById('jCompany').value.trim();
-        const salary = document.getElementById('jSalary').value.trim();
-        const type = document.getElementById('jType').value;
-        const location = document.getElementById('jLoc').value.trim();
-        const desc = document.getElementById('jDesc').value.trim();
-
-        if(!title || !company || !salary || !location) {
-            return alert("❌ Please fill in all required fields (Title, Company, Salary, and Location).");
+        // MODAL SYSTEM
+        function openModal(title, text, action) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalText').innerText = text;
+            const btn = document.getElementById('confirmBtn');
+            btn.onclick = () => { action(); closeModal(); };
+            document.getElementById('customModal').style.display = 'flex';
         }
+        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
 
-        try {
+        window.triggerLogout = () => openModal("Logout?", "Are you sure you want to exit the console?", () => auth.signOut());
+        window.triggerDelete = (id) => openModal("Delete Job?", "This vacancy will be removed from the marketplace permanently.", async () => {
+            await db.collection('jobs').doc(id).delete();
+        });
+
+        window.switchTab = (id, el) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'workers') loadWorkerDB();
+        };
+
+        window.postJob = async () => {
+            const title = document.getElementById('jTitle').value; if(!title) return alert("Enter Title");
             await db.collection('jobs').add({
-                title, company, salary, type, location, desc,
-                employerId: auth.currentUser.uid,
-                createdAt: Date.now()
+                title, company: document.getElementById('jCompany').value,
+                salary: document.getElementById('jSalary').value, location: document.getElementById('jLoc').value,
+                desc: document.getElementById('jDesc').value, employerId: auth.currentUser.uid, createdAt: Date.now(),
+                isVerified: isVerified
             });
-            alert("Job Published Successfully! 🚀");
-            // Clear inputs
-            document.getElementById('jTitle').value = "";
-            document.getElementById('jCompany').value = "";
-            document.getElementById('jSalary').value = "";
-            document.getElementById('jLoc').value = "";
-            document.getElementById('jDesc').value = "";
-        } catch(e) {
-            alert("Error posting job. Please try again.");
+            alert("Job Live!");
+        };
+
+        window.uploadVerification = async () => {
+            const file = document.getElementById('vDoc').files[0];
+            const reg = document.getElementById('pReg').value;
+            if(!file || !reg) return alert("Complete all fields");
+            const ref = storage.ref(`verifications/${auth.currentUser.uid}/${file.name}`);
+            await ref.put(file);
+            const url = await ref.getDownloadURL();
+            await db.collection('users').doc(auth.currentUser.uid).update({ verificationDoc: url, companyReg: reg, verificationStatus: 'pending' });
+            alert("Submitted for Review!");
+        };
+
+        function loadData(uid) {
+            db.collection('jobs').where('employerId', '==', uid).onSnapshot(snap => {
+                document.getElementById('jobCount').innerText = snap.size;
+                const container = document.getElementById('myJobsContainer'); container.innerHTML = "";
+                snap.forEach(doc => {
+                    container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:1rem;">
+                        <div><strong>${doc.data().title}</strong></div>
+                        <button onclick="triggerDelete('${doc.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    </div>`;
+                });
+            });
+
+            db.collection('applications').where('employerId', '==', uid).onSnapshot(snap => {
+                document.getElementById('appCount').innerText = snap.size;
+                const list = document.getElementById('appList'); list.innerHTML = "";
+                snap.forEach(doc => {
+                    const a = doc.data();
+                    const el = document.createElement('div');
+                    el.className = 'list-user';
+                    el.innerHTML = `<strong>${a.seekerName}</strong><br><small>${a.jobTitle}</small>`;
+                    el.onclick = () => openChat(doc.id, a.seekerName, a.jobTitle, a.status, a.seekerId);
+                    list.appendChild(el);
+                });
+            });
         }
-    }
 
-    function loadMyJobs(uid) {
-        db.collection('jobs').where('employerId', '==', uid).orderBy('createdAt', 'desc').onSnapshot(snap => {
-            const container = document.getElementById('myJobsContainer');
-            // FEATURE 3: EMPTY STATE FOR JOBS
-            if(snap.empty) {
-                container.innerHTML = `<p style="color:var(--muted); font-size:13px; padding:20px; border:1px dashed var(--border); border-radius:12px; text-align:center;">You haven't posted any jobs yet. Start by creating one above! 💼</p>`;
-                return;
-            }
-            container.innerHTML = "";
-            snap.forEach(doc => {
-                const job = doc.data();
-                container.innerHTML += `
-                    <div class="manage-card">
-                        <div class="manage-info">
-                            <h4>${job.title}</h4>
-                            <p>${job.company} • ${job.type} • ${job.location}</p>
-                        </div>
-                        <button class="delete-btn" onclick="deleteJob('${doc.id}')">🗑️</button>
-                    </div>`;
-            });
-        });
-    }
-
-    async function deleteJob(id) {
-        if(confirm("Delete this job vacancy permanently?")) await db.collection('jobs').doc(id).delete();
-    }
-
-    function listenToApps(uid) {
-        db.collection('applications').where('employerId', '==', uid).onSnapshot(snap => {
-            const list = document.getElementById('appList');
-            document.getElementById('appCount').innerText = snap.size;
+        window.openChat = async (appId, name, job, status, seekerId) => {
+            currentAppId = appId;
+            document.getElementById('chatHdr').style.display = 'flex';
+            document.getElementById('inputBar').style.display = 'flex';
+            document.getElementById('activeUserName').innerText = name;
+            document.getElementById('activeJobTitle').innerText = "Applied for: " + job;
+            document.getElementById('hiringStatus').value = status || "Pending";
             
-            // FEATURE 3: EMPTY STATE FOR APPLICANTS
-            if(snap.empty) {
-                list.innerHTML = `<p style="text-align:center; padding:40px; color:var(--muted); font-size:12px;">No applications yet. Your job posts are active! 📢</p>`;
-                return;
+            const rBtn = document.getElementById('resBtn'); const cBtn = document.getElementById('certBtn');
+            rBtn.style.display = 'none'; cBtn.style.display = 'none';
+
+            if(seekerId) {
+                const sD = await db.collection('users').doc(seekerId).get();
+                if(sD.exists) {
+                    const d = sD.data();
+                    if(d.resumeUrl) { rBtn.href = d.resumeUrl; rBtn.style.display = 'block'; }
+                    if(d.certUrl) { cBtn.href = d.certUrl; cBtn.style.display = 'block'; }
+                }
             }
 
-            list.innerHTML = "";
+            db.collection('applications').doc(appId).collection('chats').orderBy('time').onSnapshot(snap => {
+                const area = document.getElementById('msgArea'); area.innerHTML = "";
+                snap.forEach(m => {
+                    const d = m.data();
+                    const isMe = d.senderId === auth.currentUser.uid;
+                    area.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-me':'msg-them'}">${d.text}</div>`;
+                });
+                area.scrollTop = area.scrollHeight;
+            });
+        };
+
+        window.sendMsg = async () => {
+            const t = document.getElementById('mText').value; if(!t || !currentAppId) return;
+            await db.collection('applications').doc(currentAppId).collection('chats').add({ text: t, senderId: auth.currentUser.uid, time: Date.now() });
+            document.getElementById('mText').value = "";
+        };
+
+        window.updateStatus = async () => {
+            const s = document.getElementById('hiringStatus').value;
+            if(currentAppId) await db.collection('applications').doc(currentAppId).update({ status: s });
+        };
+
+        async function loadWorkerDB() {
+            const snap = await db.collection('users').where('role', '==', 'worker').get();
+            const list = document.getElementById('workerList'); list.innerHTML = "";
             snap.forEach(doc => {
-                const a = doc.data();
-                const div = document.createElement('div');
-                div.className = `app-item ${currentAppId === doc.id ? 'active' : ''}`;
-                div.innerHTML = `<b>${a.seekerName}</b><br><small>${a.jobTitle} - ${a.status || 'Pending'}</small>`;
-                div.onclick = () => openChat(doc.id, a);
-                list.appendChild(div);
+                list.innerHTML += `<div class="card worker-card" data-skill="${(doc.data().skills || '').toLowerCase()}">
+                    <strong>${doc.data().fullName}</strong><br><small>${doc.data().skills || 'General'}</small>
+                </div>`;
             });
-        });
-    }
+        }
 
-    async function openChat(id, data) {
-        currentAppId = id;
-        document.getElementById('chatHdr').style.display = 'flex';
-        document.getElementById('chatInputArea').style.display = 'flex';
-        document.getElementById('activeName').innerText = data.seekerName;
-        document.getElementById('statusUpdate').value = data.status || "Pending";
-        
-        const seekerDoc = await db.collection('users').doc(data.seekerId).get();
-        const p = seekerDoc.data();
-        
-        document.getElementById('activeBio').innerText = p?.bio ? `"${p.bio}"` : "No bio provided.";
-        
-        let docHtml = "";
-        if(p?.resumeUrl) docHtml += `<a href="${p.resumeUrl}" target="_blank" style="font-size:11px; color:white; background:var(--pri); padding:4px 8px; border-radius:5px; text-decoration:none;">📄 Resume</a>`;
-        if(p?.certUrl) docHtml += `<a href="${p.certUrl}" target="_blank" style="font-size:11px; color:white; background:#10b981; padding:4px 8px; border-radius:5px; text-decoration:none;">🎓 Certs</a>`;
-        document.getElementById('docLinks').innerHTML = docHtml;
+        window.filterWorkers = () => {
+            const v = document.getElementById('wSkill').value.toLowerCase();
+            document.querySelectorAll('.worker-card').forEach(c => { c.style.display = c.dataset.skill.includes(v) ? 'block' : 'none'; });
+        };
 
-        if(chatListener) chatListener();
-        chatListener = db.collection('applications').doc(id).collection('chats').orderBy('time').onSnapshot(snap => {
-            const area = document.getElementById('msgArea');
-            area.innerHTML = "";
-            snap.forEach(m => {
-                const d = m.data();
-                const isMe = d.senderId === auth.currentUser.uid;
-                area.innerHTML += `
-                    <div class="msg ${isMe ? 'sent' : 'rec'}">
-                        ${d.text}
-                        <span class="timestamp">${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>`;
-            });
-            // FEATURE 2: AUTO-SCROLL TO BOTTOM
-            area.scrollTop = area.scrollHeight;
-        });
-    }
-
-    async function sendMsg() {
-        const text = document.getElementById('mText').value.trim();
-        if(!text || !currentAppId) return;
-        await db.collection('applications').doc(currentAppId).collection('chats').add({
-            text, senderId: auth.currentUser.uid, time: Date.now()
-        });
-        document.getElementById('mText').value = "";
-    }
-
-    async function updateStatus() {
-        const status = document.getElementById('statusUpdate').value;
-        if(currentAppId) await db.collection('applications').doc(currentAppId).update({ status });
-    }
-
-    async function loadStats(uid) {
-        const jobs = await db.collection('jobs').where('employerId', '==', uid).get();
-        document.getElementById('jobCount').innerText = jobs.size;
-    }
-</script>
+        window.toggleTheme = () => {
+            const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        };
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
