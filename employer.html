@@ -65,6 +65,69 @@
 
     footer { padding: 4rem 5%; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; }
     .foot-link { color: var(--pri); text-decoration: none; font-weight: 700; margin-right: 20px; }
+/* --- MOBILE RESPONSIVE FIX (Surgical) --- */
+@media (max-width: 768px) {
+    aside {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 250px;
+    }
+    
+    /* Toggle this class via JS to show menu on mobile */
+    aside.mobile-open {
+        transform: translateX(0);
+    }
+
+    main {
+        margin-left: 0 !important; /* Remove sidebar gap on mobile */
+        width: 100%;
+    }
+
+    .top-hdr {
+        padding: 1rem 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Fix the split-view (Messages) on mobile */
+    .split-view {
+        grid-template-columns: 1fr; /* Stack list and chat */
+        height: auto;
+        min-height: 500px;
+    }
+
+    .list-pane {
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr; /* Stack stats on mobile */
+    }
+
+    footer {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 2rem;
+    }
+
+    /* Add a Menu Button for Mobile */
+    .mobile-menu-btn {
+        display: block !important;
+        background: var(--pri);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+}
+
+/* Hide mobile menu btn on desktop */
+.mobile-menu-btn { display: none; }
     </style>
 </head>
 <body data-theme="light">
@@ -93,6 +156,7 @@
 
     <main>
         <header class="top-hdr">
+<button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
             <div style="font-weight: 800; display:flex; align-items:center;">
                 🏢 <span id="employerName">Welcome...</span>
                 <span id="hdrBadge" class="v-badge">VERIFIED ✅</span>
@@ -356,6 +420,17 @@
 
         window.toggleTheme = () => {
             const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }; 
+window.toggleMobileMenu = () => {
+            document.querySelector('aside').classList.toggle('mobile-open');
+        };
+        // Close menu on mobile after clicking a tab
+        const originalSwitchTab = window.switchTab;
+        window.switchTab = (id, el) => {
+            originalSwitchTab(id, el);
+            if(window.innerWidth <= 768) {
+                document.querySelector('aside').classList.remove('mobile-open');
+            }
         };
     </script>
 </body>
