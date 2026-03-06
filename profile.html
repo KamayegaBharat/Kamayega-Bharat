@@ -56,6 +56,58 @@
 
     footer { padding: 4rem 5%; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; margin-top: auto; }
     .foot-link { color: var(--pri); text-decoration: none; font-weight: 700; margin-right: 20px; }
+/* --- MOBILE RESPONSIVE FIX (Surgical) --- */
+    @media (max-width: 768px) {
+        aside {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            width: 250px;
+        }
+        
+        aside.mobile-open {
+            transform: translateX(0);
+        }
+
+        main {
+            margin-left: 0 !important;
+            width: 100%;
+        }
+
+        .top-hdr {
+            padding: 1rem 15px;
+        }
+
+        .split-view {
+            grid-template-columns: 1fr;
+            height: auto;
+            min-height: 500px;
+        }
+
+        .list-pane {
+            height: 180px;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+        }
+
+        footer {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .mobile-menu-btn {
+            display: block !important;
+            background: var(--pri);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    }
+
+    .mobile-menu-btn { display: none; }
     </style>
 </head>
 <body data-theme="light">
@@ -83,13 +135,15 @@
 
     <main>
         <header class="top-hdr">
-            <div style="font-weight: 800;">👋 <span id="userName">Professional</span></div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
-                <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button>
-            </div>
-        </header>
-
+    <div style="font-weight: 800; display: flex; align-items: center;">
+        <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()">☰</button>
+        👋 <span id="userName">Professional</span>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
+        <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
+    </div>
+</header>
         <section class="content-body">
             <div id="jobs" class="tab-content active">
                 <div class="card" style="display:flex; gap:10px; padding:1rem; margin-bottom:1.5rem;">
@@ -330,6 +384,18 @@ if(!input.value.trim() || !currentAppId) return;
             var b = document.body; 
             var cur = b.getAttribute('data-theme');
             b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+        }; 
+window.toggleMobileMenu = function() {
+            document.querySelector('aside').classList.toggle('mobile-open');
+        };
+
+        // Close menu on mobile after clicking a tab
+        var originalSwitchTab = window.switchTab;
+        window.switchTab = function(id, el) {
+            originalSwitchTab(id, el);
+            if(window.innerWidth <= 768) {
+                document.querySelector('aside').classList.remove('mobile-open');
+            }
         };
     </script>
 </body>
