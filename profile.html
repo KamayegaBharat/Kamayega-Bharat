@@ -48,7 +48,7 @@
     .msg-bubble { padding: 10px 15px; border-radius: 14px; max-width: 80%; font-size: 0.9rem; font-weight: 600; }
     .msg-me { align-self: flex-end; background: var(--pri); color: white; }
     .msg-them { align-self: flex-start; background: var(--card); color: var(--txt); border: 1px solid var(--border); }
-.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
     .tag { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; background: #E0E7FF; color: var(--pri); }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 94, 0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
@@ -56,44 +56,37 @@
 
     footer { padding: 4rem 5%; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; margin-top: auto; }
     .foot-link { color: var(--pri); text-decoration: none; font-weight: 700; margin-right: 20px; }
-/* --- MOBILE RESPONSIVE FIX (Surgical) --- */
+
     @media (max-width: 768px) {
         aside {
             transform: translateX(-100%);
             transition: transform 0.3s ease;
             width: 250px;
         }
-        
         aside.mobile-open {
             transform: translateX(0);
         }
-
         main {
             margin-left: 0 !important;
             width: 100%;
         }
-
         .top-hdr {
             padding: 1rem 15px;
         }
-
         .split-view {
             grid-template-columns: 1fr;
             height: auto;
             min-height: 500px;
         }
-
         .list-pane {
             height: 180px;
             border-right: none;
             border-bottom: 1px solid var(--border);
         }
-
         footer {
             grid-template-columns: 1fr;
             text-align: center;
         }
-
         .mobile-menu-btn {
             display: block !important;
             background: var(--pri);
@@ -108,6 +101,30 @@
     }
 
     .mobile-menu-btn { display: none; }
+
+    /* ── Light Mode: Verified Gold Card ── */
+    .verified-gold-card {
+        border: 2px solid #FFD700 !important;
+        box-shadow: 0 0 12px rgba(255, 214, 0, 0.4);
+        background: linear-gradient(145deg, #ffffff, #fffef0) !important;
+        position: relative;
+    }
+    .verified-gold-card::after {
+        content: '👑';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 18px;
+    }
+
+    /* ── Dark Mode: Verified Gold Card Fix ──
+       Replaces the hardcoded white gradient with the dark theme card colour
+       so it no longer appears as a white block. The golden border glow and
+       crown icon are preserved unchanged. */
+    [data-theme="dark"] .verified-gold-card {
+        background: linear-gradient(145deg, #0F172A, #1a1f2e) !important;
+        box-shadow: 0 0 16px rgba(255, 214, 0, 0.25);
+    }
     </style>
 </head>
 <body data-theme="light">
@@ -135,15 +152,15 @@
 
     <main>
         <header class="top-hdr">
-    <div style="font-weight: 800; display: flex; align-items: center;">
-        <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()">☰</button>
-        👋 <span id="userName">Professional</span>
-    </div>
-    <div style="display: flex; gap: 15px; align-items: center;">
-        <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
-        <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
-    </div>
-</header>
+            <div style="font-weight: 800; display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()">☰</button>
+                👋 <span id="userName">Professional</span>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
+                <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
+            </div>
+        </header>
         <section class="content-body">
             <div id="jobs" class="tab-content active">
                 <div class="card" style="display:flex; gap:10px; padding:1rem; margin-bottom:1.5rem;">
@@ -160,7 +177,7 @@
                 <div class="split-view">
                     <div class="list-pane" id="activeChatsList"></div>
                     <div style="display:flex; flex-direction:column; flex:1; background:var(--bg);">
-<div id="chatHdr" style="padding:1rem; background:var(--card); border-bottom:1px solid var(--border); display:none;">
+                        <div id="chatHdr" style="padding:1rem; background:var(--card); border-bottom:1px solid var(--border); display:none;">
                             <h4 id="activeEmployerName">Conversation</h4>
                         </div>
                         <div id="msgArea"></div>
@@ -242,61 +259,69 @@
         };
 
         async function loadJobs() {
-    const uid = auth.currentUser.uid;
-    
-    // STEP 1: Get all Job IDs the user has already applied for
-    const appSnap = await db.collection('applications').where('seekerId', '==', uid).get();
-    const appliedJobIds = appSnap.docs.map(function(doc) { return doc.data().jobId; });
+            const uid = auth.currentUser.uid;
+            const appSnap = await db.collection('applications').where('seekerId', '==', uid).get();
+            const appliedJobIds = appSnap.docs.map(function(doc) { return doc.data().jobId; });
 
-    // STEP 2: Listen for Jobs and mark the ones already applied
-    db.collection('jobs').onSnapshot(function(snap) {
-        allJobs = [];
-        snap.forEach(function(doc) {
-            var data = doc.data();
-            allJobs.push({
-                id: doc.id, 
-                title: data.title, 
-                company: data.company, 
-                location: data.location, 
-                salary: data.salary, 
-                employerId: data.employerId,
-                alreadyApplied: appliedJobIds.includes(doc.id) // <--- Logic check
+            db.collection('jobs').onSnapshot(function(snap) {
+                var jobs = [];
+                snap.forEach(function(doc) {
+                    var data = doc.data();
+                    jobs.push({
+                        id: doc.id,
+                        title: data.title || "Job Title",
+                        company: data.companyName || data.company || "Company",
+                        location: data.location || "Location",
+                        salary: data.salary || "N/A",
+                        employerId: data.employerId,
+                        isVerified: data.isVerified || false,
+                        alreadyApplied: appliedJobIds.includes(doc.id)
+                    });
+                });
+                renderJobs(jobs);
             });
-        });
-        renderJobs(allJobs);
-    });
-}
+        }
 
-function renderJobs(jobs) {
-    var container = document.getElementById('jobListingContainer');
-    container.innerHTML = jobs.length === 0 ? "<p>Searching for jobs...</p>" : "";
-    
-    jobs.forEach(function(j) {
-        // STEP 3: Visually change the button if already applied
-        var btnText = j.alreadyApplied ? "Applied" : "Apply Now";
-        var btnAttr = j.alreadyApplied ? "disabled style='background: #cbd5e1; cursor: not-allowed; opacity: 0.7; border:none;'" : "";
-        var btnAction = j.alreadyApplied ? "" : 'onclick="window.applyJob(\'' + j.id + '\', \'' + j.title + '\', \'' + j.employerId + '\')"';
+        function renderJobs(jobs) {
+            var container = document.getElementById('jobListingContainer');
+            if (!container) return;
 
-        container.innerHTML += '<div class="card"><strong>' + j.title + '</strong><br><small>' + j.company + ' • ' + j.location + '</small><br><br><span class="tag">₹ ' + j.salary + '</span><br><br><button ' + btnAttr + ' ' + btnAction + ' class="btn-pri">' + btnText + '</button></div>';
-    });
-}
+            container.innerHTML = jobs.length === 0 ? "<p>Searching for jobs...</p>" : "";
+            
+            jobs.forEach(function(j) {
+                var verifiedClass = j.isVerified ? "verified-gold-card" : "";
+                
+                var btnText = j.alreadyApplied ? "Applied" : "Apply Now";
+                var btnAttr = j.alreadyApplied ? "disabled style='background: #cbd5e1; cursor: not-allowed; border:none;'" : "";
+                var btnAction = j.alreadyApplied ? "" : "window.applyJob('" + j.id + "', '" + j.title + "', '" + j.employerId + "')";
 
-window.applyJob = function(jobId, title, empId) {
-    window.openModal("Apply Now?", "Confirm your application for " + title, function() {
-        db.collection('applications').add({
-            jobId: jobId, 
-            jobTitle: title, 
-            employerId: empId,
-            seekerId: auth.currentUser.uid, 
-            seekerName: auth.currentUser.displayName || "Seeker",
-            status: 'Pending', 
-            time: Date.now()
-        }).then(function() { 
-            alert("Application Sent!"); 
-            loadJobs(); // STEP 4: Instantly refresh UI to disable the button
-        });
-    });
-};
+                var html = '<div class="card ' + verifiedClass + '">' +
+                           '<strong>' + j.title + '</strong><br>' +
+                           '<small>' + j.company + ' • ' + j.location + '</small><br><br>' +
+                           '<span class="tag">₹ ' + j.salary + '</span><br><br>' +
+                           '<button ' + btnAttr + ' onclick="' + btnAction + '" class="btn-pri">' + btnText + '</button>' +
+                           '</div>';
+
+                container.innerHTML += html;
+            });
+        }
+
+        window.applyJob = function(jobId, title, empId) {
+            window.openModal("Apply Now?", "Confirm your application for " + title, function() {
+                db.collection('applications').add({
+                    jobId: jobId, 
+                    jobTitle: title, 
+                    employerId: empId,
+                    seekerId: auth.currentUser.uid, 
+                    seekerName: auth.currentUser.displayName || "Seeker",
+                    status: 'Pending', 
+                    time: Date.now()
+                }).then(function() { 
+                    alert("Application Sent!"); 
+                    loadJobs();
+                });
+            });
+        };
 
         function loadChats(uid) {
             db.collection('applications').where('seekerId', '==', uid).onSnapshot(function(snap) {
@@ -330,7 +355,7 @@ window.applyJob = function(jobId, title, empId) {
 
         window.sendMsg = function() {
             var input = document.getElementById('mText');
-if(!input.value.trim() || !currentAppId) return;
+            if(!input.value.trim() || !currentAppId) return;
             db.collection('applications').doc(currentAppId).collection('chats').add({
                 text: input.value, senderId: auth.currentUser.uid, time: Date.now()
             });
@@ -384,12 +409,12 @@ if(!input.value.trim() || !currentAppId) return;
             var b = document.body; 
             var cur = b.getAttribute('data-theme');
             b.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
-        }; 
-window.toggleMobileMenu = function() {
+        };
+
+        window.toggleMobileMenu = function() {
             document.querySelector('aside').classList.toggle('mobile-open');
         };
 
-        // Close menu on mobile after clicking a tab
         var originalSwitchTab = window.switchTab;
         window.switchTab = function(id, el) {
             originalSwitchTab(id, el);
