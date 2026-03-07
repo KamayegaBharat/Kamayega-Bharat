@@ -186,15 +186,23 @@
             </div>
 
             <div id="profile" class="tab-content">
-                <div class="card">
-                    <h3>🏢 Company Verification</h3><br>
-                    <input type="text" id="pReg" placeholder="Registration No (GST/License)">
-                    <input type="file" id="vDoc">
-                    <button class="btn-pri" onclick="uploadVerification()">Submit for Review</button>
-                    <p id="vStatus" style="margin-top:20px; font-weight:700; color: var(--muted);">Status: Not Started</p>
-                </div>
-            </div>
+    <div class="card">
+        <h3>🏢 Company Verification</h3><br>
+        
+        <input type="text" id="pReg" placeholder="Registration No (GST/License)">
+        
+        <input type="url" id="vDoc" placeholder="Paste Google Drive Link here" 
+               style="margin-top:10px; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+            💡 Tip: Upload your document to Google Drive, set sharing to "Anyone with the link can view," and paste the link here.
+        </p>
 
+        <button class="btn-pri" onclick="uploadVerification()">Submit for Review</button>
+        
+        <p id="vStatus" style="margin-top:20px; font-weight:700; color: var(--muted);">Status: Not Started</p>
+    </div>
+</div>
             <div id="messages" class="tab-content">
                 <div class="split-view">
                     <div class="list-pane" id="appList"></div>
@@ -324,16 +332,32 @@
             alert("Job Live!");
         };
 
-        window.uploadVerification = async () => {
-            const file = document.getElementById('vDoc').files[0];
-            const reg = document.getElementById('pReg').value;
-            if(!file || !reg) return alert("Complete all fields");
-            const ref = storage.ref(`verifications/${auth.currentUser.uid}/${file.name}`);
-            await ref.put(file);
-            const url = await ref.getDownloadURL();
-            await db.collection('users').doc(auth.currentUser.uid).update({ verificationDoc: url, companyReg: reg, verificationStatus: 'pending' });
-            alert("Submitted for Review!");
-        };
+  window.uploadVerification = async () => {
+    // We now get the value (text) instead of a file
+    const docLink = document.getElementById('vDoc').value.trim();
+    const reg = document.getElementById('pReg').value.trim();
+
+    if(!docLink || !reg) return alert("Please enter both the Registration Number and the Link.");
+
+    // Simple check to make sure it's a URL
+    if(!docLink.startsWith("http")) return alert("Please paste a valid Google Drive or Dropbox link.");
+
+    try {
+        // Direct update to Firestore - No 'storage' needed!
+        await db.collection('users').doc(auth.currentUser.uid).update({ 
+            verificationDoc: docLink, 
+            companyReg: reg, 
+            verificationStatus: 'pending',
+            submittedAt: new Date().toISOString()
+        });
+
+        alert("Submitted for Review! ✅");
+        location.reload(); 
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Submission failed. Check your connection.");
+    }
+};
 
         function loadData(uid) {
             db.collection('jobs').where('employerId', '==', uid).onSnapshot(snap => {
