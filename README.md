@@ -1,6 +1,10 @@
-# Kamayega Bharat 🇮🇳
+# Kamayega Bharat 🇮🇳 
+
+
 
 A localized job portal designed to connect employers and job seekers across Bharat with high-speed, real-time chat capabilities.
+
+Developed & Maintained by: Sourav Bagchi
 
 ## 🚀 Key Features
 - **Real-Time Messaging:** Instant chat between employers and seekers powered by Firebase.
