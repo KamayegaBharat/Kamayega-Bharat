@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://kamayega-bharat.github.io/sitemap.xml
+Sitemap: https://kamayegabharat.github.io/Kamayega-Bharat/sitemap.xml
+
