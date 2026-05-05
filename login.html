@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KAMAYEGA BHARAT | BHARAT KA APNA JOB PORTAL</title>
-    <script src="https://www.google.com/recaptcha/api.js?render=6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q"></script>
     <style>
         :root { --pri: #2563eb; --bg: #f8fafc; --txt: #1e293b; --err: #ef4444; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -168,6 +167,8 @@
         appId: "1:595460672260:web:6584856313e2d740805e51"
     };
     firebase.initializeApp(firebaseConfig);
+ let isLogin = true;
+     let selectedRole = 'seeker';
     self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 const appCheck = firebase.appCheck();
 appCheck.activate(
@@ -179,8 +180,8 @@ console.log("App Check security is now live!");
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let isLogin = true;
-    let selectedRole = 'seeker';
+    
+   
 
     function togglePass() {
         const p = document.getElementById('password');
