@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Kamayega Bharat</title> 
+    <link rel="icon" type="image/png" href="favicon.png" sizes="48x48">
+    
+    <meta name="description" content="Learn about the mission behind Kamayega Bharat and its developer, Sourav Bagchi. Built for India's workforce.">
+    <meta name="author" content="Sourav Bagchi">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: white; color: var(--text-main); line-height: 1.6; }
+
+        /* Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 5%; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; background: white; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.03em; }
+        .login-btn { background: var(--primary); color: white; padding: 0.7rem 1.6rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: 0.3s; }
+
+        /* Hero Style Section */
+        .hero { padding: 80px 5% 100px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; }
+        h1 { font-size: clamp(2.5rem, 8vw, 3.5rem); margin: 0 0 1.5rem; letter-spacing: -0.04em; line-height: 1.1; font-weight: 800; }
+        
+        /* Layout Sections */
+        .section-padding { padding: 80px 5%; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 15px; }
+
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .feature-card { padding: 40px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; transition: 0.3s; }
+        .feature-card h3 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-main); }
+
+        /* Footer Styles */
+        footer { background: var(--bg-light); padding: 60px 5% 40px; border-top: 1px solid #e2e8f0; text-align: center; }
+        .footer-nav { margin-bottom: 2rem; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .footer-nav a { color: var(--text-muted); text-decoration: none; font-weight: 600; }
+        .footer-nav a:hover { color: var(--primary); }
+
+        @media (max-width: 768px) {
+            .footer-nav { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Kamayega Bharat</a>
+        <a href="login.html" class="login-btn">Login / Signup</a>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1>The Story Behind The Code</h1>
+            <p style="max-width: 700px; margin-inline: auto; font-size: 1.25rem; opacity: 0.9;">
+                Bridging India's employment gap with modern technology and absolute transparency.
+            </p>
+        </section>
+
+        <section class="section-padding">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3 style="color: var(--primary);">The Mission</h3>
+<p style="color: var(--text-muted);">
+                        Kamayega Bharat is an open-source initiative designed to empower workers. 
+                        We believe in a job market that is simple, fast, and completely free from 
+                        middleman commissions or hidden registration fees.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 style="color: var(--primary);">Behind the Code</h3>
+                    <p style="color: var(--text-muted);">
+                        Developed by <b>Sourav Bagchi</b>, Kamayega Bharat provide a secure, high-performance experience 
+                        for the Indian workforce. Built with a focus on clean logic—no fluff, 
+                        just direct connections.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding" style="background: var(--bg-light);">
+            <div class="section-title">
+                <h2>Our Values</h2>
+                <p>Integrity is at the heart of everything we build.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" style="background: white; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h3>No Hidden Costs</h3>
+                    <p>Our platform is 100% free for job seekers. We strictly prohibit any employer from charging fees for hiring.</p>
+                </div>
+                <div class="feature-card" style="background: white; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h3>Data Privacy</h3>
+                    <p>We use Google Firebase for military-grade authentication and follow DPDP Act guidelines to keep your data safe.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <nav class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms</a>
+            <a href="mailto:kamayegabharat@gmail.com">Contact Support</a>
+        </nav>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+            &copy; 2026 Kamayega Bharat. Developed with integrity by Sourav Bagchi.
+        </p>
+    </footer>
+
+</body>
+</html>
