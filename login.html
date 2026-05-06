@@ -173,11 +173,16 @@
     firebase.initializeApp(firebaseConfig);
  let isLogin = true;
      let selectedRole = 'seeker';
+// 1. Initialize App Check
 const appCheck = firebase.appCheck();
+
+// 2. Activate with Enterprise Provider
 appCheck.activate(
-    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q'),
-    true
+    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTdtosAAAAAM3vInCzrhfi4pmKbCMB4chdc64Q'),
+    true // isTokenAutoRefreshEnabled (Crucial for mobile/Brave)
 );
+
+console.log("App Check security is now active!");
 console.log("App Check security is now live!");
 
     const auth = firebase.auth();
