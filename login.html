@@ -176,15 +176,15 @@
 // 1. Initialize App Check
 const appCheck = firebase.appCheck();
 
-// 2. Activate with Enterprise Provider
 appCheck.activate(
     new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q'),
-    true // isTokenAutoRefreshEnabled (Crucial for mobile/Brave)
+    true 
 );
 
-console.log("App Check security is now active!");
-console.log("App Check security is now live!");
+// This ensures the login page knows your language
+auth.useDeviceLanguage(); 
 
+console.log("Security active!");
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -290,20 +290,23 @@ async function googleLogin() {
 
 // --- 3. THE DATABASE SAVER ---
 async function handleGoogleUser(user) {
-    const doc = await db.collection('users').doc(user.uid).get();
+    // This ensures we get the UID whether it's nested or direct
+    const userObj = user.user || user; 
+    const uid = userObj.uid;
+
+    const doc = await db.collection('users').doc(uid).get();
     
     if(!doc.exists) {
-        // Creates a new profile if they haven't logged in before
-        await db.collection('users').doc(user.uid).set({
-            fullName: user.displayName, 
-            email: user.email, 
-            role: 'seeker', // Defaults to seeker for Google signups
+        await db.collection('users').doc(uid).set({
+            fullName: userObj.displayName, 
+            email: userObj.email, 
+            role: 'seeker', 
             createdAt: Date.now()
         });
     }
     
-    // Uses your existing redirect function to send them to the dashboard
-    redirect(user.uid);
+    // Send them to the dashboard
+    redirect(uid);
 }
 
 
