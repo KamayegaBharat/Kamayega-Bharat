@@ -263,26 +263,29 @@
         } catch(e) { showToast(e.message); }
     }
 
-// --- 1. THE LISTENER (Catch user when they return to the site) ---
-firebase.auth().getRedirectResult()
+// --- 1. THE LISTENER (Runs immediately on page load) ---
+auth.getRedirectResult()
     .then((result) => {
         if (result && result.user) {
+            console.log("Google Login detected for:", result.user.email);
             handleGoogleUser(result.user);
         }
     }).catch((e) => {
         console.error("Redirect Error:", e.message);
-        showToast("Login failed. Please try again.");
+        if(e.code !== 'auth/popup-closed-by-user') {
+            showToast("Login failed: " + e.message);
+        }
     });
 
 // --- 2. THE LOGIN TRIGGER ---
 async function googleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    
-    // Forces the account selection screen for multiple IDs
     provider.setCustomParameters({ prompt: 'select_account' });
+    
+    // This "locks in" the choice of Seeker or Employer before the page refreshes
+    sessionStorage.setItem('pendingRole', selectedRole);
 
     try {
-        // Redirects the current tab to Google (Avoids the COOP Popup error)
         await auth.signInWithRedirect(provider);
     } catch(e) { 
         showToast(e.message); 
@@ -291,34 +294,52 @@ async function googleLogin() {
 
 // --- 3. THE DATABASE SAVER ---
 async function handleGoogleUser(user) {
-    // This ensures we get the UID whether it's nested or direct
-    const userObj = user.user || user; 
-    const uid = userObj.uid;
-
-    const doc = await db.collection('users').doc(uid).get();
+    const uid = user.uid;
+    const userRef = db.collection('users').doc(uid);
     
-    if(!doc.exists) {
-        await db.collection('users').doc(uid).set({
-            fullName: userObj.displayName, 
-            email: userObj.email, 
-            role: 'seeker', 
-            createdAt: Date.now()
-        });
+    try {
+        const doc = await userRef.get();
+        
+        if(!doc.exists) {
+            // New user: Use the role they picked, or default to seeker
+            const savedRole = sessionStorage.getItem('pendingRole') || 'seeker';
+            await userRef.set({
+                fullName: user.displayName, 
+                email: user.email, 
+                role: savedRole, 
+                createdAt: Date.now()
+            });
+            console.log("Created new profile as:", savedRole);
+        }
+        
+        // Clear memory and move to dashboard
+        sessionStorage.removeItem('pendingRole');
+        redirect(uid);
+        
+    } catch (error) {
+        console.error("Firestore error:", error);
+        showToast("Database error. Please try again.");
     }
-    
-    // Send them to the dashboard
-    redirect(uid);
 }
 
-
-    async function redirect(uid) {
+// --- 4. THE REDIRECTOR ---
+async function redirect(uid) {
+    try {
         const doc = await db.collection('users').doc(uid).get();
-        if(doc.exists && doc.data().role === 'employer') {
-            window.location.href = 'employer.html';
-        } else {
-            window.location.href = 'profile.html';
+        if(doc.exists) {
+            const role = doc.data().role;
+            console.log("Navigating to dashboard for:", role);
+            
+            if(role === 'employer') {
+                window.location.href = 'employer.html';
+            } else {
+                window.location.href = 'profile.html';
+            }
         }
+    } catch (e) {
+        console.error("Redirect logic failed:", e);
     }
+}
 </script> 
 </main>
 </body>
