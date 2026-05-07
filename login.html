@@ -275,35 +275,36 @@
         } catch(e) { showToast(e.message); }
     }
 
-// --- 1. THE LISTENER (Runs immediately on page load) ---
-auth.getRedirectResult()
-    .then((result) => {
-        if (result && result.user) {
-            console.log("Google Login detected for:", result.user.email);
-            handleGoogleUser(result.user);
-        }
-    }).catch((e) => {
-        console.error("Redirect Error:", e.message);
-        if(e.code !== 'auth/popup-closed-by-user') {
-            showToast("Login failed: " + e.message);
-        }
-    });
+// --- 1. THE LISTENER ---
+// We use this to detect the user the MOMENT the popup finishes
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        console.log("User detected:", user.email);
+        handleGoogleUser(user);
+    }
+});
 
-// --- 2. THE LOGIN TRIGGER ---
+// --- 2. THE NEW POPUP LOGIN ---
 async function googleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    
-    // This "locks in" the choice of Seeker or Employer before the page refreshes
-    sessionStorage.setItem('pendingRole', selectedRole);
 
     try {
-        await auth.signInWithRedirect(provider);
-    } catch(e) { 
-        showToast(e.message); 
+        // Switching to Popup solves the "Redirect Loop" and "Subfolder" issues
+        const result = await auth.signInWithPopup(provider);
+        if (result.user) {
+            console.log("Popup login successful!");
+            // The onAuthStateChanged above will handle the rest
+        }
+    } catch (e) {
+        console.error("Popup Error:", e.code);
+        if (e.code === 'auth/popup-blocked') {
+            showToast("Please allow popups for this site.");
+        } else {
+            showToast(e.message);
+        }
     }
 }
-
 // --- 3. THE DATABASE SAVER ---
 async function handleGoogleUser(user) {
     const uid = user.uid;
