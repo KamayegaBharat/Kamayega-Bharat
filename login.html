@@ -261,20 +261,50 @@ console.log("App Check security is now live!");
             showToast("Reset link sent to your email! 📧", "ok");
         } catch(e) { showToast(e.message); }
     }
+ds
+// --- 1. THE LISTENER (Catch user when they return to the site) ---
+firebase.auth().getRedirectResult()
+    .then((result) => {
+        if (result && result.user) {
+            handleGoogleUser(result.user);
+        }
+    }).catch((e) => {
+        console.error("Redirect Error:", e.message);
+        showToast("Login failed. Please try again.");
+    });
 
-    async function googleLogin() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-            const result = await auth.signInWithPopup(provider);
-            const user = result.user;
-            const doc = await db.collection('users').doc(user.uid).get();
-            if(!doc.exists) {
-                await db.collection('users').doc(user.uid).set({
-                    fullName: user.displayName, email: user.email, role: 'seeker', createdAt: Date.now()
-                });
-            }
-            redirect(user.uid);
-        } catch(e) { showToast(e.message); }
+// --- 2. THE LOGIN TRIGGER ---
+async function googleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // Forces the account selection screen for multiple IDs
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+        // Redirects the current tab to Google (Avoids the COOP Popup error)
+        await auth.signInWithRedirect(provider);
+    } catch(e) { 
+        showToast(e.message); 
+    }
+}
+
+// --- 3. THE DATABASE SAVER ---
+async function handleGoogleUser(user) {
+    const doc = await db.collection('users').doc(user.uid).get();
+    
+    if(!doc.exists) {
+        // Creates a new profile if they haven't logged in before
+        await db.collection('users').doc(user.uid).set({
+            fullName: user.displayName, 
+            email: user.email, 
+            role: 'seeker', // Defaults to seeker for Google signups
+            createdAt: Date.now()
+        });
+    }
+    
+    // Uses your existing redirect function to send them to the dashboard
+    redirect(user.uid);
+}
     }
 
     async function redirect(uid) {
