@@ -261,7 +261,7 @@ console.log("App Check security is now live!");
             showToast("Reset link sent to your email! 📧", "ok");
         } catch(e) { showToast(e.message); }
     }
-ds
+
 // --- 1. THE LISTENER (Catch user when they return to the site) ---
 firebase.auth().getRedirectResult()
     .then((result) => {
