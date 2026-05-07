@@ -170,27 +170,28 @@
         messagingSenderId: "595460672260",
         appId: "1:595460672260:web:6584856313e2d740805e51"
     };
+    // 1. Start the engine
     firebase.initializeApp(firebaseConfig);
- let isLogin = true;
-     let selectedRole = 'seeker';
-// 1. Initialize App Check
-const appCheck = firebase.appCheck();
 
-appCheck.activate(
-    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q'),
-    true 
-);
-
-// This ensures the login page knows your language
-auth.useDeviceLanguage(); 
-
-console.log("Security active!");
+    // 2. Unbox the tools (Define these BEFORE using them)
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const appCheck = firebase.appCheck();
 
+    // 3. Configure the tools
+    auth.useDeviceLanguage(); 
+
+    appCheck.activate(
+        new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTdtosAAAAAM3vInCzrhfi4pmKbCM84chdc64Q'),
+        true 
+    );
+
+    // 4. Set UI states
+    let isLogin = true;
+    let selectedRole = 'seeker';
+
+    console.log("Firebase initialized in the correct order.");
     
-   
-
     function togglePass() {
         const p = document.getElementById('password');
         const e = document.getElementById('eyeToggle');
