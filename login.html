@@ -305,7 +305,7 @@ async function handleGoogleUser(user) {
     // Uses your existing redirect function to send them to the dashboard
     redirect(user.uid);
 }
-    }
+
 
     async function redirect(uid) {
         const doc = await db.collection('users').doc(uid).get();
