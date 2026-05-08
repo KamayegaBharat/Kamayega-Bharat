@@ -1,0 +1,31 @@
+# Kamayega Bharat - Local Employment & Talent Marketplace
+Developer: Sourav Bagchi
+
+A high-performance, dual-sided job platform built to connect local talent with verified employers in India. 
+
+## Core Functionality
+Kamayega Bharat facilitates job discovery and hiring through a secure, real-time interface. It features specialized dashboards for 'Job Seekers' and 'Employers', integrated with Firebase for live data synchronization.
+
+## User Roles & Workflows
+
+### 1. Job Seeker (Profile.html)
+- Discovery: Search and filter jobs by role, city, and salary.
+- Verification: Access to "Golden Frame" jobs—postings from companies verified by the platform.
+- Portfolio Management: Centralized hub for skills, public Google Drive resume links, and certification links.
+- Application Tracking: Real-time status monitoring (Pending, Shortlisted, Hired, Rejected).
+- Communication: Live, refresh-free messaging with employers.
+
+### 2. Employer (Employer.html)
+- Talent Acquisition: Search the 'Worker Database' by specific skill sets to find local talent.
+- Job Management: Post, track, and delete vacancies.
+- Company Verification: Submit GST/License details via Google Drive for admin review. Verified status grants a "Golden Frame" to all job posts.
+- Applicant Management: Direct messaging and status updating for all applicants.
+
+## Technical Specifications
+- Framework: HTML5, CSS3 (Light/Dark Themes), JavaScript (ES6+).
+- Backend: Firebase Authentication (Email/Google), Firestore Database (Real-time).
+- Security: reCAPTCHA V3 protection and domain-level authorization.
+- Hosting: Deployed via GitHub Pages (kamayegabharat.github.io).
+
+## Project Mission
+To empower the Indian workforce by providing a fast, secure, and transparent bridge between skill and opportunity.
