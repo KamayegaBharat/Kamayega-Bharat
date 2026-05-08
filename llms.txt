@@ -1,31 +1,33 @@
 # Kamayega Bharat - Local Employment & Talent Marketplace
-Developer: Sourav Bagchi
+**Developer:** Sourav Bagchi
 
-A high-performance, dual-sided job platform built to connect local talent with verified employers in India. 
+> A high-performance, dual-sided job platform built to connect local talent with verified employers in India, featuring real-time data synchronization and professional verification.
 
 ## Core Functionality
-Kamayega Bharat facilitates job discovery and hiring through a secure, real-time interface. It features specialized dashboards for 'Job Seekers' and 'Employers', integrated with Firebase for live data synchronization.
+* [Job Search & Discovery](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html) - Search and filter local jobs.
+* [Employer Dashboard](https://kamayegabharat.github.io/Kamayega-Bharat/employer.html) - Post vacancies and search talent.
+* [User Authentication](https://kamayegabharat.github.io/Kamayega-Bharat/login.html) - Secure Google and Email login.
 
 ## User Roles & Workflows
 
-### 1. Job Seeker (Profile.html)
-- Discovery: Search and filter jobs by role, city, and salary.
-- Verification: Access to "Golden Frame" jobs—postings from companies verified by the platform.
-- Portfolio Management: Centralized hub for skills, public Google Drive resume links, and certification links.
-- Application Tracking: Real-time status monitoring (Pending, Shortlisted, Hired, Rejected).
-- Communication: Live, refresh-free messaging with employers.
+### 1. Job Seeker
+- **Discovery:** [Search Jobs](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html) by role, city, and salary.
+- **Verification:** Access to "Golden Frame" verified company postings.
+- **Portfolio:** Manage [Skills and Resume](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html) links.
+- **Tracking:** Real-time application status monitoring.
 
-### 2. Employer (Employer.html)
-- Talent Acquisition: Search the 'Worker Database' by specific skill sets to find local talent.
-- Job Management: Post, track, and delete vacancies.
-- Company Verification: Submit GST/License details via Google Drive for admin review. Verified status grants a "Golden Frame" to all job posts.
-- Applicant Management: Direct messaging and status updating for all applicants.
+### 2. Employer
+- **Talent Acquisition:** [Worker Database](https://kamayegabharat.github.io/Kamayega-Bharat/employer.html) search by specific skills.
+- **Job Management:** Create, track, and delete job vacancies.
+- **Company Verification:** Submit GST/License details for the "Golden Frame" status.
 
 ## Technical Specifications
-- Framework: HTML5, CSS3 (Light/Dark Themes), JavaScript (ES6+).
-- Backend: Firebase Authentication (Email/Google), Firestore Database (Real-time).
-- Security: reCAPTCHA V3 protection and domain-level authorization.
-- Hosting: Deployed via GitHub Pages (kamayegabharat.github.io).
+- **Frontend:** [index.html](https://kamayegabharat.github.io/Kamayega-Bharat/index.html) - Responsive HTML5/CSS3.
+- **Backend:** Firebase Authentication and Firestore Real-time Database.
+- **Security:** reCAPTCHA V3 protection.
 
 ## Project Mission
 To empower the Indian workforce by providing a fast, secure, and transparent bridge between skill and opportunity.
+## Legal & Policies
+* [Terms of Service](https://kamayegabharat.github.io/Kamayega-Bharat/terms.html) - Rules for using the platform and job posting guidelines.
+* [Privacy Policy](https://kamayegabharat.github.io/Kamayega-Bharat/privacy.html) - How we protect user data and verification documents.
