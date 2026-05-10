@@ -6,22 +6,22 @@
 Kamayega Bharat is an advanced recruitment ecosystem developed to bridge the gap between job seekers and employers. The platform utilizes Firebase for real-time messaging and status updates, ensuring a seamless experience for users in Jharkhand and across Bharat. It features a unique verification system for companies to establish trust.
 
 ## Core Pages
-- [Home Page](https://kamayegabharat.github.io/Kamayega-Bharat/index.html): Entry point with role redirection.
-- [Authentication](https://kamayegabharat.github.io/Kamayega-Bharat/login.html): Secure login and registration for Seekers and Employers.
+- [Home Page](https://kamayegabharat.github.io/index.html): Entry point with role redirection.
+- [Authentication](https://kamayegabharat.github.io/login.html): Secure login and registration for Seekers and Employers.
 
 ## Seeker Features
-- [Job Dashboard](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html): Search and filter verified "Golden Frame" jobs.
-- [Portfolio Manager](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html): Centralized skill and document management.
-- [Live Messaging](https://kamayegabharat.github.io/Kamayega-Bharat/profile.html): Real-time chat with prospective employers.
+- [Job Dashboard](https://kamayegabharat.github.io/profile.html): Search and filter verified "Golden Frame" jobs.
+- [Portfolio Manager](https://kamayegabharat.github.io/profile.html): Centralized skill and document management.
+- [Live Messaging](https://kamayegabharat.github.io/profile.html): Real-time chat with prospective employers.
 
 ## Employer Features
-- [Employer Dashboard](https://kamayegabharat.github.io/Kamayega-Bharat/employer.html): Job posting and application management.
-- [Worker Database](https://kamayegabharat.github.io/Kamayega-Bharat/employer.html): Talent search filtered by specific technical skills.
-- [Company Verification](https://kamayegabharat.github.io/Kamayega-Bharat/employer.html): Process for obtaining professional verification status.
+- [Employer Dashboard](https://kamayegabharat.github.io/employer.html): Job posting and application management.
+- [Worker Database](https://kamayegabharat.github.io/employer.html): Talent search filtered by specific technical skills.
+- [Company Verification](https://kamayegabharat.github.io/employer.html): Process for obtaining professional verification status.
 
 ## Legal
-- [Terms of Service](https://kamayegabharat.github.io/Kamayega-Bharat/terms.html): Usage guidelines for the platform.
-- [Privacy Policy](https://kamayegabharat.github.io/Kamayega-Bharat/privacy.html): Data protection and privacy standards.
+- [Terms of Service](https://kamayegabharat.github.io/terms.html): Usage guidelines for the platform.
+- [Privacy Policy](https://kamayegabharat.github.io/privacy.html): Data protection and privacy standards.
 
 ## Project Mission
 To empower the Indian workforce by providing a fast, secure, and transparent bridge between skill and opportunity.
