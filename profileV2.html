@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seeker Console | Kamayega Bharat</title>
+    <meta name="description" content="User Profile Dashboard for Kamayega Bharat. Update your details and track your job applications.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+    :root { 
+        --pri: #0047FF; --pri-dark: #001A5E; --bg: #F8FAFC; --txt: #0F172A; 
+        --border: #E2E8F0; --card: #FFFFFF; --muted: #64748B; --err: #EF4444; --succ: #10B981;
+        --grad: linear-gradient(135deg, #0047FF 0%, #001A5E 100%);
+        --shadow: 0 10px 25px -5px rgba(0, 71, 255, 0.1);
+    }
+    [data-theme="dark"] { --bg: #020617; --txt: #F8FAFC; --border: #1E293B; --card: #0F172A; --muted: #94A3B8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s, transform 0.1s; }
+    body { background: var(--bg); color: var(--txt); min-height: 100vh; display: flex; flex-direction: column; }
+    aside { width: 280px; background: var(--pri-dark); color: white; display: flex; flex-direction: column; padding: 2.5rem 1.5rem; position: fixed; height: 100vh; z-index: 100; }
+    .brand { font-size: 1.5rem; font-weight: 800; margin-bottom: 3.5rem; letter-spacing: -1px; background: linear-gradient(to right, #fff, #93C5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-item { padding: 14px 18px; margin-bottom: 10px; border-radius: 14px; cursor: pointer; font-weight: 600; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 12px; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item.active { background: var(--pri); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    main { margin-left: 280px; flex-grow: 1; display: flex; flex-direction: column; }
+    .top-hdr { padding: 1.2rem 5%; background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 90; }
+    .content-body { padding: 2.5rem 5%; max-width: 1200px; width: 100%; margin: 0 auto; flex: 1; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--card); padding: 2rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 2rem; }
+    input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--txt); font-weight: 600; margin-bottom: 1rem; outline: none; }
+    .btn-pri { width: 100%; padding: 16px; background: var(--grad); color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; }
+    .split-view { display: grid; grid-template-columns: 320px 1fr; height: 600px; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; background: var(--card); }
+    .list-pane { border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
+    .list-item { padding: 1.2rem; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .active-chat { border-left: 4px solid var(--pri); background: var(--card); }
+    #msgArea { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+    .msg-bubble { padding: 12px 18px; border-radius: 18px; max-width: 75%; font-size: 0.95rem; line-height: 1.4; font-weight: 500; }
+    .msg-me { align-self: flex-end; background: var(--pri); color: white; border-bottom-right-radius: 4px; }
+    .msg-them { align-self: flex-start; background: var(--card); color: var(--txt); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .meet-card { background: white; color: var(--pri-dark); padding: 15px; border-radius: 12px; border-left: 5px solid #FFD700; text-align: center; }
+    .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .tag { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; background: #E0E7FF; color: var(--pri); display: inline-block; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 94, 0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .modal-box { background: var(--card); border-radius: 24px; padding: 2.5rem; max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--pri); }
+    .verified-gold-card { border: 2px solid #FFD700 !important; box-shadow: 0 0 15px rgba(255, 214, 0, 0.2); position: relative; }
+    .verified-gold-card::after { content: '👑'; position: absolute; top: 15px; right: 15px; font-size: 1.2rem; }
+    @media (max-width: 768px) { aside { transform: translateX(-100%); width: 250px; } aside.mobile-open { transform: translateX(0); } main { margin-left: 0 !important; } .split-view { grid-template-columns: 1fr; height: auto; } .mobile-menu-btn { display: block !important; background: var(--pri); color: white; border: none; padding: 8px 12px; border-radius: 8px; margin-right: 10px; } }
+    .mobile-menu-btn { display: none; }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="color: var(--pri);">Action</h3>
+            <p id="modalText" style="margin: 1.5rem 0; font-weight: 600; color: var(--muted);"></p>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="window.closeModal()" style="flex:1; padding:14px; border-radius:12px; border:1px solid var(--border); cursor:pointer;">Cancel</button>
+                <button id="confirmBtn" style="flex:1; padding:14px; border-radius:12px; background:var(--pri); color:white; border:none; cursor:pointer;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <aside id="sideNav">
+        <div class="brand">Kamayega Bharat</div>
+        <nav>
+            <button class="nav-item active" onclick="window.switchTab('jobs', this)">🔍 Search Jobs</button>
+            <button class="nav-item" onclick="window.switchTab('my-profile', this)">👤 My Portfolio</button>
+            <button class="nav-item" onclick="window.switchTab('applications', this)">📋 Applications</button>
+            <button class="nav-item" onclick="window.switchTab('messages', this)">📩 Messages</button>
+        </nav>
+    </aside>
+
+    <main>
+        <header class="top-hdr">
+            <div style="font-weight: 800; display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()">☰</button>
+                👋 <span id="userName" style="margin-left: 8px;">Professional</span>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
+                <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 18px; border-radius:12px; font-weight:800; cursor:pointer;">LOGOUT</button> 
+            </div>
+        </header>
+
+        <section class="content-body">
+            <div id="jobs" class="tab-content active">
+                <div class="card" style="display:flex; gap:12px; padding:1.2rem; margin-bottom:2rem; align-items: center;">
+                    <input type="text" id="jSearch" placeholder="Search Role or City..." style="margin:0;" onkeyup="window.filterJobs()">
+                    <select id="salarySort" style="width:220px; margin:0;" onchange="window.filterJobs()">
+                        <option value="all">Sort Salary</option>
+                        <option value="high">High First</option>
+                        <option value="low">Low First</option>
+                    </select>
+                </div>
+                <div id="jobListingContainer" class="job-grid"></div>
+            </div>
+
+            <div id="messages" class="tab-content">
+                <div class="split-view">
+                    <div class="list-pane" id="activeChatsList"></div>
+                    <div style="display:flex; flex-direction:column; flex:1; background:var(--bg);">
+                        <div id="chatHdr" style="padding:1.2rem; background:var(--card); border-bottom:1px solid var(--border); display:none;"><h4 id="activeEmployerName" style="color:var(--pri)">Chat</h4></div>
+                        <div id="msgArea"></div>
+                        <div id="inputBar" style="padding:1.2rem; background:var(--card); border-top:1px solid var(--border); display:none; gap:12px;">
+                            <input type="text" id="mText" placeholder="Write a message..." style="margin:0;" onkeypress="if(event.key==='Enter') window.sendMsg()">
+                            <button onclick="window.sendMsg()" class="btn-pri" style="width:auto; padding:0 25px;">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="my-profile" class="tab-content">
+                <div class="card">
+                    <h3 style="margin-bottom:1.5rem;">👤 Portfolio</h3>
+                    <input type="text" id="uSkills" placeholder="Your Skills">
+                    <input type="url" id="resLink" placeholder="Google Drive Resume Link">
+                    <input type="url" id="certLink" placeholder="Certification Link">
+                    <button class="btn-pri" onclick="window.savePortfolio()">Save Portfolio</button>
+                </div>
+            </div>
+
+            <div id="applications" class="tab-content">
+                <h3 style="margin-bottom:1.5rem;">📋 My History</h3>
+                <div id="myAppsList"></div>
+            </div>
+        </section>
+
+
+        <footer>
+            <div><h4 style="color:var(--pri); margin-bottom:1rem;">Kamayega Bharat</h4><p>© 2026</p></div>
+            <div style="text-align: right;"><a href="mailto:kamayegabharat@gmail.com" style="color:var(--pri); text-decoration:none; font-weight:700;">Support</a></div>
+        </footer>
+    </main>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
+            authDomain: "kamayega-bharat.firebaseapp.com",
+            projectId: "kamayega-bharat",
+            storageBucket: "kamayega-bharat.appspot.com",
+            messagingSenderId: "595460672260",
+            appId: "1:595460672260:web:6584856313e2d740805e51"
+        };
+
+        var auth, db, currentAppId = null, allJobs = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth(); db = firebase.firestore();
+            auth.onAuthStateChanged(user => {
+                if(user) {
+                    document.getElementById('userName').innerText = user.displayName || "User";
+                    loadJobs(); loadApplications(user.uid); loadChats(user.uid); loadUserData(user.uid);
+                } else { window.location.href = 'index.html'; }
+            });
+        });
+
+        window.switchTab = (id, el) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            if(window.innerWidth <= 768) document.getElementById('sideNav').classList.remove('mobile-open');
+        };
+
+        async function loadJobs() {
+            const uid = auth.currentUser.uid;
+            const appSnap = await db.collection('applications').where('seekerId', '==', uid).get();
+            const appliedJobIds = appSnap.docs.map(doc => doc.data().jobId);
+            db.collection('jobs').onSnapshot(snap => {
+                allJobs = [];
+                snap.forEach(doc => {
+                    let d = doc.data();
+                    allJobs.push({ id: doc.id, ...d, alreadyApplied: appliedJobIds.includes(doc.id) });
+                });
+                window.filterJobs();
+            });
+        }
+
+        window.filterJobs = () => {
+            const q = document.getElementById('jSearch').value.toLowerCase();
+            const s = document.getElementById('salarySort').value;
+            let f = allJobs.filter(j => j.title.toLowerCase().includes(q) || j.location.toLowerCase().includes(q));
+            if(s === 'high') f.sort((a,b) => b.salary.replace(/\D/g,'') - a.salary.replace(/\D/g,''));
+            renderJobs(f);
+        };
+
+        function renderJobs(jobs) {
+            const container = document.getElementById('jobListingContainer');
+            container.innerHTML = jobs.length ? "" : "<p>No jobs found.</p>";
+            jobs.forEach(j => {
+                const verified = j.isVerified ? "verified-gold-card" : "";
+                const btnText = j.alreadyApplied ? "Applied ✅" : "Apply Now";
+                const btnAction = j.alreadyApplied ? "" : `window.applyJob('${j.id}','${j.title}','${j.employerId}')`;
+                container.innerHTML += `<div class="card ${verified}"><h4>${j.title}</h4><p>${j.companyName || 'Hiring'} • ${j.location}</p><br><span class="tag">₹ ${j.salary}</span><br><br><button onclick="${btnAction}" class="btn-pri" ${j.alreadyApplied ? 'disabled' : ''}>${btnText}</button></div>`;
+            });
+        }
+
+        window.applyJob = (jobId, title, empId) => {
+            window.openModal("Apply?", "Send your portfolio to " + title, async () => {
+                await db.collection('applications').add({ jobId, jobTitle: title, employerId: empId, seekerId: auth.currentUser.uid, seekerName: auth.currentUser.displayName, status: 'Pending', time: Date.now() });
+                alert("Applied!"); loadJobs();
+            });
+        };
+
+        function loadChats(uid) {
+            db.collection('applications').where('seekerId', '==', uid).onSnapshot(snap => {
+                const list = document.getElementById('activeChatsList'); list.innerHTML = "";
+                snap.forEach(doc => {
+                    const a = doc.data();
+                    const el = document.createElement('div');
+                    el.className = `list-item ${currentAppId === doc.id ? 'active-chat' : ''}`;
+                    el.innerHTML = `<strong>💬 ${a.jobTitle}</strong><br><small>${a.status}</small>`;
+                    el.onclick = () => { currentAppId = doc.id; window.openChat(doc.id, a.jobTitle); loadChats(uid); };
+                    list.appendChild(el);
+                });
+            });
+        }
+
+        window.openChat = (appId, title) => {
+            document.getElementById('chatHdr').style.display = 'block';
+            document.getElementById('inputBar').style.display = 'flex';
+            document.getElementById('activeEmployerName').innerText = title;
+            db.collection('applications').doc(appId).collection('chats').orderBy('time').onSnapshot(snap => {
+                const area = document.getElementById('msgArea'); area.innerHTML = "";
+                snap.forEach(m => {
+                    const d = m.data(); const isMe = d.senderId === auth.currentUser.uid;
+                    let content = d.text;
+                    if(content.includes('meet.google.com')) {
+                        content = `<div class="meet-card"><p>📅 Interview Call</p><button onclick="window.open('${content}','_blank')" class="btn-pri">JOIN MEETING</button></div>`;
+                    }
+                    area.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">${content}</div>`;
+                });
+                area.scrollTop = area.scrollHeight;
+            });
+        };
+
+        window.sendMsg = async () => {
+            const input = document.getElementById('mText'); const val = input.value.trim();
+            if(!val || !currentAppId) return;
+            try { await db.collection('applications').doc(currentAppId).collection('chats').add({ text: val, senderId: auth.currentUser.uid, time: Date.now() }); input.value = ""; } catch(e) {}
+        };
+
+        window.savePortfolio = async () => {
+            const r = document.getElementById('resLink').value;
+            await db.collection('users').doc(auth.currentUser.uid).set({ skills: document.getElementById('uSkills').value, resumeUrl: r, certUrl: document.getElementById('certLink').value }, { merge: true });
+            alert("Updated!");
+        };
+
+        function loadApplications(uid) {
+            db.collection('applications').where('seekerId', '==', uid).onSnapshot(snap => {
+                const list = document.getElementById('myAppsList'); list.innerHTML = "";
+                snap.forEach(doc => {
+                    const a = doc.data();
+                    const color = a.status === 'Hired' ? 'var(--succ)' : (a.status === 'Rejected' ? 'var(--err)' : '#EAB308');
+                    list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><strong>${a.jobTitle}</strong></div><div class="tag" style="background:${color}; color:white;">${a.status}</div></div>`;
+                });
+            });
+        }
+
+        function loadUserData(uid) {
+            db.collection('users').doc(uid).get().then(doc => {
+                if(doc.exists) { const d = doc.data(); document.getElementById('uSkills').value = d.skills || ""; document.getElementById('resLink').value = d.resumeUrl || ""; document.getElementById('certLink').value = d.certUrl || ""; }
+            });
+        }
+
+        window.openModal = (t, txt, act) => { document.getElementById('modalTitle').innerText = t; document.getElementById('modalText').innerText = txt; document.getElementById('confirmBtn').onclick = () => { act(); window.closeModal(); }; document.getElementById('customModal').style.display = 'flex'; };
+        window.closeModal = () => document.getElementById('customModal').style.display = 'none';
+        window.triggerLogout = () => auth.signOut();
+        window.toggleTheme = () => { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); };
+        window.toggleMobileMenu = () => document.getElementById('sideNav').classList.toggle('mobile-open');
+    </script>
+</body>
+</html>
