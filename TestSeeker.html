@@ -21,18 +21,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s, color 0.2s; }
     body { background: var(--bg); color: var(--txt); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* Navigation Sidebar */
     aside { width: 280px; background: var(--pri-dark); color: white; display: flex; flex-direction: column; padding: 2.5rem 1.5rem; position: fixed; height: 100vh; z-index: 100; }
     .brand { font-size: 1.5rem; font-weight: 800; margin-bottom: 3.5rem; letter-spacing: -1px; background: linear-gradient(to right, #fff, #93C5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .nav-item { padding: 14px 18px; margin-bottom: 10px; border-radius: 14px; cursor: pointer; font-weight: 600; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 12px; border: none; background: none; width: 100%; text-align: left; }
     .nav-item.active { background: var(--pri); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-    /* Layout Components */
     main { margin-left: 280px; flex-grow: 1; display: flex; flex-direction: column; }
     .top-hdr { padding: 1.2rem 5%; background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 90; }
     .content-body { padding: 2.5rem 5%; max-width: 1200px; width: 100%; margin: 0 auto; flex: 1; }
     
-    /* Tabs & Cards */
     .tab-content { display: none; }
     .tab-content.active { display: block; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -41,17 +38,14 @@
     input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--txt); font-weight: 600; margin-bottom: 1rem; }
     .btn-pri { width: 100%; padding: 16px; background: var(--grad); color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; }
 
-    /* Job Specific UI */
-    .job-title { font-size: 1.15rem; font-weight: 800; display: block; color: var(--txt); }
-    .job-company { color: var(--pri); font-weight: 700; margin-top: 4px; }
-    .job-loc { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
     .desc-box { display: none; margin: 12px 0; font-size: 0.85rem; line-height: 1.5; color: var(--muted); background: var(--bg); padding: 12px; border-radius: 12px; border-left: 4px solid var(--pri); }
     .desc-box.show { display: block; }
-    .toggle-desc { background: none; border: none; color: var(--pri); font-weight: 800; font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; margin: 10px 0; }
-    .tag { padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; background: #E0E7FF; color: var(--pri); }
+    .toggle-desc { background: none; border: none; color: var(--pri); font-weight: 800; font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; margin-bottom: 10px; }
 
-    /* Messaging UI */
-    .split-view { display: grid; grid-template-columns: 320px 1fr; height: 500px; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; background: var(--card); }
+    .tag { padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; background: #E0E7FF; color: var(--pri); }
+    .verified-gold-card { border: 2px solid #FFD700 !important; box-shadow: 0 0 12px rgba(255, 214, 0, 0.4); position: relative; }
+    .verified-gold-card::after { content: '👑'; position: absolute; top: 15px; right: 15px; font-size: 1.2rem; }
+.split-view { display: grid; grid-template-columns: 320px 1fr; height: 500px; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; background: var(--card); }
     .list-pane { border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
     .list-item { padding: 1.2rem; border-bottom: 1px solid var(--border); cursor: pointer; font-weight: 700; }
     #msgArea { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
@@ -59,13 +53,8 @@
     .msg-me { align-self: flex-end; background: var(--pri); color: white; }
     .msg-them { align-self: flex-start; background: var(--card); color: var(--txt); border: 1px solid var(--border); }
 
-    /* Verification Styles */
-    .verified-gold-card { border: 2px solid #FFD700 !important; box-shadow: 0 0 12px rgba(255, 214, 0, 0.4); position: relative; }
-    .verified-gold-card::after { content: '👑'; position: absolute; top: 15px; right: 15px; font-size: 1.2rem; }
-    [data-theme="dark"] .verified-gold-card { background: linear-gradient(145deg, #0F172A, #1a1f2e) !important; }
-
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 94, 0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    .modal-box { background: var(--card); border-radius: 24px; padding: 2.5rem; max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--pri); }
+    .modal-box { background: var(--card); border-radius: 24px; padding: 2rem; max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--pri); }
     </style>
 </head>
 <body data-theme="light">
@@ -80,9 +69,10 @@
             <button class="nav-item" onclick="window.switchTab('messages', this)">📩 Messages</button>
         </nav>
     </aside>
+
     <main>
         <header class="top-hdr">
-            <div style="font-weight: 800;">👋 <span id="userName">Professional</span></div>
+            <div style="font-weight: 800;">👋 <span id="userName">User</span></div>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
                 <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
@@ -91,12 +81,26 @@
 
         <section class="content-body">
             <div id="jobs" class="tab-content active">
-                <div class="card" style="display:flex; gap:10px; padding:1rem; margin-bottom:1.5rem;">
-                    <input type="text" id="jSearch" placeholder="Search Role or City..." style="margin:0;" onkeyup="window.filterJobs()">
-                    <select id="salarySort" style="width:200px; margin:0;" onchange="window.filterJobs()">
-                        <option value="all">Sort Salary</option>
-                        <option value="high">Highest First</option>
-                    </select>
+                <div class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="jSearch" placeholder="Search Role or City..." style="margin:0;" onkeyup="window.filterJobs()">
+                        <select id="salarySort" style="margin:0;" onchange="window.filterJobs()">
+                            <option value="all">Sort Salary</option>
+                            <option value="high">Highest First</option>
+                        </select>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <select id="filterType" onchange="window.filterJobs()" style="margin:0;">
+                            <option value="all">All Types (Full/Part)</option>
+<option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                        </select>
+                        <select id="filterMode" onchange="window.filterJobs()" style="margin:0;">
+                            <option value="all">All Modes (Remote/On-site)</option>
+                            <option value="On-site">On-site</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
                 </div>
                 <div id="jobListingContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;"></div>
             </div>
@@ -118,22 +122,21 @@
             <div id="my-profile" class="tab-content">
                 <div class="card">
                     <h3>👤 My Portfolio</h3><br>
-                    <input type="text" id="uSkills" placeholder="Your Skills (e.g. Python, Sales, Design)">
+                    <input type="text" id="uSkills" placeholder="Your Skills">
                     <input type="url" id="resLink" placeholder="Google Drive Resume Link">
                     <input type="url" id="certLink" placeholder="Google Drive Certificate Link">
-                    <button class="btn-pri" onclick="window.savePortfolio()">Save Portfolio</button>
+                    <button class="btn-pri" onclick="window.savePortfolio()">Save Changes</button>
                 </div>
             </div>
 
             <div id="applications" class="tab-content">
-                <h3>📋 Application Status</h3><br>
+                <h3>📋 My History</h3><br>
                 <div id="myAppsList"></div>
             </div>
         </section>
     </main>
 
     <script>
-        // Restored Original Config
         const firebaseConfig = {
             apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
             authDomain: "kamayega-bharat.firebaseapp.com",
@@ -143,7 +146,7 @@
             appId: "1:595460672260:web:6584856313e2d740805e51"
         };
 
-        var auth, db, currentAppId = null, allJobs = [];
+        var auth, db, currentAppId = null, allJobs = [], userSkills = "";
 
         document.addEventListener('DOMContentLoaded', function() {
             firebase.initializeApp(firebaseConfig);
@@ -156,8 +159,20 @@
             });
         });
 
-        async function loadJobs() {
+        // SMART RECOMMENDATION LOGIC
+        function getMatchScore(jobDesc, jobTitle) {
+            if (!userSkills) return 0;
+            let score = 0;
+            let skillsArr = userSkills.toLowerCase().split(',').map(s => s.trim());
+            let textToSearch = (jobDesc + " " + jobTitle).toLowerCase();
+            skillsArr.forEach(skill => { if (skill && textToSearch.includes(skill)) score += 20; });
+            return Math.min(score, 100);
+        }
+async function loadJobs() {
             const uid = auth.currentUser.uid;
+            const uDoc = await db.collection('users').doc(uid).get();
+            if(uDoc.exists) userSkills = uDoc.data().skills || "";
+
             const appSnap = await db.collection('applications').where('seekerId', '==', uid).get();
             const appliedIds = appSnap.docs.map(doc => doc.data().jobId);
 
@@ -165,30 +180,39 @@
                 allJobs = [];
                 snap.forEach(doc => {
                     let d = doc.data();
+                    let score = getMatchScore(d.desc  d.description  "", d.title || "");
                     allJobs.push({
-                        id: doc.id, title: d.title || "Untitled", company: d.company || "Employer",
-                        location: d.location || "Location", salary: d.salary || "N/A",
-                        desc: d.desc || d.description || "No description provided.",
-                        isVerified: d.isVerified || false, applied: appliedIds.includes(doc.id), employerId: d.employerId
+                        id: doc.id, title: d.title  "Untitled", company: d.company  "Employer",
+                        location: d.location  "Location", salary: d.salary  "N/A",
+                        desc: d.desc  d.description  "No description provided.",
+                        jobType: d.jobType  "Full-time", workMode: d.workMode  "On-site",
+                        isVerified: d.isVerified  false, isUrgent: d.isUrgent  false,
+                        applied: appliedIds.includes(doc.id), employerId: d.employerId,
+                        matchScore: score
                     });
                 });
+                // Sort by Urgent First, then by Match Score
+                allJobs.sort((a,b) => (b.isUrgent - a.isUrgent) || (b.matchScore - a.matchScore));
                 window.filterJobs();
             });
         }
 
         function renderJobs(jobs) {
             const container = document.getElementById('jobListingContainer');
-            container.innerHTML = jobs.length === 0 ? "<p>No jobs found matching your search.</p>" : "";
+            container.innerHTML = jobs.length === 0 ? "<p>No matching jobs found.</p>" : "";
             jobs.forEach(j => {
                 let v = j.isVerified ? "verified-gold-card" : "";
+                let urgent = j.isUrgent ? <span class="tag" style="background:var(--err); color:white; margin-bottom:8px;">🔥 URGENT</span> : "";
+                let match = j.matchScore > 0 ? <span class="tag" style="background:var(--succ); color:white; margin-bottom:8px;">⭐ ${j.matchScore}% Match</span> : "";
                 let btnTxt = j.applied ? "Applied" : "Apply Now";
-                let btnAttr = j.applied ? "disabled style='opacity:0.5; cursor:not-allowed;'" : `onclick="window.applyJob('${j.id}','${j.title}','${j.employerId}')"`;
-                
-                container.innerHTML += `
+                let btnAttr = j.applied ? "disabled style='opacity:0.5; cursor:not-allowed;'" : onclick="window.applyJob('${j.id}','${j.title}','${j.employerId}')";
+
+                container.innerHTML += 
                 <div class="card ${v}">
-                    <span class="job-title">${j.title}</span>
-                    <div class="job-company">${j.company}</div>
-                    <div class="job-loc">📍 ${j.location}</div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">${urgent} ${match}</div>
+                    <strong style="font-size:1.1rem; display:block; margin-top:5px;">${j.title}</strong>
+                    <div style="color:var(--pri); font-weight:700; margin-top:4px;">${j.company}</div>
+                    <div style="color:var(--muted); font-size:0.85rem; font-weight:600;">📍 ${j.location} • ${j.jobType} • ${j.workMode}</div>
                     
                     <button class="toggle-desc" onclick="window.toggleDesc(this, '${j.id}')">Read Description</button>
                     <div id="desc-${j.id}" class="desc-box">${j.desc}</div>
@@ -197,22 +221,29 @@
                         <div class="tag">₹ ${j.salary}</div>
                         <button class="btn-pri" style="width:auto; padding:10px 20px;" ${btnAttr}>${btnTxt}</button>
                     </div>
-                </div>`;
+                </div>;
             });
         }
 
         window.filterJobs = () => {
             let term = document.getElementById('jSearch').value.toLowerCase();
+            let type = document.getElementById('filterType').value;
+            let mode = document.getElementById('filterMode').value;
             let sort = document.getElementById('salarySort').value;
-            let filtered = allJobs.filter(j => 
-                j.title.toLowerCase().includes(term) || 
-                j.location.toLowerCase().includes(term) || 
-                j.company.toLowerCase().includes(term)
-            );
-            if(sort === "high") {
-                filtered.sort((a,b) => (parseInt(b.salary.replace(/[^0-9]/g,''))||0) - (parseInt(a.salary.replace(/[^0-9]/g,''))||0));
-            }
+let filtered = allJobs.filter(j => {
+                let sMatch = j.title.toLowerCase().includes(term)  j.location.toLowerCase().includes(term)  j.company.toLowerCase().includes(term);
+                let tMatch = (type === "all" || j.jobType === type);
+                let mMatch = (mode === "all" || j.workMode === mode);
+                return sMatch && tMatch && mMatch;
+            });
+
+            if(sort === "high") filtered.sort((a,b) => (parseInt(b.salary.replace(/[^0-9]/g,''))0) - (parseInt(a.salary.replace(/[^0-9]/g,''))0));
             renderJobs(filtered);
+        };
+
+        window.toggleTheme = () => {
+            let b = document.body;
+            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         };
 
         window.toggleDesc = (btn, id) => {
@@ -229,12 +260,12 @@
         };
 
         window.applyJob = (jobId, title, empId) => {
-            window.openModal("Apply Now?", `Submit application for ${title}`, () => {
+            window.openModal("Apply Now?", Confirm application for ${title}, () => {
                 db.collection('applications').add({
                     jobId, jobTitle: title, employerId: empId,
                     seekerId: auth.currentUser.uid, seekerName: auth.currentUser.displayName || "Seeker",
                     status: 'Pending', time: Date.now()
-                }).then(() => { alert("Applied successfully!"); loadJobs(); });
+                }).then(() => { alert("Applied Successfully!"); loadJobs(); });
             });
         };
 
@@ -244,7 +275,7 @@
                 snap.forEach(doc => {
                     let a = doc.data();
                     let el = document.createElement('div'); el.className = 'list-item';
-                    el.innerHTML = `💬 ${a.jobTitle}<br><small style="color:var(--muted)">Status: ${a.status}</small>`;
+                    el.innerHTML = 💬 ${a.jobTitle}<br><small>${a.status}</small>;
                     el.onclick = () => window.openChat(doc.id, a.jobTitle);
                     list.appendChild(el);
                 });
@@ -260,7 +291,7 @@
                 let area = document.getElementById('msgArea'); area.innerHTML = "";
                 snap.forEach(m => {
                     let d = m.data(); let isMe = d.senderId === auth.currentUser.uid;
-                    area.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">${d.text}</div>`;
+                    area.innerHTML += <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">${d.text}</div>;
                 });
                 area.scrollTop = area.scrollHeight;
             });
@@ -276,11 +307,11 @@
         };
 
         window.savePortfolio = () => {
-            db.collection('users').doc(auth.currentUser.uid).set({
+db.collection('users').doc(auth.currentUser.uid).update({
                 skills: document.getElementById('uSkills').value,
                 resumeUrl: document.getElementById('resLink').value,
                 certUrl: document.getElementById('certLink').value
-            }, { merge: true }).then(() => alert("Portfolio Updated!"));
+            }).then(() => alert("Saved!"));
         };
 
         function loadApplications(uid) {
@@ -288,10 +319,7 @@
                 let list = document.getElementById('myAppsList'); list.innerHTML = "";
                 snap.forEach(doc => {
                     let a = doc.data();
-                    list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong>${a.jobTitle}</strong>
-                        <div class="tag" style="background:${a.status==='Hired' ? 'var(--succ)' : '#EAB308'}; color:white;">${a.status}</div>
-                    </div>`;
+                    list.innerHTML += <div class="card" style="display:flex; justify-content:space-between; align-items:center;"><strong>${a.jobTitle}</strong><div class="tag" style="background:${a.status==='Hired' ? 'var(--succ)' : '#EAB308'}; color:white;">${a.status}</div></div>;
                 });
             });
         }
@@ -307,10 +335,6 @@
             });
         }
 
-        window.toggleTheme = () => {
-            let b = document.body;
-            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        };
         window.openModal = (t, m, a) => {
             document.getElementById('modalTitle').innerText = t;
             document.getElementById('modalText').innerText = m;
