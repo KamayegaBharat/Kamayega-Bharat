@@ -137,6 +137,7 @@
     </main>
 
     <script>
+        // FIREBASE INITIALIZATION
         const firebaseConfig = {
             apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
             authDomain: "kamayega-bharat.firebaseapp.com",
@@ -150,7 +151,8 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth(); db = firebase.firestore();
+            auth = firebase.auth(); 
+            db = firebase.firestore();
             auth.onAuthStateChanged(user => {
                 if(user) {
                     document.getElementById('userName').innerText = user.displayName || "User";
@@ -159,12 +161,15 @@
             });
         });
 
+        // CORE LOGIC FUNCTIONS
         function getMatchScore(jobDesc, jobTitle) {
             if (!userSkills) return 0;
             let score = 0;
             let skillsArr = userSkills.toLowerCase().split(',').map(s => s.trim());
-            let textToSearch = (jobDesc + " " + jobTitle).toLowerCase();
-            skillsArr.forEach(skill => { if (skill && textToSearch.includes(skill)) score += 20; });
+            let textToSearch = ((jobDesc  "") + " " + (jobTitle  "")).toLowerCase();
+            skillsArr.forEach(skill => { 
+                if (skill && textToSearch.includes(skill)) score += 20; 
+            });
             return Math.min(score, 100);
         }
 async function loadJobs() {
@@ -181,12 +186,18 @@ async function loadJobs() {
                     let d = doc.data();
                     let score = getMatchScore(d.desc  d.description  "", d.title || "");
                     allJobs.push({
-                        id: doc.id, title: d.title  "Untitled", company: d.company  "Employer",
-                        location: d.location  "Location", salary: d.salary  "N/A",
+                        id: doc.id, 
+                        title: d.title || "Untitled", 
+                        company: d.company || "Employer",
+                        location: d.location || "Location", 
+                        salary: d.salary || "N/A",
                         desc: d.desc  d.description  "No description provided.",
-                        jobType: d.jobType  "Full-time", workMode: d.workMode  "On-site",
-                        isVerified: d.isVerified  false, isUrgent: d.isUrgent  false,
-                        applied: appliedIds.includes(doc.id), employerId: d.employerId,
+                        jobType: d.jobType || "Full-time", 
+                        workMode: d.workMode || "On-site",
+                        isVerified: d.isVerified || false, 
+                        isUrgent: d.isUrgent || false,
+                        applied: appliedIds.includes(doc.id), 
+                        employerId: d.employerId,
                         matchScore: score
                     });
                 });
@@ -195,15 +206,21 @@ async function loadJobs() {
             });
         }
 
-        window.renderJobs = (jobs) => {
+        // ATTACHING TO WINDOW FOR HTML BUTTONS
+        window.renderJobs = function(jobs) {
             const container = document.getElementById('jobListingContainer');
-            container.innerHTML = jobs.length === 0 ? "<p>No matching jobs found.</p>" : "";
+            container.innerHTML = (jobs.length === 0) ? "<p>No matching jobs found.</p>" : "";
+            
             jobs.forEach(j => {
                 let v = j.isVerified ? "verified-gold-card" : "";
                 let urgent = j.isUrgent ? <span class="tag" style="background:var(--err); color:white; margin-bottom:8px;">🔥 URGENT</span> : "";
                 let match = j.matchScore > 0 ? <span class="tag" style="background:var(--succ); color:white; margin-bottom:8px;">⭐ ${j.matchScore}% Match</span> : "";
                 let btnTxt = j.applied ? "Applied" : "Apply Now";
-                let btnAttr = j.applied ? "disabled style='opacity:0.5; cursor:not-allowed;'" : onclick="window.applyJob('${j.id}','${j.title}','${j.employerId}')";
+                
+                // Safely handle quotes in strings for onclick events
+                const safeTitle = j.title.replace(/'/g, "\\'");
+                const safeEmpId = j.employerId ? j.employerId.replace(/'/g, "\\'") : "";
+                let btnAttr = j.applied ? "disabled style='opacity:0.5; cursor:not-allowed;'" : onclick="window.applyJob('${j.id}','${safeTitle}','${safeEmpId}')";
 
                 container.innerHTML += 
                 <div class="card ${v}">
@@ -220,44 +237,45 @@ async function loadJobs() {
                 </div>;
             });
         };
-
-        window.filterJobs = () => {
+window.filterJobs = function() {
             let term = (document.getElementById('jSearch').value || "").toLowerCase();
             let type = document.getElementById('filterType').value;
             let mode = document.getElementById('filterMode').value;
             let sort = document.getElementById('salarySort').value;
 
             let filtered = allJobs.filter(j => {
-let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().includes(term)  j.company.toLowerCase().includes(term));
+                let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().includes(term)  j.company.toLowerCase().includes(term));
                 let tMatch = (type === "all" || j.jobType === type);
                 let mMatch = (mode === "all" || j.workMode === mode);
                 return sMatch && tMatch && mMatch;
             });
 
-            if(sort === "high") filtered.sort((a,b) => (parseInt(b.salary.replace(/[^0-9]/g,''))0) - (parseInt(a.salary.replace(/[^0-9]/g,''))0));
+            if(sort === "high") {
+                filtered.sort((a,b) => (parseInt(b.salary.replace(/\D/g,''))  0) - (parseInt(a.salary.replace(/\D/g,''))  0));
+            }
             window.renderJobs(filtered);
         };
 
-        window.toggleTheme = () => {
+        window.toggleTheme = function() {
             let b = document.body;
             let current = b.getAttribute('data-theme');
-            b.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+            b.setAttribute('data-theme', (current === 'dark' ? 'light' : 'dark'));
         };
 
-        window.toggleDesc = (btn, id) => {
+        window.toggleDesc = function(btn, id) {
             const box = document.getElementById('desc-' + id);
             const open = box.classList.toggle('show');
             btn.innerText = open ? "Hide Description" : "Read Description";
         };
 
-        window.switchTab = (id, el) => {
+        window.switchTab = function(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
         };
 
-        window.applyJob = (jobId, title, empId) => {
+        window.applyJob = function(jobId, title, empId) {
             window.openModal("Apply Now?", Confirm application for ${title}, () => {
                 db.collection('applications').add({
                     jobId, jobTitle: title, employerId: empId,
@@ -267,6 +285,7 @@ let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().inc
             });
         };
 
+        // MESSAGE & PROFILE LOGIC (Kept Same)
         function loadChats(uid) {
             db.collection('applications').where('seekerId', '==', uid).onSnapshot(snap => {
                 let list = document.getElementById('activeChatsList'); list.innerHTML = "";
@@ -280,7 +299,7 @@ let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().inc
             });
         }
 
-        window.openChat = (appId, title) => {
+        window.openChat = function(appId, title) {
             currentAppId = appId;
             document.getElementById('chatHdr').style.display = 'block';
             document.getElementById('inputBar').style.display = 'flex';
@@ -294,8 +313,7 @@ let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().inc
                 area.scrollTop = area.scrollHeight;
             });
         };
-
-        window.sendMsg = () => {
+window.sendMsg = function() {
             let input = document.getElementById('mText');
             if(!input.value.trim() || !currentAppId) return;
             db.collection('applications').doc(currentAppId).collection('chats').add({
@@ -304,9 +322,9 @@ let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().inc
             input.value = "";
         };
 
-        window.savePortfolio = () => {
+        window.savePortfolio = function() {
             db.collection('users').doc(auth.currentUser.uid).update({
-skills: document.getElementById('uSkills').value,
+                skills: document.getElementById('uSkills').value,
                 resumeUrl: document.getElementById('resLink').value,
                 certUrl: document.getElementById('certLink').value
             }).then(() => alert("Saved!"));
@@ -333,14 +351,18 @@ skills: document.getElementById('uSkills').value,
             });
         }
 
-        window.openModal = (t, m, a) => {
+        window.openModal = function(t, m, a) {
             document.getElementById('modalTitle').innerText = t;
             document.getElementById('modalText').innerText = m;
             document.getElementById('confirmBtn').onclick = () => { a(); window.closeModal(); };
             document.getElementById('customModal').style.display = 'flex';
         };
-        window.closeModal = () => document.getElementById('customModal').style.display = 'none';
-        window.triggerLogout = () => auth.signOut().then(() => window.location.href = 'index.html');
+        
+        window.closeModal = function() { document.getElementById('customModal').style.display = 'none'; };
+        
+        window.triggerLogout = function() { 
+            auth.signOut().then(() => { window.location.href = 'index.html'; }); 
+        };
     </script>
 </body>
 </html>
