@@ -91,12 +91,12 @@
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <select id="filterType" onchange="window.filterJobs()" style="margin:0;">
-                            <option value="all">All Types (Full/Part)</option>
+                            <option value="all">All Types</option>
 <option value="Full-time">Full-time</option>
                             <option value="Part-time">Part-time</option>
                         </select>
                         <select id="filterMode" onchange="window.filterJobs()" style="margin:0;">
-                            <option value="all">All Modes (Remote/On-site)</option>
+                            <option value="all">All Modes</option>
                             <option value="On-site">On-site</option>
                             <option value="Remote">Remote</option>
                         </select>
@@ -159,7 +159,6 @@
             });
         });
 
-        // SMART RECOMMENDATION LOGIC
         function getMatchScore(jobDesc, jobTitle) {
             if (!userSkills) return 0;
             let score = 0;
@@ -191,13 +190,12 @@ async function loadJobs() {
                         matchScore: score
                     });
                 });
-                // Sort by Urgent First, then by Match Score
                 allJobs.sort((a,b) => (b.isUrgent - a.isUrgent) || (b.matchScore - a.matchScore));
                 window.filterJobs();
             });
         }
 
-        function renderJobs(jobs) {
+        window.renderJobs = (jobs) => {
             const container = document.getElementById('jobListingContainer');
             container.innerHTML = jobs.length === 0 ? "<p>No matching jobs found.</p>" : "";
             jobs.forEach(j => {
@@ -213,37 +211,37 @@ async function loadJobs() {
                     <strong style="font-size:1.1rem; display:block; margin-top:5px;">${j.title}</strong>
                     <div style="color:var(--pri); font-weight:700; margin-top:4px;">${j.company}</div>
                     <div style="color:var(--muted); font-size:0.85rem; font-weight:600;">📍 ${j.location} • ${j.jobType} • ${j.workMode}</div>
-                    
                     <button class="toggle-desc" onclick="window.toggleDesc(this, '${j.id}')">Read Description</button>
                     <div id="desc-${j.id}" class="desc-box">${j.desc}</div>
-
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                         <div class="tag">₹ ${j.salary}</div>
                         <button class="btn-pri" style="width:auto; padding:10px 20px;" ${btnAttr}>${btnTxt}</button>
                     </div>
                 </div>;
             });
-        }
+        };
 
         window.filterJobs = () => {
-            let term = document.getElementById('jSearch').value.toLowerCase();
+            let term = (document.getElementById('jSearch').value || "").toLowerCase();
             let type = document.getElementById('filterType').value;
             let mode = document.getElementById('filterMode').value;
             let sort = document.getElementById('salarySort').value;
-let filtered = allJobs.filter(j => {
-                let sMatch = j.title.toLowerCase().includes(term)  j.location.toLowerCase().includes(term)  j.company.toLowerCase().includes(term);
+
+            let filtered = allJobs.filter(j => {
+let sMatch = (j.title.toLowerCase().includes(term)  j.location.toLowerCase().includes(term)  j.company.toLowerCase().includes(term));
                 let tMatch = (type === "all" || j.jobType === type);
                 let mMatch = (mode === "all" || j.workMode === mode);
                 return sMatch && tMatch && mMatch;
             });
 
             if(sort === "high") filtered.sort((a,b) => (parseInt(b.salary.replace(/[^0-9]/g,''))0) - (parseInt(a.salary.replace(/[^0-9]/g,''))0));
-            renderJobs(filtered);
+            window.renderJobs(filtered);
         };
 
         window.toggleTheme = () => {
             let b = document.body;
-            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+            let current = b.getAttribute('data-theme');
+            b.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
         };
 
         window.toggleDesc = (btn, id) => {
@@ -307,8 +305,8 @@ let filtered = allJobs.filter(j => {
         };
 
         window.savePortfolio = () => {
-db.collection('users').doc(auth.currentUser.uid).update({
-                skills: document.getElementById('uSkills').value,
+            db.collection('users').doc(auth.currentUser.uid).update({
+skills: document.getElementById('uSkills').value,
                 resumeUrl: document.getElementById('resLink').value,
                 certUrl: document.getElementById('certLink').value
             }).then(() => alert("Saved!"));
@@ -342,7 +340,7 @@ db.collection('users').doc(auth.currentUser.uid).update({
             document.getElementById('customModal').style.display = 'flex';
         };
         window.closeModal = () => document.getElementById('customModal').style.display = 'none';
-        window.triggerLogout = () => auth.signOut();
+        window.triggerLogout = () => auth.signOut().then(() => window.location.href = 'index.html');
     </script>
 </body>
 </html>
