@@ -18,7 +18,7 @@
     }
     [data-theme="dark"] { --bg: #020617; --txt: #F8FAFC; --border: #1E293B; --card: #0F172A; --muted: #94A3B8; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s, color 0.2s; }
     body { background: var(--bg); color: var(--txt); min-height: 100vh; display: flex; flex-direction: column; }
 
     aside { width: 280px; background: var(--pri-dark); color: white; display: flex; flex-direction: column; padding: 2.5rem 1.5rem; position: fixed; height: 100vh; z-index: 100; }
@@ -34,30 +34,24 @@
     .tab-content.active { display: block; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- Job Card Enhancements --- */
     .card { background: var(--card); padding: 1.8rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
-    .job-title { font-size: 1.15rem; font-weight: 800; color: var(--txt); margin-bottom: 4px; display: block; }
-    .job-company { color: var(--pri); font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
-    .job-loc { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; }
+    .job-title { font-size: 1.15rem; font-weight: 800; color: var(--txt); display: block; }
+    .job-company { color: var(--pri); font-weight: 700; font-size: 0.95rem; margin-top: 4px; }
+    .job-loc { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
     
     .desc-box { display: none; margin: 12px 0; font-size: 0.85rem; line-height: 1.5; color: var(--muted); background: var(--bg); padding: 12px; border-radius: 12px; border-left: 4px solid var(--pri); }
     .desc-box.show { display: block; }
-    .toggle-desc { background: none; border: none; color: var(--pri); font-weight: 800; font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; margin-bottom: 10px; }
+    .toggle-desc { background: none; border: none; color: var(--pri); font-weight: 800; font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; margin: 10px 0; }
 
     .tag { padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; background: #E0E7FF; color: var(--pri); display: inline-block; }
     .btn-pri { padding: 12px 24px; background: var(--grad); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-    /* Other UI Elements */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 94, 0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    .modal-box { background: var(--card); border-radius: 24px; padding: 2.5rem; max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--pri); }
-    
     .verified-gold-card { border: 2px solid #FFD700 !important; box-shadow: 0 0 12px rgba(255, 214, 0, 0.3); position: relative; }
+    [data-theme="dark"] .verified-gold-card { background: linear-gradient(145deg, #0F172A, #1a1f2e) !important; }
     .verified-gold-card::after { content: '👑'; position: absolute; top: 15px; right: 15px; font-size: 1.2rem; }
     </style>
 </head>
 <body data-theme="light">
-    <div class="modal-overlay" id="customModal"><div class="modal-box"><h3 id="modalTitle"></h3><p id="modalText" style="margin:20px 0;"></p><div style="display:flex;gap:10px;"><button onclick="window.closeModal()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);">Cancel</button><button id="confirmBtn" style="flex:1;padding:12px;border-radius:10px;background:var(--pri);color:white;border:none;">Confirm</button></div></div></div>
-
     <aside>
         <div class="brand">Kamayega Bharat</div>
         <nav>
@@ -69,79 +63,76 @@
     </aside>
     <main>
         <header class="top-hdr">
-            <div style="font-weight:800;">👋 <span id="userName">User</span></div>
-            <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
+            <div style="font-weight: 800;">👋 <span id="userName">Professional</span></div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button onclick="window.toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.4rem;">🌓</button>
+                <button onclick="window.triggerLogout()" style="border:2px solid var(--err); color:var(--err); background:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">LOGOUT</button> 
+            </div>
         </header>
 
         <section class="content-body">
             <div id="jobs" class="tab-content active">
                 <div class="card" style="display:flex; gap:10px; padding:1rem; margin-bottom:1.5rem;">
-                    <input type="text" id="jSearch" placeholder="Search Role or City..." style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border);" onkeyup="window.filterJobs()">
-                    <select id="salarySort" style="width:180px; padding:12px; border-radius:10px; border:1px solid var(--border);" onchange="window.filterJobs()">
+                    <input type="text" id="jSearch" placeholder="Search Role or City..." style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--txt);" onkeyup="window.filterJobs()">
+                    <select id="salarySort" style="width:180px; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--txt);" onchange="window.filterJobs()">
                         <option value="all">Sort Salary</option>
                         <option value="high">Highest First</option>
                     </select>
                 </div>
                 <div id="jobListingContainer" class="job-grid"></div>
             </div>
-
-            <div id="messages" class="tab-content">...</div>
-            <div id="my-profile" class="tab-content">...</div>
-            <div id="applications" class="tab-content">...</div>
-        </section>
+            </section>
     </main>
 
     <script>
-        const firebaseConfig = { /* Your Config Here */ };
+        const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
         var auth, db, allJobs = [];
 
         document.addEventListener('DOMContentLoaded', function() {
             firebase.initializeApp(firebaseConfig);
             auth = firebase.auth(); db = firebase.firestore();
-            auth.onAuthStateChanged(u => { 
-                if(u) { document.getElementById('userName').innerText = u.displayName || "User"; loadJobs(); } 
-                else { window.location.href = 'index.html'; }
+            auth.onAuthStateChanged(user => {
+                if(user) {
+                    document.getElementById('userName').innerText = user.displayName || "User";
+                    loadJobs();
+                } else { window.location.href = 'index.html'; }
             });
         });
 
         async function loadJobs() {
-            const u = auth.currentUser.uid;
-            const snapApps = await db.collection('applications').where('seekerId', '==', u).get();
-            const appliedIds = snapApps.docs.map(d => d.data().jobId);
+            const uid = auth.currentUser.uid;
+            const appSnap = await db.collection('applications').where('seekerId', '==', uid).get();
+            const appliedIds = appSnap.docs.map(doc => doc.data().jobId);
 
             db.collection('jobs').onSnapshot(snap => {
-                allJobs = [];
+                allJobs = []; // RESET ARRAY
                 snap.forEach(doc => {
                     let d = doc.data();
                     allJobs.push({
                         id: doc.id,
-                        title: d.title || "Untitled",
+                        title: d.title || "Job Title",
                         company: d.company || d.companyName || "Employer",
-                        location: d.location || "Local",
+                        location: d.location || "Location",
                         salary: d.salary || "N/A",
-                        desc: d.desc || d.description || "Contact for details.",
+                        desc: d.desc || d.description || "No description provided.",
                         isVerified: d.isVerified || false,
                         applied: appliedIds.includes(doc.id),
                         employerId: d.employerId
                     });
                 });
-                window.filterJobs();
+                window.filterJobs(); // This calls renderJobs()
             });
         }
 
-        window.toggleDesc = (btn, id) => {
-            const box = document.getElementById('desc-' + id);
-            const isShowing = box.classList.toggle('show');
-            btn.innerText = isShowing ? "Hide Description" : "Read Description";
-        };
-
         function renderJobs(jobs) {
             const container = document.getElementById('jobListingContainer');
-            container.innerHTML = "";
+            if(!container) return;
+            container.innerHTML = jobs.length === 0 ? "<p>No jobs found.</p>" : "";
+            
             jobs.forEach(j => {
                 let vClass = j.isVerified ? "verified-gold-card" : "";
                 let btnTxt = j.applied ? "Applied" : "Apply Now";
-                let btnAttr = j.applied ? "disabled style='opacity:0.6; cursor:not-allowed;'" : `onclick="window.applyJob('${j.id}','${j.title}','${j.employerId}')"`;
+                let btnAttr = j.applied ? "disabled style='opacity:0.5; cursor:not-allowed;'" : `onclick="window.applyJob('${j.id}','${j.title}','${j.employerId}')"`;
 
                 container.innerHTML += `
                 <div class="card ${vClass}">
@@ -154,7 +145,7 @@
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                         <div class="tag">₹ ${j.salary}</div>
-                        <button class="btn-pri" ${btnAttr}>${btnTxt}</button>
+                        <button class="btn-pri" style="width:auto; padding:10px 20px;" ${btnAttr}>${btnTxt}</button>
                     </div>
                 </div>`;
             });
@@ -164,20 +155,27 @@
             let term = document.getElementById('jSearch').value.toLowerCase();
             let sort = document.getElementById('salarySort').value;
             let filtered = allJobs.filter(j => 
-                j.title.toLowerCase().includes(term) || 
-                j.location.toLowerCase().includes(term) || 
-                j.company.toLowerCase().includes(term)
+                j.title.toLowerCase().includes(term) || j.location.toLowerCase().includes(term) || j.company.toLowerCase().includes(term)
             );
-
             if(sort === "high") {
                 filtered.sort((a, b) => {
-                    // Extract only numbers (e.g. "₹ 30,000" -> 30000)
-                    let valA = parseInt(a.salary.replace(/[^0-9]/g, '')) || 0;
-                    let valB = parseInt(b.salary.replace(/[^0-9]/g, '')) || 0;
-                    return valB - valA;
+                    let vA = parseInt(a.salary.replace(/[^0-9]/g, '')) || 0;
+                    let vB = parseInt(b.salary.replace(/[^0-9]/g, '')) || 0;
+                    return vB - vA;
                 });
             }
             renderJobs(filtered);
+        };
+
+        window.toggleTheme = () => {
+            let b = document.body;
+            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        };
+
+        window.toggleDesc = (btn, id) => {
+            const box = document.getElementById('desc-' + id);
+            const open = box.classList.toggle('show');
+            btn.innerText = open ? "Hide Description" : "Read Description";
         };
 
         window.switchTab = (id, el) => {
@@ -187,23 +185,6 @@
             el.classList.add('active');
         };
 
-        window.applyJob = (jobId, title, empId) => {
-            window.openModal("Apply Now?", `Submit application for ${title}`, () => {
-                db.collection('applications').add({
-                    jobId, jobTitle: title, employerId: empId,
-                    seekerId: auth.currentUser.uid, seekerName: auth.currentUser.displayName || "Seeker",
-                    status: 'Pending', time: Date.now()
-                }).then(() => { alert("Success!"); loadJobs(); });
-            });
-        };
-
-        window.openModal = (t, m, a) => {
-            document.getElementById('modalTitle').innerText = t;
-            document.getElementById('modalText').innerText = m;
-            document.getElementById('confirmBtn').onclick = () => { a(); window.closeModal(); };
-            document.getElementById('customModal').style.display = 'flex';
-        };
-        window.closeModal = () => document.getElementById('customModal').style.display = 'none';
         window.triggerLogout = () => auth.signOut();
     </script>
 </body>
