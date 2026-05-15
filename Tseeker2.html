@@ -750,7 +750,42 @@ window.openModal = function(title, text, action) {
     document.getElementById('confirmBtn').onclick   = function() { action(); window.closeModal(); };
     document.getElementById('customModal').style.display = 'flex';
 };
-window.closeModal = function() { document.getElementById('customModal').style.display = 'none'; };
+window.closeModal = function() {
+    document.getElementById('customModal').style.display = 'none';
+    if (typeof window._jobModalCleanup === 'function') window._jobModalCleanup();
+};
+
+window.openJobModal = function(jobId) {
+    var job = allJobs.find(function(j) { return j.id === jobId; });
+    if (!job) return;
+
+    var bodyHTML =
+        '<div style="font-size:0.78rem; font-weight:700; color:var(--text-muted); margin-bottom:0.75rem;">' +
+            '🏢 ' + job.company + ' &nbsp;·&nbsp; 📍 ' + job.location +
+        '</div>' +
+        '<div style="font-size:0.875rem; font-weight:600; color:var(--text-main); line-height:1.7; white-space:pre-wrap;">' +
+            (job.desc || 'No description provided.').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+        '</div>' +
+        (job.salary ? '<div style="margin-top:1rem; font-size:1rem; font-weight:800; color:var(--primary);">₹ ' + job.salary + '</div>' : '');
+
+    document.getElementById('modalTitle').innerText = job.title;
+    document.getElementById('modalText').innerHTML  = bodyHTML;
+
+    var confirmBtn = document.getElementById('confirmBtn');
+    var cancelBtn  = confirmBtn.previousElementSibling;
+    confirmBtn.style.display = 'none';
+    cancelBtn.style.flex     = '1';
+    cancelBtn.innerText      = 'Close';
+
+    window._jobModalCleanup = function() {
+        confirmBtn.style.display = '';
+        cancelBtn.style.flex     = '';
+        cancelBtn.innerText      = 'Cancel';
+        window._jobModalCleanup  = null;
+    };
+
+    document.getElementById('customModal').style.display = 'flex';
+};
 window.triggerLogout = function() {
     window.openModal('Logout?', 'Are you sure you want to end your session?', function() { auth.signOut(); });
 };
@@ -940,10 +975,13 @@ function renderJobs(jobs) {
         var safeDesc = j.desc
             ? j.desc.replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 300)
             : '';
-        var descHTML = safeDesc
-            ? '<div class="job-card-desc">' + safeDesc + '</div>'
+       var descHTML = safeDesc
+            ? '<div class="job-card-desc" style="cursor:pointer;" ' +
+              'onclick="window.openJobModal(\'' + j.id + '\')" ' +
+              'title="Click to read full description">' +
+              safeDesc + ' <span style="color:var(--secondary); font-weight:700; font-size:0.75rem;">Read more</span>' +
+              '</div>'
             : '';
-
         // ── Match score bar ──────────────────────────────────────────
         var scoreHTML = j.score > 0
             ? '<div style="margin-top:6px;">' +
