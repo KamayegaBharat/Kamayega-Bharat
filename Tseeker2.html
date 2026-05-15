@@ -93,8 +93,12 @@
 
         /* ── Tabs ── */
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: slideUp 0.3s ease; }
+        .tab-content.active { display: block !important; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Modals ── */
+        .meet-modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-overlay { display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%; }
 
         /* ── Cards ── */
         .card { background: var(--card); padding: 1.75rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
@@ -489,11 +493,14 @@
                     <label>Google Drive Certificate Link</label>
                     <input type="url" id="certLink" placeholder="https://drive.google.com/...">
                 </div>
-                <div class="form-group">
+               <div class="form-group">
                     <label>About Me (Short Bio)</label>
                     <textarea id="uBio" rows="3" placeholder="A short paragraph about yourself..." style="resize:vertical; font-family:inherit"></textarea>
                 </div>
-            <!-- Notification Settings -->
+                <button class="btn-pri btn-full" id="save-profile-btn" onclick="window.savePortfolio()">Save Profile</button>
+            </div><!-- end portfolio card -->
+
+            <!-- Notification Settings — sibling card, not nested inside portfolio -->
             <div class="card">
                 <div class="card-title">🔔 Notification Settings</div>
 
@@ -524,8 +531,8 @@
                         <div class="notif-label" style="color:var(--err);">⚠️ Notifications Blocked</div>
                         <div class="notif-sub">You've blocked notifications for this site. To re-enable, click the 🔒 lock icon in your browser's address bar → Notifications → Allow, then refresh.</div>
                     </div>
-                </div>
-            </div>
+                    </div>
+            </div><!-- end notification card -->
         </div><!-- end my-profile tab -->
 
         <!-- ══ APPLICATIONS TAB ══ -->
@@ -1107,18 +1114,21 @@ window.requestAndSaveFCMToken = function(uid) {
         });
 };
 
-// Register the service worker early so FCM can use it.
-// Stored on window._swReg so getToken() can reference the exact registration.
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-        .then(function(reg) {
-            window._swReg = reg;
-            console.log('FCM Service Worker registered:', reg.scope);
-        })
-        .catch(function(e) {
-            console.warn('FCM Service Worker registration failed:', e);
-        });
-}
+// Register the service worker after page load so it doesn't compete
+// with critical resources. Stored on window._swReg so getToken() can
+// reference the exact registration.
+window.addEventListener('load', function() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            .then(function(reg) {
+                window._swReg = reg;
+                console.log('FCM Service Worker registered:', reg.scope);
+            })
+            .catch(function(err) {
+                console.warn('FCM Service Worker registration failed:', err);
+            });
+    }
+});
 
 // ═══════════════════════════════════════════════════════
 // APPLICATIONS (with Color-coded Tracker + Withdrawal)
