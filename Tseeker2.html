@@ -153,6 +153,7 @@
         .job-card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -8px rgba(30,64,175,0.12); }
         .job-card-title { font-size: 1rem; font-weight: 800; }
         .job-card-meta { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .job-card-desc { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; line-height: 1.55; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .job-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
         .job-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); }
         .job-card-salary { font-size: 1rem; font-weight: 800; color: var(--primary); }
@@ -916,31 +917,66 @@ window.clearFilters = function() {
 function renderJobs(jobs) {
     var container = document.getElementById('jobListingContainer');
     if (!container) return;
-    if (!jobs.length) { container.innerHTML = '<p style="color:var(--text-muted); font-weight:600; grid-column:1/-1; text-align:center; padding:3rem;">No jobs match your filters. Try broadening your search.</p>'; return; }
-    container.innerHTML = '';
+
+    if (!jobs.length) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-weight:600; grid-column:1/-1; text-align:center; padding:3rem;">No jobs match your filters. Try broadening your search.</p>';
+        return;
+    }
+
+    // String buffer — avoids repeated DOM reflows from innerHTML +=
+    var buf = [];
+
     jobs.forEach(function(j) {
-        var extra = (j.isVerified ? ' verified-gold' : '') + (j.isUrgent ? ' urgent-card' : '');
-        var scoreHTML = j.score > 0 ? '<div style="margin-top:6px;"><div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); margin-bottom:2px;">Match Score</div><div class="score-bar-wrap"><div class="score-bar" style="width:' + Math.min(j.score * 25, 100) + '%"></div></div></div>' : '';
-        var recBadge = j.score >= 2 ? '<div class="recommended-badge">⭐ Recommended</div>' : '';
-        var ratingHTML = j.rating ? '<div style="color:#fbbf24; font-size:0.75rem;">★ ' + j.rating.toFixed(1) + ' <span style="color:var(--text-muted);">(' + j.ratingCount + ' reviews)</span></div>' : '';
-        var typeTag = j.jobType ? '<span class="tag tag-blue">' + j.jobType + '</span>' : '';
-        var modeTag = j.workMode ? '<span class="tag ' + (j.workMode==='Remote'?'tag-green':'tag-gray') + '">' + j.workMode + '</span>' : '';
+        var extra     = (j.isVerified ? ' verified-gold' : '') + (j.isUrgent ? ' urgent-card' : '');
+        var recBadge  = j.score >= 2 ? '<div class="recommended-badge">⭐ Recommended</div>' : '';
+        var ratingHTML = j.rating
+            ? '<div style="color:#fbbf24; font-size:0.75rem; margin-top:2px;">★ ' + j.rating.toFixed(1) +
+              ' <span style="color:var(--text-muted);">(' + j.ratingCount + ' reviews)</span></div>'
+            : '';
+        var typeTag = j.jobType  ? '<span class="tag tag-blue">'  + j.jobType  + '</span>' : '';
+        var modeTag = j.workMode ? '<span class="tag ' + (j.workMode === 'Remote' ? 'tag-green' : 'tag-gray') + '">' + j.workMode + '</span>' : '';
+
+        // ── Description — sanitise then render ──────────────────────
+        var safeDesc = j.desc
+            ? j.desc.replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 300)
+            : '';
+        var descHTML = safeDesc
+            ? '<div class="job-card-desc">' + safeDesc + '</div>'
+            : '';
+
+        // ── Match score bar ──────────────────────────────────────────
+        var scoreHTML = j.score > 0
+            ? '<div style="margin-top:6px;">' +
+                '<div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); margin-bottom:2px;">Match Score</div>' +
+                '<div class="score-bar-wrap"><div class="score-bar" style="width:' + Math.min(j.score * 25, 100) + '%"></div></div>' +
+              '</div>'
+            : '';
 
         var btnHTML = j.alreadyApplied
             ? '<button disabled style="padding:10px 14px; background:#cbd5e1; border:none; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:not-allowed; color:#64748b;">✓ Applied</button>'
-            : '<button class="btn-pri btn-sm" onclick="window.applyJob(\'' + j.id + '\',\'' + (j.title||'').replace(/'/g,"") + '\',\'' + j.employerId + '\')">Apply Now</button>';
+            : '<button class="btn-pri btn-sm" onclick="window.applyJob(\'' + j.id + '\',\'' + (j.title || '').replace(/'/g, '') + '\',\'' + j.employerId + '\')">Apply Now</button>';
 
-        var html = '<div class="job-card' + extra + '">' +
-            recBadge +
-            '<div><div class="job-card-title">' + j.title + '</div>' +
-            '<div class="job-card-meta" style="margin-top:3px;">🏢 ' + j.company + ' &nbsp;·&nbsp; 📍 ' + j.location + '</div></div>' +
-            ratingHTML +
-            '<div class="job-card-tags">' + typeTag + modeTag + '</div>' +
-            scoreHTML +
-            '<div class="job-card-footer"><div class="job-card-salary">₹ ' + j.salary + '</div>' + btnHTML + '</div>' +
-            '</div>';
-        container.innerHTML += html;
+        buf.push(
+            '<div class="job-card' + extra + '">' +
+                recBadge +
+                '<div>' +
+                    '<div class="job-card-title">' + j.title + '</div>' +
+                    '<div class="job-card-meta" style="margin-top:3px;">🏢 ' + j.company + ' &nbsp;·&nbsp; 📍 ' + j.location + '</div>' +
+                    descHTML +   // ← description renders here, below company/location
+                '</div>' +
+                ratingHTML +
+                '<div class="job-card-tags">' + typeTag + modeTag + '</div>' +
+                scoreHTML +
+                '<div class="job-card-footer">' +
+                    '<div class="job-card-salary">₹ ' + j.salary + '</div>' +
+                    btnHTML +
+                '</div>' +
+            '</div>'
+        );
     });
+
+    // Single DOM write for the entire list
+    container.innerHTML = buf.join('');
 }
 
 // ═══════════════════════════════════════════════════════
