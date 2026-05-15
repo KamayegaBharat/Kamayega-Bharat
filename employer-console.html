@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Console | Kamayega Bharat</title>
+    <meta name="description" content="Employer Dashboard for Kamayega Bharat. Post jobs, manage applicants, and hire talent.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --card: #ffffff;
+            --err: #ef4444;
+            --succ: #10b981;
+            --warn: #f59e0b;
+            --grad: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            --shadow: 0 10px 25px -5px rgba(30,64,175,0.12);
+        }
+        [data-theme="dark"] {
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-light: #020617;
+            --border: #1e293b;
+            --card: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-light); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; transition: background 0.2s, color 0.2s; }
+
+        /* ── Sidebar ── */
+        aside {
+            width: 270px; background: var(--primary); color: white;
+            display: flex; flex-direction: column; padding: 2rem 1.25rem;
+            position: fixed; height: 100vh; z-index: 200; overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        .brand { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; letter-spacing: -0.03em; color: white; }
+        .brand-sub { font-size: 0.7rem; opacity: 0.6; margin-bottom: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; }
+        .brand-role { font-size: 0.72rem; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 2rem; font-weight: 700; letter-spacing: 0.04em; }
+        .nav-section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5; margin: 1.25rem 0 0.5rem 0.5rem; }
+        .nav-item {
+            padding: 12px 16px; margin-bottom: 4px; border-radius: 12px;
+            cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            color: rgba(255,255,255,0.65); display: flex; align-items: center; gap: 10px;
+            border: none; background: none; width: 100%; text-align: left; transition: all 0.2s;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: rgba(255,255,255,0.2); color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15); }
+        .nav-badge { margin-left: auto; background: var(--accent); color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; }
+        .sidebar-footer { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; opacity: 0.5; }
+
+        /* ── Main ── */
+        main { margin-left: 270px; flex-grow: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* ── Top Header ── */
+        .top-hdr {
+            padding: 1rem 2.5rem; background: var(--card); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; gap: 1rem;
+        }
+        .hdr-left { display: flex; align-items: center; gap: 10px; }
+        .hdr-greeting { font-weight: 800; font-size: 1rem; }
+        .hdr-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+        .hdr-right { display: flex; gap: 10px; align-items: center; }
+        .mobile-menu-btn { display: none; background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
+        .icon-btn { background: var(--bg-light); border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .icon-btn:hover { background: var(--border); }
+        .logout-btn { border: 2px solid var(--err); color: var(--err); background: none; padding: 8px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.8rem; letter-spacing: 0.05em; transition: 0.2s; }
+        .logout-btn:hover { background: var(--err); color: white; }
+
+        /* ── Content ── */
+        .content-body { padding: 2rem 2.5rem; flex: 1; max-width: 1400px; width: 100%; }
+
+        /* ── Tabs ── */
+        .tab-content { display: none; }
+        .tab-content.active { display: block !important; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Cards ── */
+        .card { background: var(--card); padding: 1.75rem; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
+
+        /* ── Inputs ── */
+        input[type="text"], input[type="url"], input[type="email"], input[type="number"], select, textarea {
+            width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+            border-radius: 10px; background: var(--bg-light); color: var(--text-main);
+            font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--secondary); }
+        label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-group { margin-bottom: 0.25rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+        /* ── Buttons ── */
+        .btn-pri {
+            padding: 13px 20px; background: var(--grad); color: white;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s; font-size: 0.9rem;
+        }
+        .btn-pri:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-pri:active { transform: translateY(0); }
+        .btn-full { width: 100%; }
+        .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; }
+        .btn-outline { background: none; border: 2px solid var(--primary); color: var(--primary); padding: 10px 18px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-danger { background: none; border: 2px solid var(--err); color: var(--err); padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-danger:hover { background: var(--err); color: white; }
+        .btn-green { background: linear-gradient(135deg,#10b981,#059669); color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-green:hover { opacity: 0.85; }
+
+        /* ── Tags ── */
+        .tag { padding: 5px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 800; display: inline-block; }
+        .tag-blue   { background: #dbeafe; color: var(--primary); }
+        .tag-green  { background: #d1fae5; color: #065f46; }
+        .tag-yellow { background: #fef3c7; color: #92400e; }
+        .tag-red    { background: #fee2e2; color: #991b1b; }
+        .tag-gray   { background: #f1f5f9; color: #475569; }
+        .tag-purple { background: #ede9fe; color: #5b21b6; }
+
+        /* ── Stats row ── */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; text-align: center; }
+        .stat-card .num { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .stat-card .lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+        /* ── Section Headers ── */
+        .section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+        .section-hdr h2 { font-size: 1.1rem; font-weight: 800; }
+
+        /* ── Job Listings (Employer view) ── */
+        .job-post-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;
+            transition: box-shadow 0.2s; margin-bottom: 1rem; position: relative;
+        }
+        .job-post-card:hover { box-shadow: var(--shadow); }
+        .job-post-info { flex: 1; min-width: 0; }
+        .job-post-title { font-size: 1rem; font-weight: 800; }
+        .job-post-meta  { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+        .job-post-tags  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .job-post-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; align-items: flex-start; }
+        .job-active-badge  { position: absolute; top: 14px; right: 14px; background: #d1fae5; color: #065f46; font-size: 0.65rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+
+        /* ── Skill tag input ── */
+        .skill-tags-wrap { border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 12px; background: var(--bg-light); display: flex; flex-wrap: wrap; gap: 6px; cursor: text; min-height: 48px; align-items: center; transition: border-color 0.2s; margin-bottom: 1rem; }
+        .skill-tags-wrap:focus-within { border-color: var(--secondary); }
+        .skill-chip { background: #dbeafe; color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; }
+        .skill-chip-remove { cursor: pointer; opacity: 0.6; font-size: 0.9rem; line-height: 1; }
+        .skill-chip-remove:hover { opacity: 1; }
+        #skillTagInput { border: none; outline: none; background: transparent; font-size: 0.875rem; font-weight: 600; color: var(--text-main); flex: 1; min-width: 100px; padding: 2px 4px; }
+
+        /* ── Applicant Cards ── */
+        .applicant-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 1.5rem; margin-bottom: 1rem; display: flex; gap: 1.25rem; align-items: flex-start;
+            transition: box-shadow 0.2s;
+        }
+        .applicant-card:hover { box-shadow: var(--shadow); }
+        .applicant-avatar {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--grad);
+            color: white; font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; letter-spacing: -0.03em;
+        }
+        .applicant-info { flex: 1; min-width: 0; }
+        .applicant-name { font-size: 1rem; font-weight: 800; }
+        .applicant-meta { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+        .applicant-skills { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .applicant-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; flex-shrink: 0; }
+        .status-select {
+            padding: 8px 12px; border-radius: 10px; border: 2px solid var(--border);
+            font-weight: 800; font-size: 0.8rem; cursor: pointer; background: var(--bg-light);
+            color: var(--text-main); outline: none; transition: border-color 0.2s; margin-bottom: 0;
+        }
+        .status-select:focus { border-color: var(--secondary); }
+        .status-select.st-applied   { border-color: #3b82f6; color: #1e40af; }
+        .status-select.st-pending   { border-color: #3b82f6; color: #1e40af; }
+        .status-select.st-review    { border-color: #f59e0b; color: #92400e; }
+        .status-select.st-interview { border-color: #8b5cf6; color: #5b21b6; }
+        .status-select.st-hired     { border-color: #10b981; color: #065f46; }
+        .status-select.st-rejected  { border-color: #ef4444; color: #991b1b; }
+        .status-select.st-withdrawn { border-color: #94a3b8; color: #475569; }
+
+        /* ── Messaging ── */
+        .split-view { display: grid; grid-template-columns: 280px 1fr; height: 560px; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: var(--card); }
+        .list-pane { border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg-light); }
+        .list-item { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+        .list-item:hover, .list-item.selected { background: rgba(30,64,175,0.06); }
+        .chat-pane { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .chat-hdr { padding: 1rem 1.25rem; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .msg-area { flex: 1; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: var(--bg-light); }
+        .msg-bubble { padding: 10px 14px; border-radius: 14px; max-width: 75%; font-size: 0.875rem; font-weight: 600; line-height: 1.5; word-break: break-word; }
+        .msg-me    { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg-them  { align-self: flex-start; background: var(--card); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .msg-input-bar { padding: 1rem; background: var(--card); border-top: 1px solid var(--border); display: none; gap: 8px; align-items: center; flex-shrink: 0; }
+        .msg-input-bar input { margin: 0; }
+
+        /* ── Meet Invite Panel ── */
+        .meet-invite-box { background: var(--bg-light); border: 1.5px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 8px; }
+        .meet-invite-box input { margin: 0; }
+
+        /* ── Activity Feed ── */
+        .activity-item { display: flex; gap: 12px; align-items: flex-start; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+        .activity-text { font-size: 0.875rem; font-weight: 600; }
+        .activity-time { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+        /* ── Modals ── */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,26,94,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-box { background: var(--card); border-radius: 20px; padding: 2.25rem; max-width: 440px; width: 90%; border: 1.5px solid var(--primary); }
+        .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; }
+        .modal-text { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-actions { display: flex; gap: 10px; }
+
+        /* ── Toast ── */
+        #toast { position: fixed; bottom: 24px; right: 24px; background: var(--primary); color: white; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 0.875rem; z-index: 99999; transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        /* ── Empty states ── */
+        .empty-state { text-align: center; padding: 3rem 2rem; color: var(--text-muted); }
+        .empty-state .emoji { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .empty-state .title { font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem; }
+        .empty-state .sub   { font-size: 0.82rem; font-weight: 600; }
+
+        /* ── Filter Bar ── */
+        .filter-bar { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+        .filter-bar input, .filter-bar select { margin-bottom: 0; flex: 1; min-width: 140px; }
+
+        /* ── Sidebar backdrop ── */
+        .sidebar-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 199; }
+        .sidebar-backdrop.show { display: block; }
+
+        /* ── Footer ── */
+        footer { padding: 3rem 2.5rem; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: auto; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            aside { transform: translateX(-100%); width: 260px; }
+            aside.mobile-open { transform: translateX(0); }
+            main { margin-left: 0 !important; }
+            .mobile-menu-btn { display: block !important; }
+            .content-body { padding: 1.25rem; }
+            .top-hdr { padding: 1rem 1.25rem; }
+            .split-view { grid-template-columns: 1fr; height: auto; }
+            .list-pane { height: 160px; border-right: none; border-bottom: 1px solid var(--border); }
+            footer { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .applicant-actions { flex-direction: column; width: 100%; }
+            .applicant-card { flex-direction: column; }
+            .job-post-card { flex-direction: column; }
+        }
+
+        [data-theme="dark"] .skill-chip { background: rgba(59,130,246,0.2); }
+        [data-theme="dark"] .meet-invite-box { background: rgba(255,255,255,0.03); }
+    </style>
+</head>
+<body data-theme="light">
+
+<!-- Sidebar backdrop -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="window.closeMobileMenu()"></div>
+
+<!-- Custom Modal -->
+<div class="modal-overlay" id="customModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Action Required</div>
+        <div class="modal-text" id="modalText"></div>
+        <div class="modal-actions">
+            <button onclick="window.closeModal()" class="btn-outline" style="flex:1">Cancel</button>
+            <button id="confirmBtn" class="btn-pri" style="flex:1">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ── Sidebar ── -->
+<aside id="sidebar">
+    <div class="brand">Kamayega Bharat</div>
+    <div class="brand-sub">Employer Console</div>
+    <div class="brand-role">🏢 Employer View</div>
+    <nav>
+        <div class="nav-section-label">Overview</div>
+        <button class="nav-item active" onclick="window.switchTab('dashboard', this)">📊 Dashboard</button>
+
+        <div class="nav-section-label">Jobs</div>
+        <button class="nav-item" onclick="window.switchTab('post-job', this)">➕ Post a Job</button>
+        <button class="nav-item" onclick="window.switchTab('my-jobs', this)">📋 My Job Listings</button>
+
+        <div class="nav-section-label">Talent</div>
+        <button class="nav-item" onclick="window.switchTab('applicants', this)">👥 Applicants <span class="nav-badge" id="appsBadge">0</span></button>
+        <button class="nav-item" onclick="window.switchTab('messages', this)">📩 Messages</button>
+    </nav>
+    <div class="sidebar-footer">v2.0 · Kamayega Bharat</div>
+</aside>
+
+<!-- ── Main ── -->
+<main>
+    <h1 style="display:none">Employer Dashboard</h1>
+
+    <header class="top-hdr">
+        <div class="hdr-left">
+            <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()">☰</button>
+            <div>
+                <div class="hdr-greeting">👋 <span id="userName">Employer</span></div>
+                <div class="hdr-sub" id="userEmail">Loading...</div>
+            </div>
+        </div>
+        <div class="hdr-right">
+            <button onclick="window.toggleTheme()" class="icon-btn" title="Toggle theme">🌓</button>
+            <button onclick="window.triggerLogout()" class="logout-btn">LOGOUT</button>
+        </div>
+    </header>
+
+    <section class="content-body">
+
+        <!-- ══ DASHBOARD TAB ══ -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section-hdr">
+                <div>
+                    <h2>📊 Hiring Overview</h2>
+                    <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin-top:2px;">Track your recruitment at a glance</div>
+                </div>
+                <button class="btn-pri btn-sm" onclick="window.switchTab('post-job', document.querySelectorAll('.nav-item')[1])">➕ Post a Job</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row" id="dashStats">
+                <div class="stat-card"><div class="num" id="d-jobs">0</div><div class="lbl">Active Jobs</div></div>
+                <div class="stat-card"><div class="num" id="d-apps">0</div><div class="lbl">Total Applicants</div></div>
+                <div class="stat-card"><div class="num" id="d-interview">0</div><div class="lbl">Interviews</div></div>
+                <div class="stat-card"><div class="num" id="d-hired">0</div><div class="lbl">Hired 🎉</div></div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-title">⚡ Recent Activity</div>
+                <div id="activityFeed">
+                    <div class="empty-state"><div class="emoji">📭</div><div class="title">No activity yet</div><div class="sub">Post a job to start receiving applications.</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ POST JOB TAB ══ -->
+        <div id="post-job" class="tab-content">
+            <div class="section-hdr">
+                <h2>➕ Post a New Job</h2>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📝 Job Details</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Job Title *</label>
+                        <input type="text" id="jTitle" placeholder="e.g. Senior Welder, Delivery Driver">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name *</label>
+                        <input type="text" id="jCompany" placeholder="Your company name">
+                    </div>
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="jCategory">
+                            <option value="">Select Category</option>
+                            <option>Construction & Labour</option>
+                            <option>Driving & Logistics</option>
+                            <option>Food & Hospitality</option>
+                            <option>Domestic & Cleaning</option>
+                            <option>Security & Guard</option>
+                            <option>Electrical & Plumbing</option>
+                            <option>Healthcare Support</option>
+                            <option>Retail & Sales</option>
+                            <option>Manufacturing</option>
+                            <option>Agriculture</option>
+                            <option>IT & Technical</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Type *</label>
+                        <select id="jType">
+                            <option value="">Select Type</option>
+                            <option>Full-time</option>
+                            <option>Part-time</option>
+                            <option>Contract</option>
+                            <option>Internship</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Work Mode *</label>
+                        <select id="jMode">
+                            <option value="">Select Mode</option>
+                            <option>On-site</option>
+                            <option>Remote</option>
+                            <option>Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Location / City *</label>
+                        <input type="text" id="jLocation" placeholder="e.g. Patna, Bihar">
+                    </div>
+                    <div class="form-group">
+                        <label>Salary (₹/month or fixed)</label>
+                        <input type="text" id="jSalary" placeholder="e.g. 15000, 15000-20000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Required Skills (press Enter or comma to add)</label>
+                    <div class="skill-tags-wrap" id="skillTagsWrap" onclick="document.getElementById('skillTagInput').focus()">
+                        <input id="skillTagInput" type="text" placeholder="Type a skill and press Enter...">
+                    </div>
+                    <div id="skillTagsHidden"></div><!-- hidden store -->
+                </div>
+
+                <div class="form-group">
+                    <label>Full Job Description *</label>
+                    <textarea id="jDesc" rows="6" placeholder="Describe the role, responsibilities, requirements, working hours, benefits, and anything else relevant for applicants..." style="resize:vertical; font-family:inherit"></textarea>
+                </div>
+
+                <div class="form-row" style="align-items:center;">
+                    <div style="display:flex; gap:1rem;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.875rem; color:var(--text-main);">
+                            <input type="checkbox" id="jUrgent" style="width:auto; margin:0; padding:0;"> 🔥 Mark as Urgent
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.875rem; color:var(--text-main);">
+                            <input type="checkbox" id="jVerified" style="width:auto; margin:0; padding:0;"> 👑 Verified Employer
+                        </label>
+                    </div>
+                    <button class="btn-pri" onclick="window.postJob()">🚀 Post Job Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ MY JOBS TAB ══ -->
+        <div id="my-jobs" class="tab-content">
+            <div class="section-hdr">
+                <h2>📋 My Job Listings</h2>
+                <button class="btn-pri btn-sm" onclick="window.switchTab('post-job', document.querySelectorAll('.nav-item')[1])">➕ New Job</button>
+            </div>
+            <div id="myJobsList">
+                <div class="empty-state"><div class="emoji">📭</div><div class="title">No jobs posted yet</div><div class="sub">Click "Post a Job" to create your first listing.</div></div>
+            </div>
+        </div>
+
+        <!-- ══ APPLICANTS TAB ══ -->
+        <div id="applicants" class="tab-content">
+            <div class="section-hdr">
+                <h2>👥 Received Applications</h2>
+            </div>
+
+            <!-- Stats row -->
+            <div class="stats-row">
+                <div class="stat-card"><div class="num" id="a-total">0</div><div class="lbl">Total</div></div>
+                <div class="stat-card"><div class="num" id="a-pending">0</div><div class="lbl">Pending</div></div>
+                <div class="stat-card"><div class="num" id="a-interview">0</div><div class="lbl">Interview</div></div>
+                <div class="stat-card"><div class="num" id="a-hired">0</div><div class="lbl">Hired 🎉</div></div>
+                <div class="stat-card"><div class="num" id="a-rejected">0</div><div class="lbl">Rejected</div></div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <div style="flex:2; min-width:180px;">
+                    <label>Search Applicants</label>
+                    <input type="text" id="aSearch" placeholder="Name, job or email..." onkeyup="window.filterApplicants()" style="margin:0">
+                </div>
+                <div style="min-width:150px;">
+                    <label>Filter by Status</label>
+                    <select id="aStatusFilter" onchange="window.filterApplicants()" style="margin:0">
+                        <option value="all">All Statuses</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Review">Review</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Hired">Hired</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div style="min-width:180px;">
+                    <label>Filter by Job</label>
+                    <select id="aJobFilter" onchange="window.filterApplicants()" style="margin:0">
+                        <option value="all">All Jobs</option>
+                    </select>
+                </div>
+                <button class="btn-pri btn-sm" onclick="window.resetApplicantFilters()">Reset</button>
+            </div>
+
+            <div id="applicantsList"></div>
+        </div>
+
+        <!-- ══ MESSAGES TAB ══ -->
+        <div id="messages" class="tab-content">
+            <div class="section-hdr" style="margin-bottom:1rem;">
+                <h2>📩 Messages</h2>
+            </div>
+            <div class="split-view">
+                <div class="list-pane" id="chatList">
+                    <div style="padding:0.75rem 1rem; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">Conversations</div>
+                </div>
+                <div class="chat-pane">
+                    <div class="chat-hdr" id="chatHdr" style="display:none;">
+                        <div>
+                            <div id="activeSeekerName" style="font-weight:800; font-size:0.95rem;"></div>
+                            <div id="activeChatJob"    style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"></div>
+                        </div>
+                        <!-- Meet invite controls — shown when a chat is open -->
+                        <div id="meetControls" style="display:none;">
+                            <button class="btn-green btn-sm" onclick="window.showMeetInviteBox()">🎥 Invite to Interview</button>
+                        </div>
+                    </div>
+
+                    <div id="noChat" style="flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted); background:var(--bg-light); padding:2rem;">
+                        <div style="font-size:2.5rem;">💬</div>
+                        <div style="font-weight:700; font-size:0.9rem;">Select a conversation to start chatting</div>
+                    </div>
+                    <div id="msgArea" class="msg-area" style="display:none;"></div>
+
+                    <!-- Meet invite input — slides in when employer clicks "Invite" -->
+                    <div id="meetInviteBox" class="meet-invite-box" style="display:none; margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none; border-top:1px solid var(--border); padding:1rem;">
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--primary); margin-bottom:4px;">🎥 Send Google Meet Interview Invite</div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="url" id="meetLinkInput" placeholder="Paste Google Meet link: https://meet.google.com/..." style="margin:0; flex:1;">
+                            <input type="text" id="meetMsgInput" placeholder="Optional message to candidate" style="margin:0; flex:1;">
+                            <button class="btn-green btn-sm" onclick="window.sendMeetInvite()" style="flex-shrink:0; white-space:nowrap;">Send Invite</button>
+                            <button onclick="document.getElementById('meetInviteBox').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:1.1rem; opacity:0.5;" title="Cancel">✕</button>
+                        </div>
+                    </div>
+
+                    <div id="inputBar" class="msg-input-bar">
+                        <input type="text" id="mText" placeholder="Type a message..." onkeydown="if(event.key==='Enter') window.sendMsg()">
+                        <button onclick="window.sendMsg()" class="btn-pri btn-sm" style="flex-shrink:0">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section><!-- end content-body -->
+
+    <footer>
+        <div>
+            <h4 style="color:var(--primary); margin-bottom:0.75rem;">Kamayega Bharat</h4>
+            <p style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">Empowering workers with verified opportunities.</p>
+            <p style="margin-top:1.5rem; font-size:0.75rem; opacity:0.5;">© 2026 Kamayega Bharat. Built by Sourav Bagchi.</p>
+        </div>
+        <div>
+            <h4 style="margin-bottom:0.75rem; font-size:0.9rem;">Quick Links</h4>
+            <a href="legal.html" style="color:var(--primary); text-decoration:none; font-weight:700; font-size:0.875rem; margin-right:20px;">Terms & Privacy</a>
+            <p style="margin-top:0.75rem; font-size:0.8rem;">Support: <a href="mailto:kamayegabharat@gmail.com" style="color:var(--primary); font-weight:700; text-decoration:none;">kamayegabharat@gmail.com</a></p>
+        </div>
+    </footer>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// FIREBASE CONFIG — same project as Seeker Console
+// ═══════════════════════════════════════════════════════
+const firebaseConfig = {
+    apiKey: "AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk",
+    authDomain: "kamayega-bharat.firebaseapp.com",
+    projectId: "kamayega-bharat",
+    storageBucket: "kamayega-bharat.appspot.com",
+    messagingSenderId: "595460672260",
+    appId: "1:595460672260:web:6584856313e2d740805e51"
+};
+
+var auth, db;
+var allApplications  = [];   // raw snapshot of this employer's applications
+var myJobs           = [];   // raw snapshot of this employer's jobs
+var currentAppId     = null; // the application doc currently open in chat
+var currentSeekerId  = null;
+var chatUnsubscribe  = null; // tear-down for the active message listener
+var skillTags        = [];   // currently entered skill tags for the post-job form
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function () {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db   = firebase.firestore();
+
+    auth.onAuthStateChanged(function (user) {
+        if (user) {
+            document.getElementById('userName').innerText  = user.displayName || user.email.split('@')[0] || 'Employer';
+            document.getElementById('userEmail').innerText = user.email || '';
+            try { loadMyJobs(user.uid); }        catch (e) { console.error(e); }
+            try { loadApplications(user.uid); }  catch (e) { console.error(e); }
+            try { loadChats(user.uid); }         catch (e) { console.error(e); }
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    // ── Skill tag input key handler ──
+    var skillInput = document.getElementById('skillTagInput');
+    skillInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            var val = skillInput.value.replace(/,/g, '').trim();
+            if (val) addSkillTag(val);
+            skillInput.value = '';
+        } else if (e.key === 'Backspace' && skillInput.value === '' && skillTags.length > 0) {
+            removeSkillTag(skillTags[skillTags.length - 1]);
+        }
+    });
+});
+
+// ═══════════════════════════════════════════════════════
+// THEME & MOBILE
+// ═══════════════════════════════════════════════════════
+window.toggleTheme = function () {
+    var cur = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+};
+window.toggleMobileMenu = function () {
+    document.getElementById('sidebar').classList.toggle('mobile-open');
+    document.getElementById('sidebarBackdrop').classList.toggle('show');
+};
+window.closeMobileMenu = function () {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebarBackdrop').classList.remove('show');
+};
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+window.switchTab = function (id, el) {
+    document.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    if (el) el.classList.add('active');
+    window.closeMobileMenu();
+};
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+window.toast = function (msg, dur) {
+    var t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, dur || 3000);
+};
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+window.openModal = function (title, text, action) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalText').innerText  = text;
+    document.getElementById('confirmBtn').onclick   = function () { action(); window.closeModal(); };
+    document.getElementById('customModal').style.display = 'flex';
+};
+window.closeModal = function () {
+    document.getElementById('customModal').style.display = 'none';
+};
+window.triggerLogout = function () {
+    window.openModal('Logout?', 'Are you sure you want to end your session?', function () { auth.signOut(); });
+};
+
+// ═══════════════════════════════════════════════════════
+// SKILL TAGS (Post-Job Form)
+// ═══════════════════════════════════════════════════════
+function addSkillTag(val) {
+    var normalised = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+    if (skillTags.includes(normalised)) return;
+    skillTags.push(normalised);
+    renderSkillTags();
+}
+function removeSkillTag(val) {
+    skillTags = skillTags.filter(function (s) { return s !== val; });
+    renderSkillTags();
+}
+function renderSkillTags() {
+    var wrap  = document.getElementById('skillTagsWrap');
+    var input = document.getElementById('skillTagInput');
+    // Remove all chips, keep the input
+    var chips = wrap.querySelectorAll('.skill-chip');
+    chips.forEach(function (c) { c.remove(); });
+    skillTags.forEach(function (tag) {
+        var chip = document.createElement('span');
+        chip.className = 'skill-chip';
+        chip.innerHTML = tag + ' <span class="skill-chip-remove" onclick="removeSkillTag(\'' + tag + '\')">×</span>';
+        wrap.insertBefore(chip, input);
+    });
+}
+function clearSkillTags() {
+    skillTags = [];
+    renderSkillTags();
+}
+
+// ═══════════════════════════════════════════════════════
+// POST A JOB
+// ═══════════════════════════════════════════════════════
+window.postJob = function () {
+    var title   = document.getElementById('jTitle').value.trim();
+    var company = document.getElementById('jCompany').value.trim();
+    var loc     = document.getElementById('jLocation').value.trim();
+    var desc    = document.getElementById('jDesc').value.trim();
+    var type    = document.getElementById('jType').value;
+    var mode    = document.getElementById('jMode').value;
+
+    if (!title || !company || !loc || !desc || !type || !mode) {
+        window.toast('⚠️ Please fill in all required (*) fields.'); return;
+    }
+
+    // Add any text sitting in the skill input that wasn't confirmed yet
+    var pendingSkill = document.getElementById('skillTagInput').value.trim();
+    if (pendingSkill) { addSkillTag(pendingSkill); document.getElementById('skillTagInput').value = ''; }
+
+    var payload = {
+        title:          title,
+        companyName:    company,
+        company:        company,
+        category:       document.getElementById('jCategory').value || '',
+        jobType:        type,
+        workMode:       mode,
+        location:       loc,
+        salary:         document.getElementById('jSalary').value.trim() || 'Negotiable',
+        desc:           desc,
+        description:    desc,
+        skills:         skillTags.join(', '),
+        requiredSkills: skillTags.slice(),   // array field for skill-gap feature on seeker side
+        isUrgent:       document.getElementById('jUrgent').checked,
+        isVerified:     document.getElementById('jVerified').checked,
+        employerId:     auth.currentUser.uid,
+        postedAt:       firebase.firestore.FieldValue.serverTimestamp(),
+        status:         'active'
+    };
+
+    db.collection('jobs').add(payload).then(function (ref) {
+        window.toast('🎉 Job posted successfully!');
+        // Reset form
+        ['jTitle','jCompany','jLocation','jSalary','jDesc'].forEach(function (id) { document.getElementById(id).value = ''; });
+        ['jCategory','jType','jMode'].forEach(function (id) { document.getElementById(id).value = ''; });
+        document.getElementById('jUrgent').checked = false;
+        document.getElementById('jVerified').checked = false;
+        clearSkillTags();
+        // Jump to My Jobs tab
+        window.switchTab('my-jobs', document.querySelectorAll('.nav-item')[2]);
+    }).catch(function (err) {
+        console.error('postJob error:', err);
+        window.toast('⚠️ Could not post job. Check Firestore rules.');
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// LOAD MY JOBS
+// ═══════════════════════════════════════════════════════
+function loadMyJobs(uid) {
+    db.collection('jobs').where('employerId', '==', uid).onSnapshot(function (snap) {
+        myJobs = [];
+        snap.forEach(function (doc) {
+            myJobs.push(Object.assign({ id: doc.id }, doc.data()));
+        });
+        document.getElementById('d-jobs').innerText = myJobs.length;
+        renderMyJobs();
+        populateJobFilter();
+    }, function (err) {
+        console.error('loadMyJobs error:', err);
+        window.toast('⚠️ Could not load jobs — check Firestore rules.');
+    });
+}
+
+function renderMyJobs() {
+    var list = document.getElementById('myJobsList');
+    if (!myJobs.length) {
+        list.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><div class="title">No jobs posted yet</div><div class="sub">Click "+ Post a Job" to get started.</div></div>';
+        return;
+    }
+    var html = '';
+    myJobs.forEach(function (j) {
+        var typeTag = j.jobType  ? '<span class="tag tag-blue">' + j.jobType + '</span>' : '';
+        var modeTag = j.workMode ? '<span class="tag ' + (j.workMode === 'Remote' ? 'tag-green' : 'tag-gray') + '">' + j.workMode + '</span>' : '';
+        var urgTag  = j.isUrgent  ? '<span class="tag tag-red">🔥 Urgent</span>' : '';
+        var verTag  = j.isVerified ? '<span class="tag tag-yellow">👑 Verified</span>' : '';
+        var appCount = allApplications.filter(function(a){ return a.jobId === j.id; }).length;
+
+        html +=
+            '<div class="job-post-card">' +
+                '<div class="job-active-badge">● Active</div>' +
+                '<div class="job-post-info">' +
+                    '<div class="job-post-title">' + j.title + '</div>' +
+                    '<div class="job-post-meta">🏢 ' + (j.companyName || j.company || '—') + ' &nbsp;·&nbsp; 📍 ' + (j.location || '—') + ' &nbsp;·&nbsp; ₹ ' + (j.salary || 'N/A') + '</div>' +
+                    '<div class="job-post-tags" style="margin-top:8px;">' + typeTag + modeTag + urgTag + verTag + '</div>' +
+                    '<div style="font-size:0.78rem; color:var(--text-muted); font-weight:600; margin-top:8px;">👥 ' + appCount + ' applicant' + (appCount !== 1 ? 's' : '') + '</div>' +
+                '</div>' +
+                '<div class="job-post-actions">' +
+                    '<button class="btn-outline btn-sm" onclick="window.switchTab(\'applicants\', document.querySelectorAll(\'.nav-item\')[3]); setTimeout(function(){ document.getElementById(\'aJobFilter\').value=\'' + j.id + '\'; window.filterApplicants(); }, 200)">View Applicants</button>' +
+                    '<button class="btn-danger btn-sm" onclick="window.deleteJob(\'' + j.id + '\',\'' + (j.title || '').replace(/'/g,'') + '\')">Delete</button>' +
+                '</div>' +
+            '</div>';
+    });
+    list.innerHTML = html;
+}
+
+window.deleteJob = function (jobId, title) {
+    window.openModal('Delete Job?', 'Delete "' + title + '"? This cannot be undone.', function () {
+        db.collection('jobs').doc(jobId).delete().then(function () {
+            window.toast('🗑️ Job deleted.');
+        }).catch(function (err) {
+            console.error('deleteJob error:', err);
+            window.toast('⚠️ Could not delete job.');
+        });
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// LOAD APPLICATIONS
+// ═══════════════════════════════════════════════════════
+function loadApplications(uid) {
+    db.collection('applications').where('employerId', '==', uid).onSnapshot(function (snap) {
+        allApplications = [];
+        snap.forEach(function (doc) {
+            allApplications.push(Object.assign({ id: doc.id }, doc.data()));
+        });
+        updateAppStats();
+        renderMyJobs(); // refresh applicant counts on the jobs list
+        window.filterApplicants();
+        buildActivityFeed();
+    }, function (err) {
+        console.error('loadApplications error:', err);
+        window.toast('⚠️ Could not load applications — check Firestore rules.');
+    });
+}
+
+function updateAppStats() {
+    var total = 0, pending = 0, interview = 0, hired = 0, rejected = 0;
+    allApplications.forEach(function (a) {
+        var st = (a.status || 'applied').toLowerCase();
+        if (st !== 'withdrawn') {
+            total++;
+            if (st === 'applied' || st === 'pending') pending++;
+            if (st === 'interview') interview++;
+            if (st === 'hired')    hired++;
+            if (st === 'rejected') rejected++;
+        }
+    });
+    document.getElementById('appsBadge').innerText = total;
+    document.getElementById('d-apps').innerText    = total;
+    document.getElementById('d-interview').innerText = interview;
+    document.getElementById('d-hired').innerText   = hired;
+    document.getElementById('a-total').innerText    = total;
+    document.getElementById('a-pending').innerText  = pending;
+    document.getElementById('a-interview').innerText = interview;
+    document.getElementById('a-hired').innerText    = hired;
+    document.getElementById('a-rejected').innerText = rejected;
+}
+
+function populateJobFilter() {
+    var sel = document.getElementById('aJobFilter');
+    var current = sel.value;
+    // Clear all except "All Jobs"
+    while (sel.options.length > 1) sel.remove(1);
+    myJobs.forEach(function (j) {
+        var opt = document.createElement('option');
+        opt.value       = j.id;
+        opt.textContent = j.title;
+        sel.appendChild(opt);
+    });
+    if (current) sel.value = current;
+}
+
+// ── Filter & Render Applicants ──────────────────────────────────────────────
+window.filterApplicants = function () {
+    var search    = document.getElementById('aSearch').value.toLowerCase();
+    var statusF   = document.getElementById('aStatusFilter').value;
+    var jobF      = document.getElementById('aJobFilter').value;
+
+    var filtered = allApplications.filter(function (a) {
+        var name  = (a.seekerName  || '').toLowerCase();
+        var email = (a.seekerEmail || '').toLowerCase();
+        var title = (a.jobTitle    || '').toLowerCase();
+        var matchSearch = !search || name.includes(search) || email.includes(search) || title.includes(search);
+        var matchStatus = statusF === 'all' || (a.status || '') === statusF;
+        var matchJob    = jobF    === 'all' || a.jobId === jobF;
+        return matchSearch && matchStatus && matchJob;
+    });
+
+    renderApplicants(filtered);
+};
+
+window.resetApplicantFilters = function () {
+    document.getElementById('aSearch').value = '';
+    document.getElementById('aStatusFilter').value = 'all';
+    document.getElementById('aJobFilter').value = 'all';
+    window.filterApplicants();
+};
+
+function renderApplicants(list) {
+    var container = document.getElementById('applicantsList');
+    if (!list.length) {
+        container.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><div class="title">No applicants found</div><div class="sub">Try changing your filters, or wait for more applications to come in.</div></div>';
+        return;
+    }
+
+    var html = '';
+    list.forEach(function (a) {
+        var initials = (a.seekerName || 'U').split(' ').map(function (n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
+        var st       = a.status || 'Applied';
+        var stClass  = 'st-' + st.toLowerCase();
+
+        // Google Drive links from the seeker's user doc — fetched lazily on demand
+        var resumeBtn = a.resumeUrl
+            ? '<a href="' + a.resumeUrl + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none; display:inline-block;">📄 Resume</a>'
+            : '<button class="btn-outline btn-sm" onclick="window.fetchAndOpenDoc(\'' + a.seekerId + '\',\'resumeUrl\')" title="Fetch resume from seeker profile">📄 Resume</button>';
+
+        var certBtn = a.certUrl
+            ? '<a href="' + a.certUrl + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none; display:inline-block;">🏆 Certificate</a>'
+            : '<button class="btn-outline btn-sm" onclick="window.fetchAndOpenDoc(\'' + a.seekerId + '\',\'certUrl\')" title="Fetch certificate from seeker profile">🏆 Certificate</button>';
+
+        var isWithdrawn = st.toLowerCase() === 'withdrawn';
+
+        html +=
+            '<div class="applicant-card' + (isWithdrawn ? '" style="opacity:0.5;' : '') + '">' +
+                '<div class="applicant-avatar">' + initials + '</div>' +
+                '<div class="applicant-info">' +
+                    '<div class="applicant-name">' + (a.seekerName || 'Unknown Seeker') + '</div>' +
+                    '<div class="applicant-meta">📋 ' + (a.jobTitle || '—') + ' &nbsp;·&nbsp; ✉ ' + (a.seekerEmail || '—') + '</div>' +
+                    (a.seekerSkills ? '<div class="applicant-skills">🛠 ' + a.seekerSkills + '</div>' : '') +
+                    '<div style="margin-top:6px;"><span class="tag tag-' + statusTagColor(st) + '">' + st + '</span></div>' +
+                '</div>' +
+                '<div class="applicant-actions">' +
+                    resumeBtn +
+                    certBtn +
+                    (isWithdrawn
+                        ? '<span class="tag tag-gray">↩️ Withdrawn</span>'
+                        : '<select class="status-select ' + stClass + '" onchange="window.updateStatus(\'' + a.id + '\', this)" title="Update application status">' +
+                              buildStatusOptions(st) +
+                          '</select>'
+                    ) +
+                    (!isWithdrawn
+                        ? '<button class="btn-pri btn-sm" onclick="window.openChatFromApplicant(\'' + a.id + '\',\'' + (a.seekerName || 'Seeker').replace(/'/g,'') + '\',\'' + (a.jobTitle || 'Job').replace(/'/g,'') + '\',\'' + (a.seekerId || '') + '\')" title="Open conversation">💬 Chat</button>'
+                        : '') +
+                '</div>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function statusTagColor(st) {
+    var map = { Applied:'blue', Pending:'blue', Review:'yellow', Interview:'purple', Hired:'green', Rejected:'red', withdrawn:'gray' };
+    return map[st] || 'gray';
+}
+
+function buildStatusOptions(current) {
+    var opts = ['Applied', 'Review', 'Interview', 'Hired', 'Rejected'];
+    return opts.map(function (o) {
+        return '<option value="' + o + '"' + (o === current ? ' selected' : '') + '>' + o + '</option>';
+    }).join('');
+}
+
+// ─── Update Application Status in Firestore ────────────────────────────────
+// Matches the `status` field name and values used in the Seeker Console's
+// buildAppCard() function so the tracker syncs correctly on both sides.
+window.updateStatus = function (appId, selectEl) {
+    var newStatus = selectEl.value;
+    // Update colour class instantly for responsiveness
+    selectEl.className = 'status-select st-' + newStatus.toLowerCase();
+
+    db.collection('applications').doc(appId).update({ status: newStatus })
+        .then(function () {
+            window.toast('✅ Status updated to "' + newStatus + '"');
+        }).catch(function (err) {
+            console.error('updateStatus error:', err);
+            window.toast('⚠️ Could not update status. Check Firestore rules.');
+        });
+};
+
+// ─── Fetch resume / cert URL from seeker's user doc if not denormalised ────
+window.fetchAndOpenDoc = function (seekerId, field) {
+    if (!seekerId) { window.toast('⚠️ Seeker ID not found.'); return; }
+    db.collection('users').doc(seekerId).get().then(function (doc) {
+        if (doc.exists) {
+            var url = doc.data()[field];
+            if (url) {
+                window.open(url, '_blank', 'noopener');
+            } else {
+                window.toast('⚠️ Seeker hasn\'t uploaded this document yet.');
+            }
+        } else {
+            window.toast('⚠️ Seeker profile not found.');
+        }
+    }).catch(function (err) {
+        console.error('fetchAndOpenDoc error:', err);
+        window.toast('⚠️ Could not fetch document link.');
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// ACTIVITY FEED (Dashboard)
+// ═══════════════════════════════════════════════════════
+function buildActivityFeed() {
+    var feed = document.getElementById('activityFeed');
+    if (!allApplications.length) {
+        feed.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><div class="title">No activity yet</div><div class="sub">Post a job to start receiving applications.</div></div>';
+        return;
+    }
+    // Sort by time descending, show latest 10
+    var sorted = allApplications.slice().sort(function (a, b) { return (b.time || 0) - (a.time || 0); }).slice(0, 10);
+    var colors = { Applied:'#3b82f6', Pending:'#3b82f6', Review:'#f59e0b', Interview:'#8b5cf6', Hired:'#10b981', Rejected:'#ef4444', withdrawn:'#94a3b8' };
+    var html = '';
+    sorted.forEach(function (a) {
+        var st    = a.status || 'Applied';
+        var color = colors[st] || '#64748b';
+        var ts    = a.time ? new Date(a.time).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : 'Just now';
+        html +=
+            '<div class="activity-item">' +
+                '<div class="activity-dot" style="background:' + color + ';"></div>' +
+                '<div>' +
+                    '<div class="activity-text"><b>' + (a.seekerName || 'A seeker') + '</b> applied for <b>' + (a.jobTitle || 'a job') + '</b> — <span style="color:' + color + '; font-weight:800;">' + st + '</span></div>' +
+                    '<div class="activity-time">' + ts + '</div>' +
+                '</div>' +
+            '</div>';
+    });
+    feed.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// MESSAGING
+// ═══════════════════════════════════════════════════════
+// Chats live at applications/{appId}/chats/{msgId}
+// — same path used by the Seeker Console, so both sides read the same docs.
+
+function loadChats(uid) {
+    db.collection('applications').where('employerId', '==', uid).onSnapshot(function (snap) {
+        var list = document.getElementById('chatList');
+        list.innerHTML = '<div style="padding:0.75rem 1rem; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">Conversations</div>';
+
+        if (snap.empty) {
+            list.innerHTML += '<div style="padding:1rem; font-size:0.8rem; color:var(--text-muted); font-weight:600;">No conversations yet.</div>';
+            return;
+        }
+
+        snap.docs.forEach(function (doc) {
+            var a = doc.data();
+            var el = document.createElement('div');
+            el.className = 'list-item';
+            el.id = 'chatItem_' + doc.id;
+            el.innerHTML =
+                '<div style="font-weight:800; font-size:0.9rem; color:var(--text-main);">👤 ' + (a.seekerName || 'Seeker') + '</div>' +
+                '<div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-top:1px;">📋 ' + (a.jobTitle || 'Job') + '</div>' +
+                '<div style="font-size:0.7rem; font-weight:700; color:var(--secondary); margin-top:3px;">' + (a.status || 'Applied') + '</div>';
+
+            el.onclick = function () {
+                document.querySelectorAll('.list-item').forEach(function (li) { li.classList.remove('selected'); });
+                el.classList.add('selected');
+                window.openChat(doc.id, a.seekerName || 'Seeker', a.jobTitle || 'Job', a.seekerId, a.status);
+            };
+            list.appendChild(el);
+        });
+
+    }, function (err) {
+        console.error('loadChats error:', err);
+    });
+}
+
+window.openChat = function (appId, seekerName, jobTitle, seekerId, status) {
+    // Tear down previous listener
+    if (typeof chatUnsubscribe === 'function') { chatUnsubscribe(); chatUnsubscribe = null; }
+
+    currentAppId    = appId;
+    currentSeekerId = seekerId || null;
+
+    document.getElementById('noChat').style.display   = 'none';
+    document.getElementById('msgArea').style.display  = 'flex';
+    document.getElementById('chatHdr').style.display  = 'flex';
+    document.getElementById('inputBar').style.display = 'flex';
+    document.getElementById('meetControls').style.display = 'flex';
+    document.getElementById('meetInviteBox').style.display = 'none';
+
+    document.getElementById('activeSeekerName').innerText = seekerName;
+    document.getElementById('activeChatJob').innerText    = jobTitle + ' · ' + (status || 'Applied');
+
+    function formatTime(ts) {
+        if (!ts) return 'Just now';
+        if (typeof ts.toDate === 'function') return ts.toDate().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        if (ts instanceof Date) return ts.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        return 'Just now';
+    }
+
+    var colRef = db.collection('applications').doc(appId).collection('chats').orderBy('time');
+    chatUnsubscribe = colRef.onSnapshot(function (snap) {
+        var area = document.getElementById('msgArea');
+        area.innerHTML = '';
+        if (snap.empty) {
+            area.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; font-weight:600; padding:2rem;">No messages yet. Start the conversation! 👋</div>';
+            return;
+        }
+        snap.forEach(function (m) {
+            var d       = m.data();
+            var isMe    = d.senderId === auth.currentUser.uid;
+            var isPending = m.metadata && m.metadata.hasPendingWrites;
+            var timeStr = formatTime(d.time);
+            var timeStyle = isPending ? 'opacity:0.45; font-style:italic;' : 'opacity:0.65;';
+
+            // Read receipt ticks (mirrors Seeker Console logic)
+            var receiptHTML = '';
+            if (isMe) {
+                if (isPending) {
+                    receiptHTML = '<span style="font-size:0.65rem; opacity:0.5; margin-left:4px;">🕐</span>';
+                } else if (d.status === 'seen') {
+                    receiptHTML = '<span style="font-size:0.7rem; color:#93c5fd; margin-left:4px; font-weight:900;" title="Seen">✓✓</span>';
+                } else {
+                    receiptHTML = '<span style="font-size:0.7rem; opacity:0.55; margin-left:4px;" title="Sent">✓</span>';
+                }
+            }
+
+            var timeHTML =
+                '<div style="font-size:0.65rem; font-weight:600; margin-top:4px; display:flex; align-items:center; justify-content:flex-end; gap:2px; ' + timeStyle + '">' +
+                    timeStr + receiptHTML +
+                '</div>';
+
+            if (d.type === 'meet_invite') {
+                var link = d.meetUrl || d.meetLink || '';
+                area.innerHTML +=
+                    '<div class="msg-bubble" style="align-self:flex-end; background:var(--primary); color:white; border-radius:14px; border-bottom-right-radius:4px; max-width:80%; padding:1rem;">' +
+                        '<div style="font-weight:800; margin-bottom:6px;">🎥 Interview Invite Sent</div>' +
+                        '<div style="font-size:0.8rem; opacity:0.9; margin-bottom:6px;">' + (d.text || 'Interview invite sent.') + '</div>' +
+                        (link ? '<div style="font-size:0.72rem; opacity:0.75; word-break:break-all;">' + link + '</div>' : '') +
+                        '<div style="font-size:0.65rem; margin-top:8px; opacity:0.6; ' + timeStyle + '">' + timeStr + '</div>' +
+                    '</div>';
+            } else {
+                var safeText = (d.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                area.innerHTML +=
+                    '<div class="msg-bubble ' + (isMe ? 'msg-me' : 'msg-them') + '">' +
+                        safeText + timeHTML +
+                    '</div>';
+            }
+        });
+        area.scrollTop = area.scrollHeight;
+
+        // Mark incoming (seeker's) messages as seen
+        if (snap.metadata && !snap.metadata.hasPendingWrites && !snap.metadata.fromCache) {
+            var batch = db.batch();
+            var hasUp = false;
+            snap.forEach(function (m) {
+                var d = m.data();
+                if (d.senderId !== auth.currentUser.uid && d.status === 'sent') {
+                    batch.update(colRef.doc(m.id), { status: 'seen' });
+                    hasUp = true;
+                }
+            });
+            if (hasUp) batch.commit().catch(function (e) { console.warn('read receipt batch:', e); });
+        }
+
+    }, function (err) {
+        console.error('Chat subscription error:', err);
+        document.getElementById('msgArea').innerHTML =
+            '<div style="text-align:center; color:var(--err); font-size:0.8rem; font-weight:600; padding:2rem;">⚠️ Could not load messages. Check your Firestore rules.</div>';
+    });
+};
+
+window.sendMsg = function () {
+    var input = document.getElementById('mText');
+    var text  = input.value.trim();
+    if (!text)         return;
+    if (!currentAppId) { window.toast('⚠️ No conversation selected.'); return; }
+
+    input.value = '';
+
+    db.collection('applications').doc(currentAppId).collection('chats').add({
+        text:       text,
+        senderId:   auth.currentUser.uid,
+        senderName: auth.currentUser.displayName || auth.currentUser.email || 'Employer',
+        receiverId: currentSeekerId || '',
+        appId:      currentAppId,
+        status:     'sent',
+        time:       firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(function (err) {
+        console.error('sendMsg error:', err);
+        input.value = text;
+        window.toast('⚠️ Message failed — check Firestore rules.');
+    });
+};
+
+// ── Open chat directly from Applicants tab ──────────────────────────────────
+window.openChatFromApplicant = function (appId, seekerName, jobTitle, seekerId) {
+    window.switchTab('messages', document.querySelectorAll('.nav-item')[4]);
+    setTimeout(function () {
+        // Mark the sidebar list item as selected if it exists
+        var el = document.getElementById('chatItem_' + appId);
+        if (el) {
+            document.querySelectorAll('.list-item').forEach(function (li) { li.classList.remove('selected'); });
+            el.classList.add('selected');
+        }
+        window.openChat(appId, seekerName, jobTitle, seekerId, '');
+    }, 150);
+};
+
+// ── Google Meet Invite ──────────────────────────────────────────────────────
+window.showMeetInviteBox = function () {
+    var box = document.getElementById('meetInviteBox');
+    box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+    if (box.style.display === 'flex') {
+        document.getElementById('meetLinkInput').focus();
+    }
+};
+
+window.sendMeetInvite = function () {
+    var link = document.getElementById('meetLinkInput').value.trim();
+    var msg  = document.getElementById('meetMsgInput').value.trim() || 'You have been invited to a Google Meet interview. Please join at the link below.';
+
+    if (!link || !link.startsWith('https://')) {
+        window.toast('⚠️ Please paste a valid Google Meet link (starts with https://).');
+        return;
+    }
+    if (!currentAppId) {
+        window.toast('⚠️ No conversation selected.');
+        return;
+    }
+
+    // 1. Write the meet_invite message to the chat sub-collection
+    var chatMsg = {
+        type:       'meet_invite',
+        meetUrl:    link,
+        meetLink:   link,
+        text:       msg,
+        senderId:   auth.currentUser.uid,
+        senderName: auth.currentUser.displayName || auth.currentUser.email || 'Employer',
+        receiverId: currentSeekerId || '',
+        appId:      currentAppId,
+        status:     'sent',
+        time:       firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    // 2. Also update the application doc with the meetUrl and bump status to 'Interview'
+    //    so the Seeker Console's tracker highlights the Interview step and
+    //    the "Join Interview" button appears in the seeker's Applications tab.
+    var appUpdate = {
+        meetUrl: link,
+        status:  'Interview'   // matches the seeker-side tracker value
+    };
+
+    var batch = db.batch();
+    var chatRef = db.collection('applications').doc(currentAppId).collection('chats').doc();
+    var appRef  = db.collection('applications').doc(currentAppId);
+    batch.set(chatRef, chatMsg);
+    batch.update(appRef, appUpdate);
+
+    batch.commit().then(function () {
+        window.toast('🎥 Interview invite sent!');
+        document.getElementById('meetLinkInput').value = '';
+        document.getElementById('meetMsgInput').value  = '';
+        document.getElementById('meetInviteBox').style.display = 'none';
+    }).catch(function (err) {
+        console.error('sendMeetInvite error:', err);
+        window.toast('⚠️ Could not send invite — check Firestore rules.');
+    });
+};
+</script>
+</body>
+</html>
