@@ -6,6 +6,8 @@
     <title>Seeker Console | Kamayega Bharat</title>
     <meta name="description" content="User Profile Dashboard for Kamayega Bharat. Update your details and track your job applications.">
     <meta name="robots" content="noindex, nofollow">
+    <!-- Favicon — consistent path used here and in firebase-messaging-sw.js -->
+    <link rel="icon" type="image/png" href="/favicon.png">
 
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -643,7 +645,7 @@ var allJobs = [], userSkills = [], userData = {};
 // ── FCM VAPID key — get this from Firebase Console →
 //    Project Settings → Cloud Messaging → Web Push certificates → Key pair
 // Replace the placeholder below with your actual VAPID key.
-var FCM_VAPID_KEY = 'BMUZXGCttN0MKdOP1qhQw8mHR07ym5LihceUUTc5qYbXvx3VvJQKOpS8vkI5UApgOKQVbrOo9DeyPg7ChNkpzwk';
+var FCM_VAPID_KEY = 'YOUR_VAPID_KEY_HERE';
 
 // ═══════════════════════════════════════════════════════
 // INIT
