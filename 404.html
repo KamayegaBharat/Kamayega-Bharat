@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found — Kamayega Bharat</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%231A56DB'/%3E%3Ctext x='50%25' y='54%25' font-family='Arial, Helvetica, sans-serif' font-weight='900' font-size='310' fill='%23FFFFFF' letter-spacing='-15' dominant-baseline='middle' text-anchor='middle'%3EKB%3C/text%3E%3C/svg%3E" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: min-height 100vh;
+            /* Using a beautiful royal blue gradient layout to match your login page backdrop */
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #1A56DB 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(to bottom, #FFFFFF, #93C5FD);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #F3F4F6;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #9CA3AF;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1A56DB;
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(26, 86, 219, 0.4);
+            width: 100%;
+        }
+
+        .home-btn:hover {
+            background-color: #1D4ED8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 86, 219, 0.6);
+        }
+
+        .home-btn:active {
+            transform: translateY(0);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Subtle ambient background glow shapes */
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: #1A56DB;
+            filter: blur(150px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        .glow-1 { top: 10%; left: 10%; }
+        .glow-2 { bottom: 10%; right: 10%; }
+    </style>
+</head>
+<body>
+
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Kuch Gadbad Ho Gayi!</h1>
+        <p class="error-message">
+            The page you are looking for doesn't exist or has been moved. Let's get you back on track to finding your next opportunity.
+        </p>
+        <a href="/" class="home-btn">🏠 Go Back to Dashboard</a>
+    </div>
+
+</body>
+</html>
