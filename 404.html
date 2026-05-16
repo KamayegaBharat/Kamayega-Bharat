@@ -3,132 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found — Kamayega Bharat</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%231A56DB'/%3E%3Ctext x='50%25' y='54%25' font-family='Arial, Helvetica, sans-serif' font-weight='900' font-size='310' fill='%23FFFFFF' letter-spacing='-15' dominant-baseline='middle' text-anchor='middle'%3EKB%3C/text%3E%3C/svg%3E" />
+    <title>Page Not Found - Kamayega Bharat</title> 
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%231e40af'/%3E%3Ctext x='50%25' y='54%25' font-family='Arial, Helvetica, sans-serif' font-weight='900' font-size='310' fill='%23FFFFFF' letter-spacing='-15' dominant-baseline='middle' text-anchor='middle'%3EKB%3C/text%3E%3C/svg%3E" />
+    <meta name="apple-mobile-web-app-title" content="Kamayega Bharat">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
         }
 
-        body {
-            background: min-height 100vh;
-            /* Using a beautiful royal blue gradient layout to match your login page backdrop */
-            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #1A56DB 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #FFFFFF;
-            padding: 20px;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: white; color: var(--text-main); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
 
-        .error-container {
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 40px 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            animation: fadeInUp 0.6s ease-out;
-        }
+        /* Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 5%; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; background: white; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.03em; }
+        .login-btn { background: var(--primary); color: white; padding: 0.7rem 1.6rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: 0.3s; }
+        .login-btn:hover { background: #1e3a8a; }
 
-        .error-code {
-            font-size: 120px;
-            font-weight: 900;
-            line-height: 1;
-            background: linear-gradient(to bottom, #FFFFFF, #93C5FD);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            letter-spacing: -2px;
-        }
+        /* Error Core Content Area */
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 80px 5%; background: var(--bg-light); }
+        .error-card { text-align: center; max-width: 550px; width: 100%; background: white; border: 1px solid #e2e8f0; padding: 60px 40px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        
+        .error-code { font-size: 6rem; font-weight: 800; color: var(--primary); line-height: 1; margin: 0 0 1rem; letter-spacing: -0.04em; }
+        h1 { font-size: 2rem; font-weight: 800; margin: 0 0 1rem; letter-spacing: -0.03em; color: var(--text-main); }
+        p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; }
 
-        .error-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #F3F4F6;
-        }
+        /* Control Button */
+        .btn { display: inline-block; padding: 1.1rem 2.5rem; border-radius: 12px; font-weight: 700; text-decoration: none; text-align: center; transition: 0.2s; font-size: 1.1rem; width: 100%; background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2); }
+        .btn:hover { background: #1e3a8a; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(30, 64, 175, 0.3); }
 
-        .error-message {
-            font-size: 16px;
-            color: #9CA3AF;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
+        /* Footer */
+        footer { background: white; padding: 80px 5% 40px; border-top: 1px solid #e2e8f0; text-align: center; }
+        .footer-nav { margin-bottom: 2.5rem; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .footer-nav a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 1rem; }
+        .footer-nav a:hover { color: var(--primary); }
+        .contact-box { background: var(--bg-light); padding: 1.5rem; border-radius: 12px; display: inline-block; border: 1px solid #e2e8f0; }
+        .contact-box a { color: var(--primary); font-weight: 700; text-decoration: none; }
 
-        .home-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #1A56DB;
-            color: #FFFFFF;
-            text-decoration: none;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 14px rgba(26, 86, 219, 0.4);
-            width: 100%;
+        @media (max-width: 768px) {
+            .footer-nav { flex-direction: column; gap: 15px; }
+            .error-card { padding: 40px 20px; }
         }
-
-        .home-btn:hover {
-            background-color: #1D4ED8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26, 86, 219, 0.6);
-        }
-
-        .home-btn:active {
-            transform: translateY(0);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Subtle ambient background glow shapes */
-        .glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: #1A56DB;
-            filter: blur(150px);
-            border-radius: 50%;
-            z-index: -1;
-            opacity: 0.5;
-        }
-        .glow-1 { top: 10%; left: 10%; }
-        .glow-2 { bottom: 10%; right: 10%; }
     </style>
 </head>
 <body>
 
-    <div class="glow glow-1"></div>
-    <div class="glow glow-2"></div>
+    <nav>
+        <a href="index.html" class="logo">Kamayega Bharat</a>
+        <a href="login.html" class="login-btn">Login / Signup</a>
+    </nav>
 
-    <div class="error-container">
-        <div class="error-code">404</div>
-        <h1 class="error-title">Kuch Gadbad Ho Gayi!</h1>
-        <p class="error-message">
-            The page you are looking for doesn't exist or has been moved. Let's get you back on track to finding your next opportunity.
+    <main>
+        <div class="error-card">
+            <div class="error-code">404</div>
+            <h1>Page Not Found</h1>
+            <p>The page you are looking for doesn't exist or has been moved. Let's return to the interface dashboard to continue your process.</p>
+            <a href="index.html" class="btn">Return to Home Dashboard</a>
+        </div>
+    </main>
+
+    <footer>
+        <nav class="footer-nav">
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms</a>
+            <a href="mailto:kamayegabharat@gmail.com">Contact Support</a>
+        </nav>
+
+        <div class="contact-box">
+            24/7 Support: <a href="mailto:kamayegabharat@gmail.com">kamayegabharat@gmail.com</a>
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.85rem; color: var(--text-muted);">
+            &copy; 2026 Kamayega Bharat. Developed with integrity by Sourav Bagchi.
         </p>
-        <a href="/" class="home-btn">🏠 Go Back to Dashboard</a>
-    </div>
+    </footer>
 
 </body>
 </html>
