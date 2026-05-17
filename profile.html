@@ -14,8 +14,8 @@
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
     <!-- html2pdf — client-side PDF generation, no Firebase storage needed -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-            integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnA=="
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
             crossorigin="anonymous"
             referrerpolicy="no-referrer"></script>
 
@@ -823,6 +823,22 @@ window.triggerLogout = function() {
 // ═══════════════════════════════════════════════════════
 // USER DATA
 // ═══════════════════════════════════════════════════════
+// Strictly validates that a URL's hostname is exactly 'drive.google.com'.
+// Using new URL() prevents bypasses like:
+//   "https://evil.com/?drive.google.com" — passes .includes(), fails here
+//   "https://drive.google.com.evil.com"  — passes .includes(), fails here
+function isGoogleDriveUrl(raw) {
+    if (!raw || !raw.trim()) return true;
+    try {
+        var parsed = new URL(raw.trim());
+        return parsed.protocol === 'https:' &&
+               (parsed.hostname === 'drive.google.com' ||
+                parsed.hostname.endsWith('.drive.google.com'));
+    } catch (_) {
+        return false;
+    }
+}
+
 function loadUserData(uid, cb) {
     // Fix 4: wrap the Firestore read; if it fails (permission denied, offline)
     // we call cb() anyway so the rest of the dashboard still boots.
@@ -850,25 +866,6 @@ function loadUserData(uid, cb) {
         window.toast('⚠️ Could not load profile — check Firestore rules.');
         if (cb) cb(); // still allow rest of dashboard to load
     });
-}
-
-// Strictly validates that a URL's hostname is exactly 'drive.google.com'
-// or a subdomain of it. Using new URL() prevents bypasses like:
-//   "https://evil.com/?drive.google.com" — passes .includes(), fails here
-//   "https://drive.google.com.evil.com"  — passes .includes(), fails here
-function isGoogleDriveUrl(raw) {
-    if (!raw || !raw.trim()) return true; // empty = field not filled, allowed
-    try {
-        var parsed = new URL(raw.trim());
-        // Must be HTTPS and hostname must be exactly 'drive.google.com'
-        // or end with '.drive.google.com' (covers future subdomains).
-        return parsed.protocol === 'https:' &&
-               (parsed.hostname === 'drive.google.com' ||
-                parsed.hostname.endsWith('.drive.google.com'));
-    } catch (_) {
-        // new URL() throws on malformed URLs — treat as invalid
-        return false;
-    }
 }
 
 window.savePortfolio = function() {
