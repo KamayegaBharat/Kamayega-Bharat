@@ -730,13 +730,21 @@ function renderVerificationUI(uid) {
         return;
     }
 
-    // ── Case 3: Not yet submitted ────────────────────────────────────
+// ── Case 3: Not yet submitted ────────────────────────────────────
     section.innerHTML =
         '<div>' +
-            '<p style="font-size:.875rem;color:var(--text-muted);font-weight:600;margin-bottom:1rem;">' +
-                'Your account is currently <strong>Unverified</strong>. Submit your business details ' +
-                'for admin review to receive the Verified Employer badge.' +
+            '<p style="font-size:.875rem;color:var(--text-muted);font-weight:600;margin-bottom:1.25rem;">' +
+                'Your account is currently <strong>Unverified</strong>. Fill in your business details ' +
+                'below and submit for admin review to receive the Verified Employer badge.' +
             '</p>' +
+            '<div class="form-group" style="max-width:440px;">' +
+                '<label>Official Business Name</label>' +
+                '<input type="text" id="verif_businessName" placeholder="e.g. Sharma Constructions Pvt. Ltd." style="margin-bottom:.75rem;">' +
+            '</div>' +
+            '<div class="form-group" style="max-width:440px;">' +
+                '<label>Business Registration Number / GSTIN</label>' +
+                '<input type="text" id="verif_regNumber" placeholder="e.g. 22AAAAA0000A1Z5" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:1.25rem;" oninput="this.value=this.value.toUpperCase()">' +
+            '</div>' +
             '<button class="btn-pri" onclick="window.submitVerificationRequest(\'' + uid + '\')">' +
                 '🚀 Submit Details for Verification' +
             '</button>' +
@@ -751,21 +759,54 @@ function renderVerificationUI(uid) {
 */
 window.submitVerificationRequest = function (uid) {
     if (!uid) { window.toast('⚠️ User not loaded. Please refresh.'); return; }
+
+    // Read the two plain-text fields added by renderVerificationUI Case 3.
+    var businessNameEl  = document.getElementById('verif_businessName');
+    var regNumberEl     = document.getElementById('verif_regNumber');
+    var businessName    = (businessNameEl  ? businessNameEl.value.trim()  : '');
+    var registrationNum = (regNumberEl     ? regNumberEl.value.trim()     : '');
+
+    if (!businessName) {
+        window.toast('⚠️ Please enter your Official Business Name.');
+        if (businessNameEl) businessNameEl.focus();
+        return;
+    }
+    if (!registrationNum) {
+        window.toast('⚠️ Please enter your Business Registration Number / GSTIN.');
+        if (regNumberEl) regNumberEl.focus();
+        return;
+    }
+
+    // Bundle the submitted details into a single nested object so they
+    // stay together in Firestore and are easy to read in the admin panel.
+    var verificationDetails = {
+        businessName:       businessName,
+        registrationNumber: registrationNum
+    };
+
     var batch = db.batch();
+
+    // Update the employer's own user document.
     batch.update(db.collection('users').doc(uid), {
         verificationStatus:      'pending',
+        verificationDetails:     verificationDetails,
         verificationRequestedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // Write the admin-facing request document with all details inline.
     batch.set(db.collection('verification_requests').doc(uid), {
-        employerId:    uid,
-        employerEmail: (auth.currentUser && auth.currentUser.email) || '',
-        companyName:   employerDoc.companyName || employerDoc.fullName || '',
-        requestedAt:   firebase.firestore.FieldValue.serverTimestamp(),
-        status:        'pending'
+        employerId:          uid,
+        employerEmail:       (auth.currentUser && auth.currentUser.email) || '',
+        companyName:         employerDoc.companyName || employerDoc.fullName || '',
+        verificationDetails: verificationDetails,
+        requestedAt:         firebase.firestore.FieldValue.serverTimestamp(),
+        status:              'pending'
     });
+
     batch.commit()
         .then(function () {
-            employerDoc.verificationStatus = 'pending';
+            employerDoc.verificationStatus  = 'pending';
+            employerDoc.verificationDetails = verificationDetails;
             renderVerificationUI(uid);
             window.toast('✅ Verification request submitted! Admin will review soon.');
         })
