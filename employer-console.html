@@ -1072,49 +1072,156 @@ function renderApplicants(list) {
         container.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><div class="title">No applicants found</div><div class="sub">Try changing your filters, or wait for more applications.</div></div>';
         return;
     }
+
+    // Render skeleton cards immediately so the layout doesn't jump,
+    // then enrich each card with the full seeker profile from /users/{seekerId}.
     var buf = [];
     list.forEach(function (a) {
         if (!a) return;
-        var name     = a.seekerName || 'Unknown Seeker';
-        // FIX 4: safe initials — guard against empty name parts
+        // Use the denormalised name already on the application as the
+        // initial display value — it is replaced once the profile loads.
+        var name     = a.seekerName || 'Loading…';
         var initials = name.split(' ')
             .map(function (n) { return (n && n[0]) ? n[0].toUpperCase() : ''; })
             .join('').substring(0, 2) || 'U';
-        var st   = a.status || 'Applied';
-        var stCls= 'st-' + st.toLowerCase();
-
-        // FIX 2: Resume button — open stored URL directly if available;
-        //        otherwise call the fixed fetchAndOpenDoc (see below)
-        var resumeBtn = a.resumeUrl
-            ? '<a href="' + esc(a.resumeUrl) + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none;display:inline-block;">📄 Resume</a>'
-            : '<button class="btn-outline btn-sm" onclick="window.fetchAndOpenDoc(\'' + esc(a.seekerId || '') + '\',\'resumeUrl\',this)">📄 Resume</button>';
-
-        var certBtn = a.certUrl
-            ? '<a href="' + esc(a.certUrl) + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none;display:inline-block;">🏆 Certificate</a>'
-            : '<button class="btn-outline btn-sm" onclick="window.fetchAndOpenDoc(\'' + esc(a.seekerId || '') + '\',\'certUrl\',this)">🏆 Certificate</button>';
+        var st    = a.status || 'Applied';
+        var stCls = 'st-' + st.toLowerCase();
 
         buf.push(
-            '<div class="applicant-card">' +
-                '<div class="applicant-avatar">' + esc(initials) + '</div>' +
-                '<div class="applicant-info">' +
+            '<div class="applicant-card" id="appCard_' + a.id + '">' +
+                '<div class="applicant-avatar" id="appAvatar_' + a.id + '">' + esc(initials) + '</div>' +
+                '<div class="applicant-info" id="appInfo_' + a.id + '">' +
                     '<div class="applicant-name">' + esc(name) + '</div>' +
                     '<div class="applicant-meta">📋 ' + esc(a.jobTitle || '—') + ' · ✉ ' + esc(a.seekerEmail || '—') + '</div>' +
-                    (a.seekerSkills ? '<div class="applicant-skills">🛠 ' + esc(a.seekerSkills) + '</div>' : '') +
+                    '<div style="margin-top:4px;font-size:.78rem;color:var(--text-muted);font-weight:600;">⏳ Loading full profile…</div>' +
                     '<div style="margin-top:6px;"><span class="tag tag-' + statusTagColor(st) + '">' + esc(st) + '</span></div>' +
                 '</div>' +
-                '<div class="applicant-actions">' +
-                    resumeBtn + certBtn +
+                '<div class="applicant-actions" id="appActions_' + a.id + '">' +
                     '<select class="status-select ' + stCls + '" onchange="window.updateStatus(\'' + a.id + '\',this)" title="Update status">' +
                         buildStatusOptions(st) +
                     '</select>' +
-                    '<button class="btn-pri btn-sm" onclick="window.openChatFromApplicant(\'' + a.id + '\',\'' + esc(name).replace(/'/g,'') + '\',\'' + esc(a.jobTitle || 'Job').replace(/'/g,'') + '\',\'' + (a.seekerId || '') + '\')" title="Open conversation">💬 Chat</button>' +
+                    '<button class="btn-pri btn-sm" onclick="window.openChatFromApplicant(\'' + a.id + '\',\'' + esc(a.seekerName || 'Seeker').replace(/'/g,'') + '\',\'' + esc(a.jobTitle || 'Job').replace(/'/g,'') + '\',\'' + (a.seekerId || '') + '\')" title="Open conversation">💬 Chat</button>' +
                 '</div>' +
             '</div>'
         );
     });
     container.innerHTML = buf.join('');
+
+    // Now enrich each card by fetching the seeker's full /users profile.
+    list.forEach(function (a) {
+        if (!a || !a.seekerId) {
+            // No seekerId on the application doc — fill in what we have and stop.
+            enrichApplicantCard(a, null);
+            return;
+        }
+        db.collection('users').doc(a.seekerId).get()
+            .then(function (doc) {
+                var seekerData = (doc && doc.exists) ? (doc.data() || {}) : null;
+                enrichApplicantCard(a, seekerData);
+            })
+            .catch(function (err) {
+                console.error('[renderApplicants] profile fetch uid=' + a.seekerId, err);
+                // Still render the card with whatever the application doc contains.
+                enrichApplicantCard(a, null);
+            });
+    });
 }
 
+/*
+ * enrichApplicantCard
+ * --------------------
+ * Fills a previously-rendered skeleton card with the full seeker profile.
+ *
+ * Field-name mapping (adjust these keys to match YOUR seeker registration schema):
+ *   fullName    — primary display name  (fallback: name → seekerName → 'Name Not Provided')
+ *   shortBio    — one-line about-me     (fallback: bio → about → '')
+ *   currentCity — location              (fallback: city → location → '')
+ *   experience  — years / level string  (fallback: exp → experienceYears → '')
+ *   skills      — array OR comma string (both handled safely)
+ *   resumeUrl   — Google Drive PDF link (fallback: from application doc)
+ *   certUrl     — certificate link      (fallback: from application doc)
+ */
+function enrichApplicantCard(a, seekerData) {
+    var sd = seekerData || {};
+
+    // ── Name: try every likely key your registration form may have used ──
+    var name = sd.fullName
+            || sd.name
+            || sd.displayName
+            || a.seekerName
+            || 'Name Not Provided';
+
+    // ── Initials ──
+    var initials = name.split(' ')
+        .map(function (n) { return (n && n[0]) ? n[0].toUpperCase() : ''; })
+        .join('').substring(0, 2) || 'U';
+
+    // ── Skills: array or comma-string — both rendered safely ──
+    var rawSkills = sd.skills || sd.requiredSkills || a.seekerSkills || '';
+    var skillsStr = '';
+    if (Array.isArray(rawSkills)) {
+        skillsStr = rawSkills.filter(Boolean).join(', ');
+    } else if (typeof rawSkills === 'string') {
+        skillsStr = rawSkills.trim();
+    }
+
+    // ── Other profile fields — note every fallback chain clearly ──
+    var bio      = sd.shortBio    || sd.bio        || sd.about       || '';
+    var city     = sd.currentCity || sd.city       || sd.location    || a.seekerCity || '';
+    var exp      = sd.experience  || sd.exp        || sd.experienceYears || '';
+    var email    = sd.email       || a.seekerEmail || '';
+
+    // ── Document URLs: prefer profile doc, fall back to application doc ──
+    var resumeUrl = sd.resumeUrl || sd.resume || a.resumeUrl || '';
+    var certUrl   = sd.certUrl   || sd.certificateUrl || a.certUrl || '';
+
+    // ── Status ──
+    var st    = a.status || 'Applied';
+    var stCls = 'st-' + st.toLowerCase();
+
+    // ── Build the enriched info block ──
+    var metaLine = '📋 ' + esc(a.jobTitle || '—') + ' · ✉ ' + esc(email || '—');
+    if (city) metaLine += ' · 📍 ' + esc(city);
+    if (exp)  metaLine += ' · 🏅 ' + esc(exp);
+
+    var infoHTML =
+        '<div class="applicant-name">' + esc(name) + '</div>' +
+        '<div class="applicant-meta">' + metaLine + '</div>' +
+        (skillsStr
+            ? '<div class="applicant-skills" style="margin-top:4px;">🛠 ' + esc(skillsStr) + '</div>'
+            : '<div style="margin-top:4px;font-size:.75rem;color:var(--text-muted);font-weight:600;">🛠 Skills: Not provided</div>'
+        ) +
+        (bio
+            ? '<div style="margin-top:5px;font-size:.76rem;color:var(--text-muted);font-weight:600;font-style:italic;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">💬 ' + esc(bio) + '</div>'
+            : ''
+        ) +
+        '<div style="margin-top:6px;"><span class="tag tag-' + statusTagColor(st) + '">' + esc(st) + '</span></div>';
+
+    // ── Build the enriched actions block ──
+    var resumeBtn = resumeUrl
+        ? '<a href="' + esc(resumeUrl) + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none;display:inline-block;">📄 Resume</a>'
+        : '<button class="btn-outline btn-sm" style="opacity:.5;cursor:not-allowed;" disabled title="No resume uploaded">📄 No Resume</button>';
+
+    var certBtn = certUrl
+        ? '<a href="' + esc(certUrl) + '" target="_blank" rel="noopener" class="btn-outline btn-sm" style="text-decoration:none;display:inline-block;">🏆 Certificate</a>'
+        : '<button class="btn-outline btn-sm" style="opacity:.5;cursor:not-allowed;" disabled title="No certificate uploaded">🏆 No Cert</button>';
+
+    var actionsHTML =
+        resumeBtn + certBtn +
+        '<select class="status-select ' + stCls + '" onchange="window.updateStatus(\'' + a.id + '\',this)" title="Update status">' +
+            buildStatusOptions(st) +
+        '</select>' +
+        '<button class="btn-pri btn-sm" onclick="window.openChatFromApplicant(\'' + a.id + '\',\'' + esc(name).replace(/'/g,'') + '\',\'' + esc(a.jobTitle || 'Job').replace(/'/g,'') + '\',\'' + (a.seekerId || '') + '\')" title="Open conversation">💬 Chat</button>';
+
+    // ── Inject into the already-rendered skeleton card ──
+    var avatarEl  = document.getElementById('appAvatar_' + a.id);
+    var infoEl    = document.getElementById('appInfo_'   + a.id);
+    var actionsEl = document.getElementById('appActions_' + a.id);
+
+    if (avatarEl)  avatarEl.innerText  = initials;
+    if (infoEl)    infoEl.innerHTML    = infoHTML;
+    if (actionsEl) actionsEl.innerHTML = actionsHTML;
+}
 function statusTagColor(st) {
     return ({ Applied:'blue', Pending:'blue', Review:'yellow', Interview:'purple', Hired:'green', Rejected:'red' })[st] || 'gray';
 }
