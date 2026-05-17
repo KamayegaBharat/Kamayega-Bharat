@@ -851,6 +851,16 @@ function clearSkillTags() { skillTags = []; renderSkillTags(); }
           never self-assigned by the employer.
    ═══════════════════════════════════════════════════════ */
 window.postJob = function () {
+    // Guard: auth.currentUser is asynchronous — it can be null on slow
+    // connections or immediately after a page reload even if the user is
+    // logged in. If it's null the employerId field will be undefined,
+    // which causes the Firestore rule check to fail with PERMISSION_DENIED.
+    var currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.uid) {
+        window.toast('⚠️ Session not ready — please wait a moment and try again.');
+        return;
+    }
+
     var title   = (document.getElementById('jTitle').value   || '').trim();
     var company = (document.getElementById('jCompany').value || '').trim();
     var loc     = (document.getElementById('jLocation').value|| '').trim();
@@ -863,7 +873,7 @@ window.postJob = function () {
     var pending = (document.getElementById('skillTagInput').value || '').trim();
     if (pending) { addSkillTag(pending); document.getElementById('skillTagInput').value = ''; }
 
-    db.collection('jobs').add({
+db.collection('jobs').add({
         title:          title,
         companyName:    company,
         company:        company,
@@ -877,9 +887,10 @@ window.postJob = function () {
         skills:         skillTags.join(', '),
         requiredSkills: skillTags.slice(),
         isUrgent:       !!(document.getElementById('jUrgent') && document.getElementById('jUrgent').checked),
-        // FIX 3: backend-only field — propagated from the employer's verified status, never self-set
         isVerified:     employerDoc.isVerified === true,
-        employerId:     auth.currentUser.uid,
+        // Use the pre-checked currentUser variable — never read auth.currentUser
+        // inline inside a Firestore write because it can race to null.
+        employerId:     currentUser.uid,
         postedAt:       firebase.firestore.FieldValue.serverTimestamp(),
         status:         'active'
     }).then(function () {
