@@ -7,6 +7,7 @@
     <meta name="description" content="Employer Dashboard for Kamayega Bharat. Post jobs, manage applicants, and hire talent.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
+<link rel="manifest" href="manifest.json">
 
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -372,10 +373,13 @@
                     permanently removed. isVerified is a backend-only field.
                     Only the "🔥 Urgent" flag (a legitimate employer tool) remains.
                 -->
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:.875rem;color:var(--text-main);">
-                        <input type="checkbox" id="jUrgent" style="width:auto;margin:0;padding:0;"> 🔥 Mark as Urgent
-                    </label>
+             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <label id="jUrgentLabel" style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:.875rem;color:var(--text-main);">
+                            <input type="checkbox" id="jUrgent" style="width:auto;margin:0;padding:0;"> 🔥 Mark as Urgent
+                        </label>
+                        <span id="urgentLockedBadge" style="display:none;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.02em;">🔒 Only available for verified employers</span>
+                    </div>
                     <button class="btn-pri" onclick="window.postJob()">🚀 Post Job Now</button>
                 </div>
             </div>
@@ -437,7 +441,8 @@
                     <div id="meetInviteBox">
                         <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:4px;">🎥 Send Google Meet Interview Invite</div>
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            <input type="url" id="meetLinkInput" placeholder="https://meet.google.com/…" style="margin:0;flex:1;min-width:200px;">
+                            <input type="url" id="meetLinkInput" placeholder="https://meet.google.com/…" style="margin:0;flex:1;min-width:200px;">                             
+                            <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>
                             <input type="text" id="meetMsgInput" placeholder="Optional note to candidate" style="margin:0;flex:1;min-width:160px;">
                             <button class="btn-green btn-sm" onclick="window.sendMeetInvite()" style="white-space:nowrap;">Send Invite</button>
                             <button onclick="document.getElementById('meetInviteBox').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:.5;" title="Cancel">✕</button>
@@ -451,9 +456,20 @@
             </div>
         </div>
 
-        <!-- ACCOUNT & VERIFICATION TAB -->
+       <!-- ACCOUNT & VERIFICATION TAB -->
         <div id="account" class="tab-content">
             <div class="section-hdr"><h2>⚙️ Account &amp; Verification</h2></div>
+            <div class="card">
+                <div class="card-title">🔖 Verify Selection Letter Reference</div>
+                <p style="font-size:.875rem;color:var(--text-muted);font-weight:600;margin-bottom:1.25rem;line-height:1.7;">
+                    Enter a reference number (e.g. <code style="background:var(--bg-light);padding:2px 7px;border-radius:6px;font-size:.8rem;">KB-MP9DS8IH</code>) from a Kamayega Bharat selection letter to instantly verify its authenticity.
+                </p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+                    <input type="text" id="verifyRefInput" placeholder="e.g. KB-MP9DS8IH" style="margin:0;flex:1;min-width:200px;max-width:340px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;" oninput="this.value=this.value.toUpperCase()">
+                    <button class="btn-pri" onclick="window.verifySelectionRef()">🔍 Verify</button>
+                </div>
+                <div id="verifyRefResult"></div>
+            </div>
             <div class="card">
                 <div class="card-title">🏅 Employer Verification</div>
                 <p style="font-size:.875rem;color:var(--text-muted);font-weight:600;margin-bottom:1.5rem;line-height:1.7;">
@@ -657,15 +673,30 @@ function loadEmployerProfile(uid, cb) {
         .then(function (doc) {
             // FIX 4: safe existence check before .data()
             employerDoc = (doc && doc.exists) ? (doc.data() || {}) : {};
-            renderVerificationUI(uid);
+renderVerificationUI(uid);
+            applyUrgentLock();
             if (typeof cb === 'function') cb();
         })
         .catch(function (err) {
             console.error('[loadEmployerProfile]', err);
             employerDoc = {};
             renderVerificationUI(uid);
+            applyUrgentLock();
             if (typeof cb === 'function') cb();
         });
+}
+
+function applyUrgentLock() {
+    var cb    = document.getElementById('jUrgent');
+    var lbl   = document.getElementById('jUrgentLabel');
+    var badge = document.getElementById('urgentLockedBadge');
+    if (!cb) return;
+    var verified = employerDoc.isVerified === true;
+    cb.disabled  = !verified;
+    if (lbl)   lbl.style.opacity = verified ? '1' : '0.45';
+    if (lbl)   lbl.style.cursor  = verified ? 'pointer' : 'not-allowed';
+    if (badge) badge.style.display = verified ? 'none' : 'inline-flex';
+    if (!verified) cb.checked = false; // clear if somehow pre-ticked
 }
 
 function renderVerificationUI(uid) {
@@ -1100,11 +1131,74 @@ window.updateStatus = function (appId, selectEl) {
     if (!appId || !selectEl) return;
     var newStatus = selectEl.value;
     selectEl.className = 'status-select st-' + newStatus.toLowerCase();
-    db.collection('applications').doc(appId).update({ status: newStatus })
-        .then(function () { window.toast('✅ Status updated to "' + newStatus + '"'); })
+
+    // Build update payload; stamp selection letter fields when hiring
+    var payload = { status: newStatus };
+    if (newStatus === 'Hired') {
+        // KB- + first 8 chars of appId uppercased, e.g. KB-MP9DS8IH
+        var refNum = 'KB-' + appId.substring(0, 8).toUpperCase();
+        payload.referenceNumber = refNum;
+        payload.companyName     = employerDoc.companyName || employerDoc.fullName ||
+                                  (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || '';
+        payload.hiredAt         = firebase.firestore.FieldValue.serverTimestamp();
+    }
+
+    db.collection('applications').doc(appId).update(payload)
+        .then(function () {
+            if (newStatus === 'Hired') {
+                window.toast('🎉 Hired! Reference: ' + payload.referenceNumber);
+            } else {
+                window.toast('✅ Status updated to "' + newStatus + '"');
+            }
+        })
         .catch(function (err) {
             console.error('[updateStatus]', err);
             window.toast('⚠️ Could not update status — check Firestore rules.');
+        });
+};
+
+/* ── Selection Letter Reference Verifier ── */
+window.verifySelectionRef = function () {
+    var input = document.getElementById('verifyRefInput');
+    var out   = document.getElementById('verifyRefResult');
+    if (!input || !out) return;
+    var ref = input.value.trim().toUpperCase();
+    if (!ref) { out.innerHTML = '<span style="color:var(--text-muted);font-weight:600;font-size:.85rem;">Please enter a reference number.</span>'; return; }
+
+    out.innerHTML = '<span style="color:var(--text-muted);font-weight:600;font-size:.85rem;">⏳ Verifying…</span>';
+
+    db.collection('applications').where('referenceNumber', '==', ref).limit(1).get()
+        .then(function (snap) {
+            if (!snap || snap.empty) {
+                out.innerHTML =
+                    '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
+                        '❌ Invalid or Unverified Reference Number' +
+                    '</div>';
+                return;
+            }
+            var doc  = snap.docs[0];
+            var data = doc?.data() || {};
+            if ((data.status || '').toLowerCase() !== 'hired') {
+                out.innerHTML =
+                    '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
+                        '❌ Invalid or Unverified Reference Number' +
+                    '</div>';
+                return;
+            }
+            out.innerHTML =
+                '<div style="background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:14px;padding:14px 18px;display:inline-flex;flex-direction:column;gap:6px;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;">' +
+                        '<span style="background:#10b981;color:white;font-size:.7rem;font-weight:900;padding:4px 10px;border-radius:20px;letter-spacing:.04em;">✅ VERIFIED AUTHENTIC SELECTION LETTER</span>' +
+                    '</div>' +
+                    '<div style="font-size:.875rem;font-weight:700;color:#065f46;margin-top:2px;">👤 Candidate: ' + esc(data.seekerName || '—') + '</div>' +
+                    '<div style="font-size:.85rem;font-weight:700;color:#065f46;">💼 Job Title: ' + esc(data.jobTitle || '—') + '</div>' +
+                    '<div style="font-size:.8rem;font-weight:700;color:#065f46;">🏢 Company: ' + esc(data.companyName || '—') + '</div>' +
+                    '<div style="font-size:.75rem;font-weight:600;color:#047857;">🔖 Reference: ' + esc(data.referenceNumber || ref) + '</div>' +
+                '</div>';
+        })
+        .catch(function (err) {
+            console.error('[verifySelectionRef]', err);
+            out.innerHTML = '<span style="color:var(--err);font-weight:700;font-size:.85rem;">⚠️ Verification failed — check Firestore rules.</span>';
         });
 };
 
@@ -1173,13 +1267,11 @@ function buildActivityFeed() {
         feed.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><div class="title">No activity yet</div><div class="sub">Post a job to start receiving applications.</div></div>';
         return;
     }
-    var sorted = allApplications.slice().sort(function (a, b) {
-        // FIX 4: Firestore Timestamps expose .seconds; raw numbers work as-is
-        var at = (a.time && a.time.seconds) ? a.time.seconds : ((a.time || 0) / 1000 || 0);
-        var bt = (b.time && b.time.seconds) ? b.time.seconds : ((b.time || 0) / 1000 || 0);
+  var sorted = (allApplications || []).slice().sort(function (a, b) {
+        var at = (a?.time?.seconds) ?? ((typeof a?.time === 'number' ? a.time / 1000 : 0));
+        var bt = (b?.time?.seconds) ?? ((typeof b?.time === 'number' ? b.time / 1000 : 0));
         return bt - at;
     }).slice(0, 10);
-
     var colors = { applied:'#3b82f6',pending:'#3b82f6',review:'#f59e0b',interview:'#8b5cf6',hired:'#10b981',rejected:'#ef4444' };
     var buf = [];
     sorted.forEach(function (a) {
