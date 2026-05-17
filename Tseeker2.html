@@ -14,7 +14,10 @@
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
     <!-- html2pdf — client-side PDF generation, no Firebase storage needed -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -849,10 +852,37 @@ function loadUserData(uid, cb) {
     });
 }
 
+// Strictly validates that a URL's hostname is exactly 'drive.google.com'
+// or a subdomain of it. Using new URL() prevents bypasses like:
+//   "https://evil.com/?drive.google.com" — passes .includes(), fails here
+//   "https://drive.google.com.evil.com"  — passes .includes(), fails here
+function isGoogleDriveUrl(raw) {
+    if (!raw || !raw.trim()) return true; // empty = field not filled, allowed
+    try {
+        var parsed = new URL(raw.trim());
+        // Must be HTTPS and hostname must be exactly 'drive.google.com'
+        // or end with '.drive.google.com' (covers future subdomains).
+        return parsed.protocol === 'https:' &&
+               (parsed.hostname === 'drive.google.com' ||
+                parsed.hostname.endsWith('.drive.google.com'));
+    } catch (_) {
+        // new URL() throws on malformed URLs — treat as invalid
+        return false;
+    }
+}
+
 window.savePortfolio = function() {
-    var res = document.getElementById('resLink').value;
-    if (res && !res.includes('drive.google.com')) { window.toast('⚠️ Please use a Google Drive link for your resume.'); return; }
-    var payload = {
+    var res  = document.getElementById('resLink').value.trim();
+    var cert = document.getElementById('certLink').value.trim();
+    if (!isGoogleDriveUrl(res)) {
+        window.toast('⚠️ Resume link must be a valid https://drive.google.com URL.');
+        return;
+    }
+    if (!isGoogleDriveUrl(cert)) {
+        window.toast('⚠️ Certificate link must be a valid https://drive.google.com URL.');
+        return;
+    }
+    var payload = {{
         skills:     document.getElementById('uSkills').value,
         resumeUrl:  res,
         certUrl:    document.getElementById('certLink').value,
@@ -1337,14 +1367,43 @@ function buildAppCard(appDocId, a) {
     var st      = a.status || 'Applied';
     var stLower = st.toLowerCase();
 
-    // ── Withdrawn: greyed-out minimal card, no tracker, no actions ────
+   // ── Withdrawn: greyed-out minimal card, no tracker, no actions ────
+    // CodeQL DOM-HTML alert: a.jobTitle is untrusted Firestore data and must
+    // never be interpolated raw into an innerHTML string. We build the card
+    // via DOM API methods so jobTitle is always assigned to .textContent,
+    // which the browser treats as plain text and never parses as markup.
     if (stLower === 'withdrawn') {
-        return '<div class="app-card" style="opacity:0.5;">' +
-            '<div class="app-card-info">' +
-                '<div class="app-card-title" style="text-decoration:line-through; color:var(--text-muted);">' + (a.jobTitle || 'Job') + '</div>' +
-                '<div class="app-card-meta" style="margin-top:4px;"><span class="tag tag-gray">↩️ Withdrawn</span></div>' +
-            '</div>' +
-        '</div>';
+        var outerDiv = document.createElement('div');
+        outerDiv.className = 'app-card';
+        outerDiv.style.opacity = '0.5';
+
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'app-card-info';
+
+        var titleDiv = document.createElement('div');
+        titleDiv.className = 'app-card-title';
+        titleDiv.style.textDecoration = 'line-through';
+        titleDiv.style.color = 'var(--text-muted)';
+        titleDiv.textContent = a.jobTitle || 'Job'; // ← safe: textContent never parsed as HTML
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'app-card-meta';
+        metaDiv.style.marginTop = '4px';
+
+        var badge = document.createElement('span');
+        badge.className = 'tag tag-gray';
+        badge.textContent = '↩️ Withdrawn';
+
+        metaDiv.appendChild(badge);
+        infoDiv.appendChild(titleDiv);
+        infoDiv.appendChild(metaDiv);
+        outerDiv.appendChild(infoDiv);
+
+        // buildAppCard is called inside an innerHTML += context in loadApplications.
+        // We return the outerHTML of the safely-constructed node so the caller
+        // receives a sanitised string — jobTitle has already been text-encoded
+        // by the browser's own serialiser before it ever touches innerHTML.
+        return outerDiv.outerHTML;
     }
 
     // ── Tracker steps ──────────────────────────────────────────────────
