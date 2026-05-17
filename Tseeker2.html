@@ -1369,34 +1369,24 @@ function buildAppCard(appDocId, a) {
 
     if (stLower === 'hired') {
         // ── Hired: show Download Letter button, or a locked badge if already downloaded ──
-        if (a.letterDownloaded) {
-            // Permanently locked after first download
-            actionBtn =
-                '<div style="padding:8px 14px; background:#f1f5f9; border:1.5px solid #cbd5e1; ' +
-                    'border-radius:8px; font-weight:700; font-size:0.72rem; color:#94a3b8; ' +
-                    'text-align:center; cursor:not-allowed; line-height:1.4; max-width:140px;">' +
-                    '🔒 Letter Downloaded<br><span style="font-size:0.65rem; font-weight:600;">(One-Time Limit Reached)</span>' +
-                '</div>';
-        } else {
-            // Look up company name from allJobs (same logic as newlyHired mapping)
-            var hiredJob     = allJobs.find(function(j) { return j.id === a.jobId; });
-            var hiredCompany = (hiredJob && hiredJob.company) || a.companyName || a.company || 'the Company';
-            var safeTitle    = (a.jobTitle || 'Position').replace(/'/g, '');
-            var safeCompany  = hiredCompany.replace(/'/g, '');
-            var safeCandidate = ((userData && userData.fullName) || '').replace(/'/g, '') || 'Candidate';
+// Look up company name from allJobs (same logic as newlyHired mapping)
+        var hiredJob      = allJobs.find(function(j) { return j.id === a.jobId; });
+        var hiredCompany  = (hiredJob && hiredJob.company) || a.companyName || a.company || 'the Company';
+        var safeTitle     = (a.jobTitle || 'Position').replace(/'/g, '');
+        var safeCompany   = hiredCompany.replace(/'/g, '');
+        var safeCandidate = ((userData && userData.fullName) || '').replace(/'/g, '') || 'Candidate';
 
-            actionBtn =
-                '<button ' +
-                    'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\')" ' +
-                    'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
-                        'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
-                        'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
-                        'box-shadow:0 2px 8px rgba(16,185,129,0.35); transition:opacity 0.2s;" ' +
-                    'onmouseover="this.style.opacity=\'0.85\'" ' +
-                    'onmouseout="this.style.opacity=\'1\'">' +
-                    '📄 Download<br><span style="font-size:0.68rem; font-weight:600;">Selection Letter</span>' +
-                '</button>';
-        }
+        actionBtn =
+            '<button ' +
+                'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\')" ' +
+                'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
+                    'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
+                    'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
+                    'box-shadow:0 2px 8px rgba(16,185,129,0.35); transition:opacity 0.2s;" ' +
+                'onmouseover="this.style.opacity=\'0.85\'" ' +
+                'onmouseout="this.style.opacity=\'1\'">' +
+                '📄 Download<br><span style="font-size:0.68rem; font-weight:600;">Selection Letter</span>' +
+            '</button>';
     } else if (['applied','pending','review','interview'].includes(stLower)) {
         // ── Active: show Withdraw button ──────────────────────────────
         actionBtn =
@@ -1992,23 +1982,7 @@ window.downloadSelectionLetter = function() {
             btn.innerText = '⬇️ Download Letter';
             window.toast('📄 Selection letter downloaded!');
 
-            // ── Permanent one-time guard ───────────────────────────────
-            // Write letterDownloaded:true to the application doc so the
-            // Download button is replaced with the locked badge on next render,
-            // even after a page refresh (sessionStorage would not survive that).
-            var aid = _slData.appDocId;
-            if (aid && db) {
-                db.collection('applications').doc(aid).update({
-                    letterDownloaded: true
-                }).then(function() {
-                    // onSnapshot re-fires automatically → buildAppCard re-renders
-                    // the card with the locked badge. No manual DOM surgery needed.
-                    console.log('Letter download recorded for application:', aid);
-                }).catch(function(err) {
-                    // Non-fatal: the user got the PDF. Just log — don't alarm them.
-                    console.warn('Could not record letterDownloaded flag:', err);
-                });
-            }
+// No download limit — letter is freely re-downloadable on every visit.
         })
         .catch(function(err) {
             console.error('html2pdf error:', err);
