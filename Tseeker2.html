@@ -1364,14 +1364,48 @@ function buildAppCard(appDocId, a) {
             '🎥 Join Interview Room</button>';
     }
 
-    // ── Withdraw button — only on non-terminal, non-withdrawn statuses ─
-    var canWithdraw = ['applied','pending','review','interview'].includes(stLower);
-    var withdrawBtn = canWithdraw
-        ? '<button class="btn-withdraw" ' +
-              'onclick="window.withdrawApplication(\'' + appDocId + '\',\'' + (a.jobTitle || 'Job').replace(/'/g,'') + '\')">' +
-              '↩ Withdraw' +
-          '</button>'
-        : '';
+  // ── Right-side action button — varies by status ────────────────────
+    var actionBtn = '';
+
+    if (stLower === 'hired') {
+        // ── Hired: show Download Letter button, or a locked badge if already downloaded ──
+        if (a.letterDownloaded) {
+            // Permanently locked after first download
+            actionBtn =
+                '<div style="padding:8px 14px; background:#f1f5f9; border:1.5px solid #cbd5e1; ' +
+                    'border-radius:8px; font-weight:700; font-size:0.72rem; color:#94a3b8; ' +
+                    'text-align:center; cursor:not-allowed; line-height:1.4; max-width:140px;">' +
+                    '🔒 Letter Downloaded<br><span style="font-size:0.65rem; font-weight:600;">(One-Time Limit Reached)</span>' +
+                '</div>';
+        } else {
+            // Look up company name from allJobs (same logic as newlyHired mapping)
+            var hiredJob     = allJobs.find(function(j) { return j.id === a.jobId; });
+            var hiredCompany = (hiredJob && hiredJob.company) || a.companyName || a.company || 'the Company';
+            var safeTitle    = (a.jobTitle || 'Position').replace(/'/g, '');
+            var safeCompany  = hiredCompany.replace(/'/g, '');
+            var safeCandidate = ((userData && userData.fullName) || '').replace(/'/g, '') || 'Candidate';
+
+            actionBtn =
+                '<button ' +
+                    'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\')" ' +
+                    'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
+                        'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
+                        'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
+                        'box-shadow:0 2px 8px rgba(16,185,129,0.35); transition:opacity 0.2s;" ' +
+                    'onmouseover="this.style.opacity=\'0.85\'" ' +
+                    'onmouseout="this.style.opacity=\'1\'">' +
+                    '📄 Download<br><span style="font-size:0.68rem; font-weight:600;">Selection Letter</span>' +
+                '</button>';
+        }
+    } else if (['applied','pending','review','interview'].includes(stLower)) {
+        // ── Active: show Withdraw button ──────────────────────────────
+        actionBtn =
+            '<button class="btn-withdraw" ' +
+                'onclick="window.withdrawApplication(\'' + appDocId + '\',\'' + (a.jobTitle || 'Job').replace(/'/g,'') + '\')">' +
+                '↩ Withdraw' +
+            '</button>';
+    }
+    // rejected → no action button
 
     return '<div class="app-card">' +
         '<div class="app-card-info" style="flex:1;">' +
@@ -1380,7 +1414,7 @@ function buildAppCard(appDocId, a) {
             '<div class="tracker-steps" style="margin-top:8px;">' + stepsHTML + '</div>' +
             meetBtnHTML +
         '</div>' +
-        (withdrawBtn ? '<div style="margin-left:1rem; align-self:flex-start; padding-top:4px;">' + withdrawBtn + '</div>' : '') +
+        (actionBtn ? '<div style="margin-left:1rem; align-self:center; padding-top:4px;">' + actionBtn + '</div>' : '') +
     '</div>';
 }
 
@@ -1863,13 +1897,13 @@ function loadSkillGap() {
 // ═══════════════════════════════════════════════════════
 var _slData = {};
 
-window.showSelectionLetter = function(candidateName, company, jobTitle) {
-    _slData = { candidateName: candidateName, company: company, jobTitle: jobTitle };
+// appDocId is passed in so the download guard can write back to Firestore.
+window.showSelectionLetter = function(candidateName, company, jobTitle, appDocId) {
+    _slData = { candidateName: candidateName, company: company, jobTitle: jobTitle, appDocId: appDocId || null };
     document.getElementById('slCandidateName').innerText = candidateName;
     document.getElementById('slSubtitle').innerText = 'Selected for ' + jobTitle + ' at ' + company;
     document.getElementById('selectionLetterModal').style.display = 'flex';
 };
-
 window.closeSelectionLetter = function() {
     document.getElementById('selectionLetterModal').style.display = 'none';
 };
@@ -1953,10 +1987,28 @@ window.downloadSelectionLetter = function() {
         })
         .from(letterHTML, 'string')
         .save()
-        .then(function() {
+.then(function() {
             btn.disabled  = false;
             btn.innerText = '⬇️ Download Letter';
             window.toast('📄 Selection letter downloaded!');
+
+            // ── Permanent one-time guard ───────────────────────────────
+            // Write letterDownloaded:true to the application doc so the
+            // Download button is replaced with the locked badge on next render,
+            // even after a page refresh (sessionStorage would not survive that).
+            var aid = _slData.appDocId;
+            if (aid && db) {
+                db.collection('applications').doc(aid).update({
+                    letterDownloaded: true
+                }).then(function() {
+                    // onSnapshot re-fires automatically → buildAppCard re-renders
+                    // the card with the locked badge. No manual DOM surgery needed.
+                    console.log('Letter download recorded for application:', aid);
+                }).catch(function(err) {
+                    // Non-fatal: the user got the PDF. Just log — don't alarm them.
+                    console.warn('Could not record letterDownloaded flag:', err);
+                });
+            }
         })
         .catch(function(err) {
             console.error('html2pdf error:', err);
