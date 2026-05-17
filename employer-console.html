@@ -373,12 +373,12 @@
                     permanently removed. isVerified is a backend-only field.
                     Only the "🔥 Urgent" flag (a legitimate employer tool) remains.
                 -->
-             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                        <label id="jUrgentLabel" style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:.875rem;color:var(--text-main);">
-                            <input type="checkbox" id="jUrgent" style="width:auto;margin:0;padding:0;"> 🔥 Mark as Urgent
+                        <label id="jUrgentLabel" style="display:flex;align-items:center;gap:8px;cursor:not-allowed;text-transform:none;font-size:.875rem;color:var(--text-main);opacity:0.45;transition:opacity .2s;">
+                            <input type="checkbox" id="jUrgent" disabled style="width:auto;margin:0;padding:0;cursor:not-allowed;"> 🔥 Mark as Urgent
                         </label>
-                        <span id="urgentLockedBadge" style="display:none;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.02em;">🔒 Only available for verified employers</span>
+                        <span id="urgentLockedBadge" style="display:inline-flex;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.02em;">🔒 Only available for verified employers</span>
                     </div>
                     <button class="btn-pri" onclick="window.postJob()">🚀 Post Job Now</button>
                 </div>
@@ -442,7 +442,7 @@
                         <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:4px;">🎥 Send Google Meet Interview Invite</div>
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                             <input type="url" id="meetLinkInput" placeholder="https://meet.google.com/…" style="margin:0;flex:1;min-width:200px;">                             
-                            <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>
+                            <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                            
                             <input type="text" id="meetMsgInput" placeholder="Optional note to candidate" style="margin:0;flex:1;min-width:160px;">
                             <button class="btn-green btn-sm" onclick="window.sendMeetInvite()" style="white-space:nowrap;">Send Invite</button>
                             <button onclick="document.getElementById('meetInviteBox').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:.5;" title="Cancel">✕</button>
@@ -1134,15 +1134,16 @@ window.updateStatus = function (appId, selectEl) {
 
     // Build update payload; stamp selection letter fields when hiring
     var payload = { status: newStatus };
-    if (newStatus === 'Hired') {
+if (newStatus === 'Hired') {
         // KB- + first 8 chars of appId uppercased, e.g. KB-MP9DS8IH
-        var refNum = 'KB-' + appId.substring(0, 8).toUpperCase();
+        var refNum = 'KB-' + (appId || '').substring(0, 8).toUpperCase();
+        var coName = (employerDoc && (employerDoc.companyName || employerDoc.fullName)) ||
+                     (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) ||
+                     'Kamayega Bharat Employer';
         payload.referenceNumber = refNum;
-        payload.companyName     = employerDoc.companyName || employerDoc.fullName ||
-                                  (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || '';
+        payload.companyName     = coName;
         payload.hiredAt         = firebase.firestore.FieldValue.serverTimestamp();
     }
-
     db.collection('applications').doc(appId).update(payload)
         .then(function () {
             if (newStatus === 'Hired') {
@@ -1167,6 +1168,21 @@ window.verifySelectionRef = function () {
 
     out.innerHTML = '<span style="color:var(--text-muted);font-weight:600;font-size:.85rem;">⏳ Verifying…</span>';
 
+    // Derive the appId from the reference number (KB-XXXXXXXX → first 8 chars after "KB-")
+    // This avoids a collection-wide query that would require broad read permission.
+    // Instead we do a direct document lookup using the known appId embedded in the ref.
+    var prefix = 'KB-';
+    if (!ref.startsWith(prefix) || ref.length < prefix.length + 1) {
+        out.innerHTML =
+            '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
+                '❌ Invalid Reference Format — expected KB-XXXXXXXX' +
+            '</div>';
+        return;
+    }
+
+    // The referenceNumber is "KB-" + appId.substring(0,8).toUpperCase().
+    // We cannot reverse it to a full appId directly, so we still use a
+    // query — but the Firestore rule now permits it for Hired+referenceNumber docs.
     db.collection('applications').where('referenceNumber', '==', ref).limit(1).get()
         .then(function (snap) {
             if (!snap || snap.empty) {
@@ -1176,12 +1192,13 @@ window.verifySelectionRef = function () {
                     '</div>';
                 return;
             }
-            var doc  = snap.docs[0];
-            var data = doc?.data() || {};
+            var docSnap = snap.docs[0];
+            var data    = (docSnap && docSnap.data()) || {};
+            // Double-check status on the client side even if the rule already filters
             if ((data.status || '').toLowerCase() !== 'hired') {
                 out.innerHTML =
                     '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
-                        '❌ Invalid or Unverified Reference Number' +
+                        '❌ Reference found but application is not in Hired status' +
                     '</div>';
                 return;
             }
@@ -1198,7 +1215,16 @@ window.verifySelectionRef = function () {
         })
         .catch(function (err) {
             console.error('[verifySelectionRef]', err);
-            out.innerHTML = '<span style="color:var(--err);font-weight:700;font-size:.85rem;">⚠️ Verification failed — check Firestore rules.</span>';
+            // Surface a specific, actionable message for permission errors
+            if (err && err.code === 'permission-denied') {
+                out.innerHTML =
+                    '<span style="color:var(--err);font-weight:700;font-size:.85rem;">' +
+                    '⛔ Permission denied. Paste the Firestore rule fix from the source comments into your Firebase Console → Firestore → Rules tab.' +
+                    '</span>';
+            } else {
+                out.innerHTML =
+                    '<span style="color:var(--err);font-weight:700;font-size:.85rem;">⚠️ Verification failed: ' + esc((err && err.message) || 'unknown error') + '</span>';
+            }
         });
 };
 
@@ -1267,9 +1293,13 @@ function buildActivityFeed() {
         feed.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><div class="title">No activity yet</div><div class="sub">Post a job to start receiving applications.</div></div>';
         return;
     }
-  var sorted = (allApplications || []).slice().sort(function (a, b) {
-        var at = (a?.time?.seconds) ?? ((typeof a?.time === 'number' ? a.time / 1000 : 0));
-        var bt = (b?.time?.seconds) ?? ((typeof b?.time === 'number' ? b.time / 1000 : 0));
+ var sorted = (allApplications || []).slice().sort(function (a, b) {
+        var aTime = (a && a.time) || null;
+        var bTime = (b && b.time) || null;
+        var at = aTime && aTime.seconds ? aTime.seconds
+               : (typeof aTime === 'number' ? aTime / 1000 : 0);
+        var bt = bTime && bTime.seconds ? bTime.seconds
+               : (typeof bTime === 'number' ? bTime / 1000 : 0);
         return bt - at;
     }).slice(0, 10);
     var colors = { applied:'#3b82f6',pending:'#3b82f6',review:'#f59e0b',interview:'#8b5cf6',hired:'#10b981',rejected:'#ef4444' };
