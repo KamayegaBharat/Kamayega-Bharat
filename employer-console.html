@@ -1144,18 +1144,33 @@ if (newStatus === 'Hired') {
         payload.companyName     = coName;
         payload.hiredAt         = firebase.firestore.FieldValue.serverTimestamp();
     }
-    db.collection('applications').doc(appId).update(payload)
-        .then(function () {
-            if (newStatus === 'Hired') {
-                window.toast('🎉 Hired! Reference: ' + payload.referenceNumber);
-            } else {
-                window.toast('✅ Status updated to "' + newStatus + '"');
-            }
-        })
-        .catch(function (err) {
-            console.error('[updateStatus]', err);
-            window.toast('⚠️ Could not update status — check Firestore rules.');
+ if (newStatus === 'Hired') {
+        // Write to both /applications and the public /selection_letters mirror
+        // so verifySelectionRef can query without needing broad applications access.
+        var batch = db.batch();
+        batch.update(db.collection('applications').doc(appId), payload);
+        batch.set(db.collection('selection_letters').doc(payload.referenceNumber), {
+            referenceNumber: payload.referenceNumber,
+            seekerName:      allApplications.filter(function(a){ return a && a.id === appId; }).map(function(a){ return a.seekerName || '—'; })[0] || '—',
+            jobTitle:        allApplications.filter(function(a){ return a && a.id === appId; }).map(function(a){ return a.jobTitle  || '—'; })[0] || '—',
+            companyName:     payload.companyName,
+            status:          'Hired',
+            hiredAt:         firebase.firestore.FieldValue.serverTimestamp()
         });
+        batch.commit()
+            .then(function () { window.toast('🎉 Hired! Reference: ' + payload.referenceNumber); })
+            .catch(function (err) {
+                console.error('[updateStatus]', err);
+                window.toast('⚠️ Could not update status — check Firestore rules.');
+            });
+    } else {
+        db.collection('applications').doc(appId).update(payload)
+            .then(function () { window.toast('✅ Status updated to "' + newStatus + '"'); })
+            .catch(function (err) {
+                console.error('[updateStatus]', err);
+                window.toast('⚠️ Could not update status — check Firestore rules.');
+            });
+    }
 };
 
 /* ── Selection Letter Reference Verifier ── */
@@ -1180,25 +1195,23 @@ window.verifySelectionRef = function () {
         return;
     }
 
-    // The referenceNumber is "KB-" + appId.substring(0,8).toUpperCase().
-    // We cannot reverse it to a full appId directly, so we still use a
-    // query — but the Firestore rule now permits it for Hired+referenceNumber docs.
-    db.collection('applications').where('referenceNumber', '==', ref).limit(1).get()
-        .then(function (snap) {
-            if (!snap || snap.empty) {
+   // Direct document lookup on the public /selection_letters collection.
+    // The referenceNumber IS the document ID, so no collection-wide query is needed —
+    // this is a single doc get() which the Firestore rule below allows for any signed-in user.
+    db.collection('selection_letters').doc(ref).get()
+        .then(function (docSnap) {
+            if (!docSnap || !docSnap.exists) {
                 out.innerHTML =
                     '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
                         '❌ Invalid or Unverified Reference Number' +
                     '</div>';
                 return;
             }
-            var docSnap = snap.docs[0];
-            var data    = (docSnap && docSnap.data()) || {};
-            // Double-check status on the client side even if the rule already filters
+            var data = docSnap.data() || {};
             if ((data.status || '').toLowerCase() !== 'hired') {
                 out.innerHTML =
                     '<div style="display:inline-flex;align-items:center;gap:8px;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;padding:10px 16px;border-radius:12px;font-weight:800;font-size:.85rem;">' +
-                        '❌ Reference found but application is not in Hired status' +
+                        '❌ Reference found but not in Hired status' +
                     '</div>';
                 return;
             }
@@ -1215,11 +1228,10 @@ window.verifySelectionRef = function () {
         })
         .catch(function (err) {
             console.error('[verifySelectionRef]', err);
-            // Surface a specific, actionable message for permission errors
             if (err && err.code === 'permission-denied') {
                 out.innerHTML =
                     '<span style="color:var(--err);font-weight:700;font-size:.85rem;">' +
-                    '⛔ Permission denied. Paste the Firestore rule fix from the source comments into your Firebase Console → Firestore → Rules tab.' +
+                    '⛔ Permission denied — add the selection_letters rule to your Firestore Rules tab.' +
                     '</span>';
             } else {
                 out.innerHTML =
@@ -1379,9 +1391,10 @@ window.openChat = function (appId, seekerName, jobTitle, seekerId, status) {
     var jobEl = document.getElementById('activeChatJob');
     if (jobEl) jobEl.innerText = (jobTitle || '') + ' · ' + (status || 'Applied');
 
-    var colRef = db.collection('applications').doc(appId).collection('chats').orderBy('time');
+   var colRef   = db.collection('applications').doc(appId).collection('chats');
+    var colQuery = colRef.orderBy('time');
 
-    chatUnsubscribe = colRef.onSnapshot({ includeMetadataChanges: true }, function (snap) {
+    chatUnsubscribe = colQuery.onSnapshot({ includeMetadataChanges: true }, function (snap) {
         var area = document.getElementById('msgArea');
         if (!area) return;
         area.innerHTML = '';
@@ -1428,7 +1441,7 @@ window.openChat = function (appId, seekerName, jobTitle, seekerId, status) {
         // Mark seeker messages as seen
         if (snap.metadata && !snap.metadata.hasPendingWrites && !snap.metadata.fromCache) {
             var batch = db.batch(); var hasUpd = false;
-            snap.forEach(function (m) {
+           snap.forEach(function (m) {
                 if (!m || !m.exists) return;
                 var d = m.data() || {};
                 if (d.senderId !== (auth.currentUser && auth.currentUser.uid) && d.status === 'sent') {
