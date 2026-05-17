@@ -1266,12 +1266,20 @@ function loadApplications(uid) {
                 total++;
                 if (stLower === 'applied' || stLower === 'pending') pending++;
                 if (stLower === 'interview') interview++;
-                if (stLower === 'hired') {
+if (stLower === 'hired') {
                     hired++;
                     var guardKey = 'slShown_' + doc.id;
                     if (!sessionStorage.getItem(guardKey)) {
                         sessionStorage.setItem(guardKey, '1');
-                        newlyHired = { jobTitle: a.jobTitle || 'Position', company: a.companyName || a.company || 'the Company' };
+                        // Company name is not stored on the application doc — look it up
+                        // from the already-loaded allJobs array using jobId (zero extra reads).
+                        // Fall back to employerId snippet if the job has scrolled out of allJobs.
+                        var matchedJob = allJobs.find(function(j) { return j.id === a.jobId; });
+                        var companyName = (matchedJob && matchedJob.company)
+                            || a.companyName
+                            || a.company
+                            || (a.employerId ? 'Employer (' + a.employerId.slice(0,6) + ')' : 'the Company');
+                        newlyHired = { jobTitle: a.jobTitle || 'Position', company: companyName };
                     }
                 }
             }
