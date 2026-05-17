@@ -8,11 +8,13 @@
     <meta name="robots" content="noindex, nofollow">
     <!-- Favicon — consistent path used here and in firebase-messaging-sw.js -->
     <link rel="icon" type="image/png" href="/favicon.png">
-
+<link rel="manifest" href="manifest.json">
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+ <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+    <!-- html2pdf — client-side PDF generation, no Firebase storage needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,8 +96,8 @@
         /* ── Tabs ── */
         .tab-content { display: none; }
         .tab-content.active { display: block !important; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
+      @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounceIn { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
         /* ── Modals ── */
         .meet-modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-overlay { display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%; }
@@ -203,20 +205,24 @@
         .tracker-step.active-step { box-shadow: 0 2px 6px rgba(0,0,0,0.1); position: relative; z-index: 1; }
 
         /* ── Messaging ── */
+/* ── Split view: fixed 560px tall, never collapses ── */
         .split-view { display: grid; grid-template-columns: 280px 1fr; height: 560px; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: var(--card); }
         .list-pane { border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg-light); }
         .list-item { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
         .list-item:hover, .list-item.selected { background: rgba(30,64,175,0.06); }
         .list-item-name { font-weight: 700; font-size: 0.9rem; }
         .list-item-meta { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
-        .chat-pane { display: flex; flex-direction: column; flex: 1; }
-        .chat-hdr { padding: 1rem 1.25rem; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .msg-area { flex: 1; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: var(--bg-light); }
+        /* chat-pane: full height flex column so msg-area fills remaining space */
+        .chat-pane { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+        .chat-hdr { flex-shrink: 0; padding: 1rem 1.25rem; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        /* msg-area: flex:1 + min-height:0 is the key combo that makes overflow-y work inside a flex child */
+        .msg-area { flex: 1; min-height: 0; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: var(--bg-light); }
         .msg-bubble { padding: 10px 14px; border-radius: 14px; max-width: 75%; font-size: 0.875rem; font-weight: 600; line-height: 1.5; word-break: break-word; }
         .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .msg-them { align-self: flex-start; background: var(--card); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
         .msg-invite { align-self: flex-start; background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; border-radius: 16px; padding: 1rem; max-width: 85%; }
-        .msg-input-bar { padding: 1rem; background: var(--card); border-top: 1px solid var(--border); display: none; gap: 8px; align-items: center; }
+        /* input bar is always flex-shrink:0 so it never gets squeezed out */
+        .msg-input-bar { flex-shrink: 0; padding: 1rem; background: var(--card); border-top: 1px solid var(--border); display: none; gap: 8px; align-items: center; }
         .msg-input-bar input { margin: 0; }
 
         /* ── Notification Toggle ── */
@@ -295,8 +301,8 @@
             .mobile-menu-btn { display: block !important; }
             .content-body { padding: 1.25rem; }
             .top-hdr { padding: 1rem 1.25rem; }
-            .split-view { grid-template-columns: 1fr; height: auto; }
-            .list-pane { height: 160px; border-right: none; border-bottom: 1px solid var(--border); }
+.split-view { grid-template-columns: 1fr; height: 600px; }
+            .list-pane { height: 160px; flex-shrink: 0; border-right: none; border-bottom: 1px solid var(--border); }
             footer { grid-template-columns: 1fr; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
         }
@@ -350,6 +356,27 @@
         </p>
     </div>
 </div>
+
+<!-- Selection Letter Modal -->
+<div id="selectionLetterModal" style="display:none; position:fixed; z-index:10000; top:0; left:0; width:100%; height:100%; background:rgba(0,26,94,0.65); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+    <div style="background:var(--card); border-radius:24px; padding:2.5rem; max-width:500px; width:92%; border:2px solid #10b981; box-shadow:0 30px 60px rgba(16,185,129,0.25); text-align:center; position:relative;">
+        <div style="font-size:3.5rem; margin-bottom:0.75rem; animation:bounceIn 0.5s ease;">🎉</div>
+        <div style="font-size:1.4rem; font-weight:800; color:#065f46; margin-bottom:0.4rem;">Congratulations!</div>
+        <div id="slCandidateName" style="font-size:1rem; font-weight:700; color:var(--text-muted); margin-bottom:0.25rem;"></div>
+        <div id="slSubtitle" style="font-size:0.875rem; font-weight:600; color:var(--text-muted); margin-bottom:1.5rem;"></div>
+        <div style="background:linear-gradient(135deg,#d1fae5,#a7f3d0); border-radius:16px; padding:1.25rem; margin-bottom:1.5rem; border:1px solid #6ee7b7;">
+            <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:#065f46; margin-bottom:6px;">Your Selection Letter is ready</div>
+            <div style="font-size:0.8rem; color:#047857; font-weight:600; line-height:1.6;">Download your official selection letter as a print-ready PDF. Keep it safe — you'll need it for onboarding.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="slDownloadBtn" class="btn-pri" style="flex:1; min-width:160px; background:linear-gradient(135deg,#059669,#10b981);" onclick="window.downloadSelectionLetter()">⬇️ Download Letter</button>
+            <button onclick="window.closeSelectionLetter()" class="btn-outline" style="flex:1; min-width:120px; border-color:#10b981; color:#065f46;">Close</button>
+        </div>
+        <div style="font-size:0.65rem; color:var(--text-muted); margin-top:1rem; opacity:0.6;">Issued by Kamayega Bharat · kamayegabharat.com</div>
+    </div>
+</div>
+<!-- Hidden off-screen letter template rendered before PDF export -->
+<div id="selectionLetterDoc" style="position:fixed; left:-9999px; top:0; width:794px; background:white; padding:60px 70px; font-family:'Plus Jakarta Sans',sans-serif; color:#0f172a; z-index:-1;"></div>
 
 <!-- Toast -->
 <div id="toast"></div>
@@ -1136,12 +1163,30 @@ window.requestAndSaveFCMToken = function(uid) {
 
     // messaging.getToken() silently uses an already-granted permission,
     // or triggers the browser prompt if permission is 'default'.
-    messaging.getToken({ vapidKey: FCM_VAPID_KEY,
-                         serviceWorkerRegistration: window._swReg || undefined })
-        .then(function(token) {
+// Defer getToken until the SW is definitely registered.
+    // On GitHub Pages the SW registration is async; calling getToken before
+    // it resolves causes an AbortError because the push subscription has
+    // no backing service worker yet.
+    function _doGetToken() {
+        if (!window._swReg) {
+            // SW not ready yet — wait up to 8 s then try anyway
+            var waited = 0;
+            var poll = setInterval(function() {
+                waited += 200;
+                if (window._swReg || waited >= 8000) {
+                    clearInterval(poll);
+                    _issueGetToken();
+                }
+            }, 200);
+        } else {
+            _issueGetToken();
+        }
+    }
+    function _issueGetToken() {
+        messaging.getToken({ vapidKey: FCM_VAPID_KEY,
+                             serviceWorkerRegistration: window._swReg })
+     .then(function(token) {
             if (!token) {
-                // Permission was granted but token generation failed
-                // (usually means the service worker isn't registered yet)
                 window.toast('⚠️ Could not get notification token. Ensure firebase-messaging-sw.js is deployed.');
                 document.getElementById('notifToggle').checked = false;
                 return;
@@ -1173,12 +1218,9 @@ window.requestAndSaveFCMToken = function(uid) {
                 window.toast('🔔 Notifications enabled!');
             });
         })
-        .catch(function(err) {
+       .catch(function(err) {
             console.error('FCM getToken error:', err);
             document.getElementById('notifToggle').checked = false;
-
-            // The most common reason for this error is the user clicking "Block"
-            // on the permission prompt that just appeared.
             if (Notification.permission === 'denied') {
                 document.getElementById('notifBlockedRow').style.display = 'flex';
                 window.toast('⚠️ You blocked notifications. See settings below to re-enable.');
@@ -1186,6 +1228,8 @@ window.requestAndSaveFCMToken = function(uid) {
                 window.toast('⚠️ Could not enable notifications. Check that firebase-messaging-sw.js is deployed.');
             }
         });
+    }
+    _doGetToken();
 };
 
 // Register the service worker after page load so it doesn't compete
@@ -1209,26 +1253,39 @@ window.addEventListener('load', function() {
 // ═══════════════════════════════════════════════════════
 function loadApplications(uid) {
     db.collection('applications').where('seekerId', '==', uid).onSnapshot(function(snap) {
-        var list = document.getElementById('myAppsList');
+      var list = document.getElementById('myAppsList');
         list.innerHTML = '';
         var total = 0, pending = 0, interview = 0, hired = 0;
+        var newlyHired = null;
 
         snap.forEach(function(doc) {
             var a       = doc.data();
             var stLower = (a.status || 'applied').toLowerCase();
 
-            // Withdrawn applications are rendered differently but still shown
-            // so the user has a record. Excluded from the live stats counters.
             if (stLower !== 'withdrawn') {
                 total++;
                 if (stLower === 'applied' || stLower === 'pending') pending++;
                 if (stLower === 'interview') interview++;
-                if (stLower === 'hired') hired++;
+                if (stLower === 'hired') {
+                    hired++;
+                    var guardKey = 'slShown_' + doc.id;
+                    if (!sessionStorage.getItem(guardKey)) {
+                        sessionStorage.setItem(guardKey, '1');
+                        newlyHired = { jobTitle: a.jobTitle || 'Position', company: a.companyName || a.company || 'the Company' };
+                    }
+                }
             }
 
             list.innerHTML += buildAppCard(doc.id, a);
         });
 
+        if (newlyHired) {
+            window.showSelectionLetter(
+                userData.fullName || (auth.currentUser && auth.currentUser.displayName) || 'Candidate',
+                newlyHired.company,
+                newlyHired.jobTitle
+            );
+        }
         document.getElementById('appsBadge').innerText      = total;
         document.getElementById('stat-total').innerText     = total;
         document.getElementById('stat-pending').innerText   = pending;
@@ -1686,18 +1743,16 @@ function loadSkillGap() {
         //       Only reads the dedicated `requiredSkills` array field.
         //       Title / desc tokenisation is intentionally NOT used — that
         //       approach produced false positives (e.g. "delivery", "full").
-        var skillCount = {};   // { skillName: numberOfJobsThatRequireIt }
+       var skillCount = {};
         var jobsWithSkills = 0;
 
         snap.forEach(function(doc) {
             var d = doc.data();
-            // Accept both `requiredSkills` (array) and legacy `skills` (comma string)
             var arr = [];
             if (Array.isArray(d.requiredSkills) && d.requiredSkills.length > 0) {
                 arr = d.requiredSkills;
                 jobsWithSkills++;
             } else if (typeof d.skills === 'string' && d.skills.trim().length > 0) {
-                // Legacy: comma-separated string, e.g. "Welding, Driving, Cooking"
                 arr = d.skills.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
                 if (arr.length > 0) jobsWithSkills++;
             }
@@ -1789,11 +1844,106 @@ function loadSkillGap() {
             }).join('');
         }
 
-    }).catch(function(err) {
+  }).catch(function(err) {
         console.error('loadSkillGap error:', err);
         container.innerHTML = '<div style="color:var(--err); font-size:0.875rem; font-weight:600;">⚠️ Could not load skill data. Check your Firestore rules.</div>';
     });
 }
+
+// ═══════════════════════════════════════════════════════
+// SELECTION LETTER — popup + html2pdf download
+// ═══════════════════════════════════════════════════════
+var _slData = {};
+
+window.showSelectionLetter = function(candidateName, company, jobTitle) {
+    _slData = { candidateName: candidateName, company: company, jobTitle: jobTitle };
+    document.getElementById('slCandidateName').innerText = candidateName;
+    document.getElementById('slSubtitle').innerText = 'Selected for ' + jobTitle + ' at ' + company;
+    document.getElementById('selectionLetterModal').style.display = 'flex';
+};
+
+window.closeSelectionLetter = function() {
+    document.getElementById('selectionLetterModal').style.display = 'none';
+};
+
+window.downloadSelectionLetter = function() {
+    var d     = _slData;
+    var today = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    var refNo = 'KB-' + Date.now().toString(36).toUpperCase();
+
+    var html =
+        '<div style="font-family:\'Plus Jakarta Sans\',sans-serif; color:#0f172a; padding:60px 70px; width:794px;">' +
+        '<div style="background:linear-gradient(135deg,#1e40af,#3b82f6); border-radius:12px; padding:28px 36px; color:white; margin-bottom:36px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<div>' +
+                '<div style="font-size:1.5rem; font-weight:800; letter-spacing:-0.03em;">Kamayega Bharat</div>' +
+                '<div style="font-size:0.75rem; opacity:0.7; margin-top:2px; letter-spacing:0.08em; text-transform:uppercase;">Official Selection Letter</div>' +
+            '</div>' +
+            '<div style="text-align:right; font-size:0.75rem; opacity:0.8;">' +
+                '<div>Ref: ' + refNo + '</div>' +
+                '<div>Date: ' + today + '</div>' +
+            '</div>' +
+        '</div>' +
+        '<p style="font-size:0.95rem; line-height:1.8; margin-bottom:18px;">Dear <strong>' + d.candidateName + '</strong>,</p>' +
+        '<p style="font-size:0.95rem; line-height:1.8; margin-bottom:18px;">' +
+            'We are pleased to inform you that, following a thorough review of your application and profile on <strong>Kamayega Bharat</strong>, ' +
+            'you have been <strong>selected</strong> for the position of:' +
+        '</p>' +
+        '<div style="background:#dbeafe; border-left:5px solid #1e40af; border-radius:8px; padding:18px 24px; margin:24px 0;">' +
+            '<div style="font-size:1.3rem; font-weight:800; color:#1e40af;">' + d.jobTitle + '</div>' +
+            '<div style="font-size:0.9rem; font-weight:600; color:#334155; margin-top:4px;">at ' + d.company + '</div>' +
+        '</div>' +
+        '<p style="font-size:0.95rem; line-height:1.8; margin-bottom:18px;">' +
+            'This letter serves as your official confirmation of selection. Please retain it for your records and present it during your onboarding process.' +
+        '</p>' +
+        '<p style="font-size:0.95rem; line-height:1.8; margin-bottom:36px;">' +
+            'Congratulations on this achievement! We wish you every success in this new role.' +
+        '</p>' +
+        '<div style="border-top:2px solid #e2e8f0; padding-top:24px; display:flex; justify-content:space-between; align-items:flex-end;">' +
+            '<div>' +
+                '<div style="font-size:1rem; font-weight:800; color:#1e40af;">Kamayega Bharat</div>' +
+                '<div style="font-size:0.8rem; color:#64748b; margin-top:2px;">Talent & Placement Division</div>' +
+                '<div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">kamayegabharat@gmail.com</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+                '<div style="font-size:0.7rem; color:#cbd5e1; letter-spacing:0.08em; text-transform:uppercase;">Verified & Issued via</div>' +
+                '<div style="font-size:0.8rem; font-weight:700; color:#94a3b8;">kamayegabharat.com</div>' +
+            '</div>' +
+        '</div>' +
+        '<div style="margin-top:32px; padding:10px; background:#f8fafc; border-radius:8px; text-align:center; font-size:0.65rem; color:#94a3b8; letter-spacing:0.1em; text-transform:uppercase;">' +
+            'This is a system-generated letter issued by Kamayega Bharat. Ref: ' + refNo +
+        '</div>' +
+        '</div>';
+
+    var holder = document.getElementById('selectionLetterDoc');
+    holder.innerHTML = html;
+
+    var btn = document.getElementById('slDownloadBtn');
+    btn.disabled  = true;
+    btn.innerText = '⏳ Generating PDF...';
+
+    html2pdf()
+        .set({
+            margin:      [0, 0, 0, 0],
+            filename:    'Selection_Letter_' + d.candidateName.replace(/\s+/g, '_') + '.pdf',
+            image:       { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(holder)
+        .save()
+        .then(function() {
+            btn.disabled  = false;
+            btn.innerText = '⬇️ Download Letter';
+            holder.innerHTML = '';
+            window.toast('📄 Selection letter downloaded!');
+        })
+        .catch(function(err) {
+            console.error('html2pdf error:', err);
+            btn.disabled  = false;
+            btn.innerText = '⬇️ Download Letter';
+            window.toast('⚠️ PDF generation failed. Try again.');
+        });
+};
 </script>
 </body>
 </html>
