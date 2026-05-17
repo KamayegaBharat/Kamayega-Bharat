@@ -1279,7 +1279,12 @@ if (stLower === 'hired') {
                             || a.companyName
                             || a.company
                             || (a.employerId ? 'Employer (' + a.employerId.slice(0,6) + ')' : 'the Company');
-                        newlyHired = { jobTitle: a.jobTitle || 'Position', company: companyName };
+                       newlyHired = {
+                            jobTitle:        a.jobTitle        || 'Position',
+                            company:         companyName,
+                            referenceNumber: a.referenceNumber || null,
+                            appDocId:        doc.id
+                        };
                     }
                 }
             }
@@ -1287,11 +1292,13 @@ if (stLower === 'hired') {
             list.innerHTML += buildAppCard(doc.id, a);
         });
 
-        if (newlyHired) {
+       if (newlyHired) {
             window.showSelectionLetter(
                 userData.fullName || (auth.currentUser && auth.currentUser.displayName) || 'Candidate',
                 newlyHired.company,
-                newlyHired.jobTitle
+                newlyHired.jobTitle,
+                newlyHired.appDocId,
+                newlyHired.referenceNumber
             );
         }
         document.getElementById('appsBadge').innerText      = total;
@@ -1376,9 +1383,10 @@ function buildAppCard(appDocId, a) {
         var safeCompany   = hiredCompany.replace(/'/g, '');
         var safeCandidate = ((userData && userData.fullName) || '').replace(/'/g, '') || 'Candidate';
 
+       var safeRef = (a.referenceNumber || '').replace(/'/g, '');
         actionBtn =
             '<button ' +
-                'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\')" ' +
+                'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\',\'' + safeRef + '\')" ' +
                 'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
                     'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
                     'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
@@ -1888,8 +1896,14 @@ function loadSkillGap() {
 var _slData = {};
 
 // appDocId is passed in so the download guard can write back to Firestore.
-window.showSelectionLetter = function(candidateName, company, jobTitle, appDocId) {
-    _slData = { candidateName: candidateName, company: company, jobTitle: jobTitle, appDocId: appDocId || null };
+window.showSelectionLetter = function(candidateName, company, jobTitle, appDocId, referenceNumber) {
+    _slData = {
+        candidateName:   candidateName,
+        company:         company,
+        jobTitle:        jobTitle,
+        appDocId:        appDocId        || null,
+        referenceNumber: referenceNumber || null
+    };
     document.getElementById('slCandidateName').innerText = candidateName;
     document.getElementById('slSubtitle').innerText = 'Selected for ' + jobTitle + ' at ' + company;
     document.getElementById('selectionLetterModal').style.display = 'flex';
@@ -1899,9 +1913,19 @@ window.closeSelectionLetter = function() {
 };
 
 window.downloadSelectionLetter = function() {
-    var d     = _slData;
-    var today = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-    var refNo = 'KB-' + Date.now().toString(36).toUpperCase();
+    var d   = _slData;
+    var btn = document.getElementById('slDownloadBtn');
+    btn.disabled  = true;
+    btn.innerText = '⏳ Fetching reference...';
+
+    // ── Resolve the true referenceNumber from Firestore ──────────────
+    // Priority:
+    //   1. Already in _slData (set by the caller) — zero extra reads.
+    //   2. Fetch from /applications/{appDocId} if we have the doc ID.
+    //   3. Hard fallback: generate a temporary ref so the PDF is never
+    //      completely blank — but log a warning so it can be debugged.
+    function buildPDF(refNo) {
+        var today = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
 
     // Build a complete, self-contained HTML document string.
     // Passing a string (not a DOM node) to html2pdf().from(str,'string')
@@ -1967,29 +1991,64 @@ window.downloadSelectionLetter = function() {
     btn.disabled  = true;
     btn.innerText = '⏳ Generating PDF...';
 
-    html2pdf()
-        .set({
-            margin:      10,
-            filename:    'Selection_Letter_' + d.candidateName.replace(/\s+/g, '_') + '.pdf',
-            image:       { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        })
-        .from(letterHTML, 'string')
-        .save()
-.then(function() {
-            btn.disabled  = false;
-            btn.innerText = '⬇️ Download Letter';
-            window.toast('📄 Selection letter downloaded!');
+   html2pdf()
+            .set({
+                margin:      10,
+                filename:    'Selection_Letter_' + d.candidateName.replace(/\s+/g, '_') + '.pdf',
+                image:       { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+                jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            })
+            .from(letterHTML, 'string')
+            .save()
+            .then(function() {
+                btn.disabled  = false;
+                btn.innerText = '⬇️ Download Letter';
+                window.toast('📄 Selection letter downloaded!');
+            })
+            .catch(function(err) {
+                console.error('html2pdf error:', err);
+                btn.disabled  = false;
+                btn.innerText = '⬇️ Download Letter';
+                window.toast('⚠️ PDF generation failed. Try again.');
+            });
+    } // end buildPDF
 
-// No download limit — letter is freely re-downloadable on every visit.
-        })
-        .catch(function(err) {
-            console.error('html2pdf error:', err);
-            btn.disabled  = false;
-            btn.innerText = '⬇️ Download Letter';
-            window.toast('⚠️ PDF generation failed. Try again.');
-        });
+    // ── Route: use cached ref, fetch from Firestore, or warn & fallback ──
+    if (_slData.referenceNumber) {
+        // Best case: ref already in memory from the snapshot data
+        buildPDF(_slData.referenceNumber);
+
+    } else if (_slData.appDocId) {
+        // Fetch the application doc to get the stamped referenceNumber
+        db.collection('applications').doc(_slData.appDocId).get()
+            .then(function(docSnap) {
+                var fetchedRef = (docSnap.exists && docSnap.data().referenceNumber) || null;
+                if (!fetchedRef) {
+                    console.warn('[downloadSelectionLetter] referenceNumber missing from Firestore doc ' + _slData.appDocId + '. The employer may not have stamped it yet.');
+                    window.toast('⚠️ Reference number not found — contact your employer to confirm hire status.');
+                    btn.disabled  = false;
+                    btn.innerText = '⬇️ Download Letter';
+                    return;
+                }
+                // Also cache it so repeat downloads skip this fetch
+                _slData.referenceNumber = fetchedRef;
+                buildPDF(fetchedRef);
+            })
+            .catch(function(err) {
+                console.error('[downloadSelectionLetter] Firestore fetch failed:', err);
+                btn.disabled  = false;
+                btn.innerText = '⬇️ Download Letter';
+                window.toast('⚠️ Could not fetch reference number — check Firestore rules.');
+            });
+
+    } else {
+        // No appDocId at all — this should not happen in normal flow
+        console.warn('[downloadSelectionLetter] No appDocId in _slData — cannot fetch referenceNumber.');
+        window.toast('⚠️ Could not verify reference number. Please re-open your application.');
+        btn.disabled  = false;
+        btn.innerText = '⬇️ Download Letter';
+    }
 };
 </script>
 </body>
