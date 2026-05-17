@@ -1132,47 +1132,74 @@ window.updateStatus = function (appId, selectEl) {
     var newStatus = selectEl.value;
     selectEl.className = 'status-select st-' + newStatus.toLowerCase();
 
-    // Build update payload; stamp selection letter fields when hiring
-    var payload = { status: newStatus };
-if (newStatus === 'Hired') {
-        // KB- + first 8 chars of appId uppercased, e.g. KB-MP9DS8IH
-        var refNum = 'KB-' + (appId || '').substring(0, 8).toUpperCase();
-        var coName = (employerDoc && (employerDoc.companyName || employerDoc.fullName)) ||
-                     (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) ||
-                     'Kamayega Bharat Employer';
-        payload.referenceNumber = refNum;
-        payload.companyName     = coName;
-        payload.hiredAt         = firebase.firestore.FieldValue.serverTimestamp();
-    }
- if (newStatus === 'Hired') {
-        // Write to both /applications and the public /selection_letters mirror
-        // so verifySelectionRef can query without needing broad applications access.
-        var batch = db.batch();
-        batch.update(db.collection('applications').doc(appId), payload);
-        batch.set(db.collection('selection_letters').doc(payload.referenceNumber), {
-            referenceNumber: payload.referenceNumber,
-            seekerName:      allApplications.filter(function(a){ return a && a.id === appId; }).map(function(a){ return a.seekerName || '—'; })[0] || '—',
-            jobTitle:        allApplications.filter(function(a){ return a && a.id === appId; }).map(function(a){ return a.jobTitle  || '—'; })[0] || '—',
-            companyName:     payload.companyName,
-            status:          'Hired',
-            hiredAt:         firebase.firestore.FieldValue.serverTimestamp()
-        });
-        batch.commit()
-            .then(function () { window.toast('🎉 Hired! Reference: ' + payload.referenceNumber); })
-            .catch(function (err) {
-                console.error('[updateStatus]', err);
-                window.toast('⚠️ Could not update status — check Firestore rules.');
-            });
-    } else {
-        db.collection('applications').doc(appId).update(payload)
+    // Non-hire statuses: simple single-field update, no extra work needed
+    if (newStatus !== 'Hired') {
+        db.collection('applications').doc(appId).update({ status: newStatus })
             .then(function () { window.toast('✅ Status updated to "' + newStatus + '"'); })
             .catch(function (err) {
                 console.error('[updateStatus]', err);
                 window.toast('⚠️ Could not update status — check Firestore rules.');
             });
+        return;
     }
-};
 
+    // ── HIRED PATH ────────────────────────────────────────────────────
+    // Step 1: Read the application doc fresh from Firestore so we have
+    // guaranteed seekerName / jobTitle values regardless of in-memory state.
+    db.collection('applications').doc(appId).get()
+        .then(function (docSnap) {
+            if (!docSnap || !docSnap.exists) {
+                window.toast('⚠️ Application document not found.');
+                return;
+            }
+
+            var appData = docSnap.data() || {};
+
+            // Build all hire fields explicitly
+            var refNum  = 'KB-' + appId.substring(0, 8).toUpperCase();
+            var coName  = (employerDoc && (employerDoc.companyName || employerDoc.fullName))
+                       || (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email))
+                       || 'Kamayega Bharat Employer';
+            var seeker  = appData.seekerName  || '—';
+            var jobTtl  = appData.jobTitle    || '—';
+            var ts      = firebase.firestore.FieldValue.serverTimestamp();
+
+            // Step 2: Batch-write both documents atomically
+            var batch = db.batch();
+
+            // 2a. Stamp the application doc with all hire fields
+            batch.update(db.collection('applications').doc(appId), {
+                status:          'Hired',
+                referenceNumber: refNum,
+                companyName:     coName,
+                hiredAt:         ts
+            });
+
+            // 2b. Write the public selection_letters mirror doc
+            batch.set(db.collection('selection_letters').doc(refNum), {
+                referenceNumber: refNum,
+                seekerName:      seeker,
+                jobTitle:        jobTtl,
+                companyName:     coName,
+                status:          'Hired',
+                hiredAt:         ts
+            });
+
+            return batch.commit();
+        })
+        .then(function (result) {
+            // batch.commit() resolves undefined; the .get() resolves a docSnap.
+            // Only show the toast when the batch actually committed (result === undefined).
+            if (result === undefined) {
+                var refNum = 'KB-' + appId.substring(0, 8).toUpperCase();
+                window.toast('🎉 Hired! Reference: ' + refNum);
+            }
+        })
+        .catch(function (err) {
+            console.error('[updateStatus hired]', err);
+            window.toast('⚠️ Could not save hire record — check Firestore rules.');
+        });
+};
 /* ── Selection Letter Reference Verifier ── */
 window.verifySelectionRef = function () {
     var input = document.getElementById('verifyRefInput');
