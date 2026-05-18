@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Command Centre | Kamayega Bharat</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/favicon.png">
+
+<!-- Firebase compat SDK -->
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<!-- Distinctive typography: Syne (geometric display) + DM Sans (refined body) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
+:root {
+    /* Core palette — deep navy command-centre aesthetic */
+    --ink:        #080e1a;
+    --ink-2:      #111827;
+    --ink-3:      #1c2636;
+    --surface:    #141d2b;
+    --surface-2:  #1a2537;
+    --surface-3:  #212f44;
+    --border:     rgba(255,255,255,0.07);
+    --border-2:   rgba(255,255,255,0.12);
+
+    /* Brand accent — electric cobalt */
+    --accent:     #3b82f6;
+    --accent-2:   #1d4ed8;
+    --accent-glow:rgba(59,130,246,0.18);
+
+    /* Status colours */
+    --green:      #10b981;
+    --green-bg:   rgba(16,185,129,0.12);
+    --amber:      #f59e0b;
+    --amber-bg:   rgba(245,158,11,0.12);
+    --red:        #ef4444;
+    --red-bg:     rgba(239,68,68,0.12);
+    --blue-bg:    rgba(59,130,246,0.12);
+
+    /* Text */
+    --text-1:     #f1f5f9;
+    --text-2:     #94a3b8;
+    --text-3:     #64748b;
+
+    /* Layout */
+    --sidebar-w:  260px;
+    --radius:     14px;
+    --radius-sm:  8px;
+    --shadow:     0 8px 32px rgba(0,0,0,0.45);
+    --shadow-sm:  0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ink);
+    color: var(--text-1);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+    /* Subtle noise texture for depth */
+    background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(16,185,129,0.05) 0%, transparent 60%);
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 200;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.brand-wordmark {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.brand-sub {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 3px;
+}
+
+.admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-chip::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.nav-section {
+    padding: 1.25rem 1rem 0.5rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 1.25rem;
+    margin: 2px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-2);
+    border: none;
+    background: transparent;
+    width: calc(100% - 16px);
+    text-align: left;
+    transition: all 0.15s;
+    position: relative;
+}
+
+.nav-item:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+}
+
+.nav-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    height: 50%;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+}
+
+.nav-icon { font-size: 1rem; flex-shrink: 0; }
+
+.nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.admin-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.admin-meta { flex: 1; min-width: 0; }
+.admin-name { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-role-label { font-size: 0.65rem; color: var(--text-3); }
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* Mobile sidebar */
+.sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
+.mobile-toggle { display: none; }
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+.main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-width: 0;
+}
+
+/* ── Top bar ── */
+.topbar {
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 1rem;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+
+.mobile-toggle {
+    display: none;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-bg);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: var(--green);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+}
+.live-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 1.5s infinite;
+}
+
+.btn-refresh {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-refresh:hover { background: var(--surface-3); color: var(--text-1); }
+
+/* ── Content body ── */
+.content {
+    padding: 2rem;
+    flex: 1;
+    max-width: 1500px;
+    width: 100%;
+}
+
+/* ── Tabs ── */
+.tab-pane { display: none; animation: fadeUp 0.25s ease; }
+.tab-pane.active { display: block; }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   STATS GRID
+═══════════════════════════════════════════ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.stat-card:hover {
+    border-color: var(--border-2);
+    transform: translateY(-2px);
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.07;
+    transform: translate(30%, -30%);
+}
+
+.stat-card.blue::after  { background: var(--accent); }
+.stat-card.green::after { background: var(--green); }
+.stat-card.amber::after { background: var(--amber); }
+.stat-card.red::after   { background: var(--red); }
+
+.stat-icon {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-card.blue  .stat-num { color: var(--accent); }
+.stat-card.green .stat-num { color: var(--green); }
+.stat-card.amber .stat-num { color: var(--amber); }
+.stat-card.red   .stat-num { color: var(--red); }
+
+.stat-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-2);
+}
+
+.stat-sub {
+    font-size: 0.7rem;
+    color: var(--text-3);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+/* Role split pills */
+.role-pills { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.role-pill {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+.role-pill.seeker   { background: var(--blue-bg);  color: var(--accent); }
+.role-pill.employer { background: var(--green-bg); color: var(--green); }
+.role-pill.admin    { background: var(--amber-bg); color: var(--amber); }
+
+/* ═══════════════════════════════════════════
+   SECTION HEADER
+═══════════════════════════════════════════ */
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-count {
+    background: var(--surface-3);
+    color: var(--text-2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   CARDS / PANELS
+═══════════════════════════════════════════ */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.panel-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+thead th {
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+tbody td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-1);
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+tbody tr {
+    transition: background 0.12s;
+}
+tbody tr:hover { background: var(--surface-2); }
+
+.td-muted { color: var(--text-2); font-size: 0.8rem; }
+.td-mono  { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--accent); letter-spacing: 0.04em; }
+
+/* ═══════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.badge-green  { background: var(--green-bg);  color: var(--green); }
+.badge-amber  { background: var(--amber-bg);  color: var(--amber); }
+.badge-red    { background: var(--red-bg);    color: var(--red); }
+.badge-blue   { background: var(--blue-bg);   color: var(--accent); }
+.badge-gray   { background: rgba(100,116,139,0.12); color: var(--text-3); }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-approve {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid rgba(16,185,129,0.25);
+}
+.btn-approve:hover:not(:disabled) {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+}
+
+.btn-reject {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.25);
+}
+.btn-reject:hover:not(:disabled) {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+}
+
+.btn-danger {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.2);
+}
+.btn-danger:hover:not(:disabled) { background: var(--red); color: #fff; }
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+    border: 1px solid var(--border-2);
+}
+.btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+
+.btn-amber {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.25);
+}
+.btn-amber:hover:not(:disabled) { background: var(--amber); color: #fff; }
+
+.actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════
+   SEARCH / FILTER BAR
+═══════════════════════════════════════════ */
+.search-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    min-width: 220px;
+}
+
+.search-input::placeholder { color: var(--text-3); }
+.search-input:focus { border-color: var(--accent); }
+
+.filter-select {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATES
+═══════════════════════════════════════════ */
+.empty-state {
+    text-align: center;
+    padding: 3.5rem 2rem;
+    color: var(--text-3);
+}
+
+.empty-state .e-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
+.empty-state .e-title { font-size: 0.9rem; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+.empty-state .e-sub   { font-size: 0.78rem; }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 99999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    box-shadow: var(--shadow);
+    max-width: 360px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.toast-ok   { border-color: rgba(16,185,129,0.4);  color: var(--green); }
+#toast.toast-err  { border-color: rgba(239,68,68,0.4);   color: var(--red); }
+#toast.toast-warn { border-color: rgba(245,158,11,0.4);  color: var(--amber); }
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.2s ease;
+}
+
+.modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    margin-bottom: 0.5rem;
+}
+
+.modal-body {
+    font-size: 0.85rem;
+    color: var(--text-2);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ═══════════════════════════════════════════
+   LOADING SKELETON
+═══════════════════════════════════════════ */
+.skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skel-row { height: 52px; margin-bottom: 2px; }
+
+/* ═══════════════════════════════════════════
+   AUTH GATE (shown while checking)
+═══════════════════════════════════════════ */
+#authGate {
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-gate-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.03em;
+}
+
+.auth-gate-sub {
+    font-size: 0.8rem;
+    color: var(--text-3);
+}
+
+.spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--border-2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-backdrop.open { display: block; }
+    .main { margin-left: 0; }
+    .mobile-toggle { display: flex; }
+    .content { padding: 1.25rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .topbar { padding: 1rem 1.25rem; }
+}
+
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════
+   STAGGERED ENTRY ANIMATION
+═══════════════════════════════════════════ */
+.stat-card { animation: fadeUp 0.4s ease both; }
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH GATE ═══ -->
+<div id="authGate">
+    <div class="auth-gate-logo">Kamayega Bharat</div>
+    <div class="auth-gate-sub">Verifying admin session…</div>
+    <div class="spinner"></div>
+</div>
+
+<!-- ═══ CONFIRM MODAL ═══ -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Confirm Action</div>
+        <div class="modal-body"  id="modalBody">Are you sure?</div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-wordmark">Kamayega Bharat</div>
+        <div class="brand-sub">Admin Command Centre</div>
+        <div class="admin-chip">Restricted Access</div>
+    </div>
+
+    <div class="nav-section">Platform</div>
+    <button class="nav-item active" onclick="switchTab('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+    </button>
+
+    <div class="nav-section">Workflows</div>
+    <button class="nav-item" onclick="switchTab('verification', this)">
+        <span class="nav-icon">🏅</span> Verifications
+        <span class="nav-badge" id="verif-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('letters', this)">
+        <span class="nav-icon">📄</span> Selection Letters
+    </button>
+
+    <div class="nav-section">Moderation</div>
+    <button class="nav-item" onclick="switchTab('jobs', this)">
+        <span class="nav-icon">💼</span> Job Listings
+    </button>
+    <button class="nav-item" onclick="switchTab('users', this)">
+        <span class="nav-icon">👥</span> Users
+    </button>
+
+    <div class="sidebar-footer">
+        <div class="admin-user-row">
+            <div class="admin-avatar" id="sidebarAvatar">A</div>
+            <div class="admin-meta">
+                <div class="admin-name" id="sidebarName">Admin</div>
+                <div class="admin-role-label">Super Admin</div>
+            </div>
+            <button class="btn-logout" onclick="doLogout()">Out</button>
+        </div>
+    </div>
+</aside>
+
+<!-- Sidebar backdrop (mobile) -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-toggle btn btn-ghost" onclick="toggleSidebar()">☰</button>
+            <div class="page-title" id="pageTitle">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+            <div class="live-badge">Live</div>
+            <button class="btn-refresh" onclick="hardRefresh()">
+                <span>↻</span> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+        <!-- ══════════════════════════════════
+             TAB: DASHBOARD
+        ══════════════════════════════════ -->
+        <div id="tab-dashboard" class="tab-pane active">
+
+            <!-- Stats grid -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-num" id="stat-users">—</div>
+                    <div class="stat-label">Registered Users</div>
+                    <div class="role-pills" id="stat-roles"></div>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-icon">💼</span>
+                    <div class="stat-num" id="stat-jobs">—</div>
+                    <div class="stat-label">Total Jobs Posted</div>
+                    <div class="stat-sub" id="stat-jobs-sub">Loading…</div>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-icon">📋</span>
+                    <div class="stat-num" id="stat-apps">—</div>
+                    <div class="stat-label">Active Applications</div>
+                    <div class="stat-sub" id="stat-apps-sub">Withdrawn excluded</div>
+                </div>
+                <div class="stat-card red">
+                    <span class="stat-icon">🏅</span>
+                    <div class="stat-num" id="stat-verif">—</div>
+                    <div class="stat-label">Pending Verifications</div>
+                    <div class="stat-sub" id="stat-verif-sub">Awaiting admin review</div>
+                </div>
+            </div>
+
+            <!-- Platform health summary -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title">⚡ Platform Health</div>
+                    <div class="badge badge-green">All systems operational</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="healthTableBody">
+                            <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent hires -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title">🎉 Recent Hires <span class="section-count" id="hired-count">0</span></div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Candidate</th>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentHiresBody">
+                            <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             TAB: VERIFICATION QUEUE
+        ══════════════════════════════════ -->
+        <div id="tab-verification" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">🏅 Employer Verification Queue <span class="section-count" id="verif-count">0</span></div>
+            </div>
+
+            <!-- Production note -->
+            <div style="background:var(--amber-bg); border:1px solid rgba(245,158,11,0.25); border-radius:var(--radius-sm); padding:12px 16px; font-size:0.8rem; color:var(--amber); margin-bottom:1.25rem; line-height:1.6;">
+                ⚠️ <strong>Production note:</strong> The APPROVE action below writes <code>isVerified: true</code> directly to Firestore via this admin client. In production, this write must be performed by a Firebase Cloud Function with Admin SDK credentials, because the Firestore rule <code>request.resource.data.isVerified == resource.data.isVerified</code> blocks client writes of that field for non-admin users. Wire up a Cloud Function trigger on <code>/verification_requests/{uid}</code> status change to handle this securely at scale.
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">Pending Requests</div>
+                    <div class="badge badge-amber" id="verif-pending-badge">Loading…</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Business Name</th>
+                                <th>GSTIN / Reg. No.</th>
+                                <th>Requested</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verifTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Already-processed section -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">Processed Verifications</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Business Name</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verifProcessedBody">
+                            <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             TAB: SELECTION LETTERS
+        ══════════════════════════════════ -->
+        <div id="tab-letters" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">📄 Selection Letter Audit Registry <span class="section-count" id="letters-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="letterSearch"
+                           placeholder="Search by Reference or Candidate…"
+                           oninput="filterLetters()">
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference No.</th>
+                                <th>Candidate Name</th>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Hired Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lettersTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             TAB: JOB LISTINGS
+        ══════════════════════════════════ -->
+        <div id="tab-jobs" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">💼 Job Listings <span class="section-count" id="jobs-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="jobSearch"
+                           placeholder="Search by title or company…"
+                           oninput="filterJobs()">
+                    <select class="filter-select" id="jobTypeFilter" onchange="filterJobs()">
+                        <option value="all">All Types</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                    <select class="filter-select" id="jobVerifFilter" onchange="filterJobs()">
+                        <option value="all">All Verification</option>
+                        <option value="verified">Verified Only</option>
+                        <option value="unverified">Unverified Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Verified</th>
+                                <th>Urgent</th>
+                                <th>Posted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTableBody">
+                            <tr><td colspan="8"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="8"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="8"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             TAB: USERS
+        ══════════════════════════════════ -->
+        <div id="tab-users" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">👥 User Management <span class="section-count" id="users-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="userSearch"
+                           placeholder="Search by name or email…"
+                           oninput="filterUsers()">
+                    <select class="filter-select" id="userRoleFilter" onchange="filterUsers()">
+                        <option value="all">All Roles</option>
+                        <option value="seeker">Seekers</option>
+                        <option value="employer">Employers</option>
+                        <option value="admin">Admins</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Verified</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════
+   FIREBASE CONFIG
+═══════════════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk',
+    authDomain:        'kamayega-bharat.firebaseapp.com',
+    projectId:         'kamayega-bharat',
+    storageBucket:     'kamayega-bharat.appspot.com',
+    messagingSenderId: '595460672260',
+    appId:             '1:595460672260:web:6584856313e2d740805e51'
+};
+
+/* ═══════════════════════════════════════════════════════
+   ADMIN ACCESS CONTROL
+   ─────────────────────────────────────────────────────
+   SECURITY MODEL:
+   • Primary gate  — Firestore /users/{uid}.role === 'admin'
+     (read from the database, not a client-side hardcode)
+   • Secondary gate — UID allowlist below as belt-and-suspenders
+     Add every admin UID here. An attacker who sets their own
+     role to 'admin' is still blocked by this list.
+   • In production, also set a Firebase Custom Claim via Admin SDK:
+       admin.auth().setCustomUserClaims(uid, { admin: true })
+     and check request.auth.token.admin == true in Firestore rules.
+═══════════════════════════════════════════════════════ */
+const ALLOWED_ADMIN_UIDS = [
+    '2Mx9kxqRLrOxuxlW7Ihrb3uswhJ3'   // Kamayega Bharat primary admin
+    // Add additional admin UIDs here as comma-separated strings
+];
+
+/* ═══════════════════════════════════════════════════════
+   MODULE STATE
+═══════════════════════════════════════════════════════ */
+var auth, db;
+var _unsubscribers = [];   // holds all onSnapshot cleanup functions
+var _allLetters    = [];   // raw data for client-side filter
+var _allJobs       = [];
+var _allUsers      = [];
+var _currentAdminUid  = null;
+var _currentAdminName = 'Admin';
+
+/* ═══════════════════════════════════════════════════════
+   INIT — fires after Firebase scripts load
+═══════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth = firebase.auth();
+    db   = firebase.firestore();
+
+    auth.onAuthStateChanged(function (user) {
+        if (!user) {
+            // Not logged in at all — redirect immediately
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Gate 1: UID allowlist check (synchronous, instant)
+        if (!ALLOWED_ADMIN_UIDS.includes(user.uid)) {
+            console.warn('[Admin] UID not in allowlist:', user.uid);
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Gate 2: Firestore role check (async, belt-and-suspenders)
+        db.collection('users').doc(user.uid).get()
+            .then(function (doc) {
+                var role = doc.exists ? (doc.data().role || '') : '';
+                if (role !== 'admin') {
+                    console.warn('[Admin] Firestore role check failed. Role:', role);
+                    window.location.href = 'index.html';
+                    return;
+                }
+                // ── Authenticated ──
+                _currentAdminUid  = user.uid;
+                _currentAdminName = doc.data().fullName || user.email || 'Admin';
+                bootAdminPanel(user);
+            })
+            .catch(function (err) {
+                console.error('[Admin] Role verification Firestore error:', err);
+                // On error, fail closed — redirect rather than allow access
+                window.location.href = 'index.html';
+            });
+    });
+});
+
+/* ═══════════════════════════════════════════════════════
+   BOOT — runs only after both security gates pass
+═══════════════════════════════════════════════════════ */
+function bootAdminPanel(user) {
+    // Hide auth gate
+    var gate = document.getElementById('authGate');
+    if (gate) { gate.style.transition = 'opacity 0.4s'; gate.style.opacity = '0'; setTimeout(function(){ gate.style.display='none'; }, 400); }
+
+    // Populate sidebar identity
+    var initials = _currentAdminName.split(' ').map(function(n){ return n[0] || ''; }).join('').substring(0,2).toUpperCase() || 'A';
+    var avatarEl = document.getElementById('sidebarAvatar');
+    var nameEl   = document.getElementById('sidebarName');
+    if (avatarEl) avatarEl.textContent = initials;
+    if (nameEl)   nameEl.textContent   = _currentAdminName;
+
+    // Mount all real-time listeners
+    mountDashboardListeners();
+    mountVerificationListeners();
+    mountLettersListener();
+    mountJobsListener();
+    mountUsersListener();
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY HELPERS
+═══════════════════════════════════════════════════════ */
+function esc(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function fmtDate(ts) {
+    if (!ts) return '—';
+    try {
+        var d = ts.toDate ? ts.toDate()
+              : ts.seconds ? new Date(ts.seconds * 1000)
+              : new Date(ts);
+        return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+    } catch(_) { return '—'; }
+}
+
+var _toastTimer = null;
+function toast(msg, type) {
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className   = 'show' + (type ? ' toast-' + type : '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function(){ t.className = ''; }, 3800);
+}
+
+function setEl(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+}
+
+function emptyState(msg) {
+    return '<tr><td colspan="99"><div class="empty-state">' +
+           '<div class="e-icon">📭</div>' +
+           '<div class="e-title">' + esc(msg) + '</div>' +
+           '<div class="e-sub">Nothing to show here yet.</div>' +
+           '</div></td></tr>';
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONFIRM MODAL
+═══════════════════════════════════════════════════════ */
+function confirm(title, body, onConfirm, confirmLabel, confirmClass) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').textContent  = body;
+    var btn = document.getElementById('modalConfirmBtn');
+    btn.textContent = confirmLabel || 'Confirm';
+    btn.className   = 'btn ' + (confirmClass || 'btn-primary');
+    btn.onclick     = function () { closeModal(); onConfirm(); };
+    document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('confirmModal').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════ */
+var TAB_TITLES = {
+    dashboard:    'Dashboard',
+    verification: 'Verification Queue',
+    letters:      'Selection Letters',
+    jobs:         'Job Listings',
+    users:        'User Management'
+};
+
+function switchTab(name, el) {
+    document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    var pane = document.getElementById('tab-' + name);
+    if (pane) pane.classList.add('active');
+    if (el)   el.classList.add('active');
+    setEl('pageTitle', TAB_TITLES[name] || name);
+    closeSidebar();
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+
+function doLogout() {
+    confirm('Sign Out', 'Are you sure you want to end your admin session?', function () {
+        auth.signOut().then(function(){ window.location.href = 'index.html'; });
+    }, 'Sign Out', 'btn-danger');
+}
+
+function hardRefresh() {
+    // Teardown all listeners then remount
+    _unsubscribers.forEach(function(unsub){ try { unsub(); } catch(_){} });
+    _unsubscribers = [];
+    mountDashboardListeners();
+    mountVerificationListeners();
+    mountLettersListener();
+    mountJobsListener();
+    mountUsersListener();
+    toast('Data refreshed', 'ok');
+}
+
+/* ═══════════════════════════════════════════════════════
+   1. DASHBOARD LISTENERS
+   ─────────────────────────────────────────────────────
+   Four real-time onSnapshot listeners power the stats grid.
+   Each is stored in _unsubscribers[] so hardRefresh() can
+   tear them all down cleanly without leaking reads.
+═══════════════════════════════════════════════════════ */
+function mountDashboardListeners() {
+
+    // ── Users: total + role breakdown ──────────────────────────────
+    var unsubUsers = db.collection('users').onSnapshot(function (snap) {
+        try {
+            var total    = snap.size;
+            var seekers  = 0, employers = 0, admins = 0;
+            snap.forEach(function (doc) {
+                var r = (doc.data().role || '').toLowerCase();
+                if (r === 'seeker')   seekers++;
+                else if (r === 'employer') employers++;
+                else if (r === 'admin')    admins++;
+            });
+            setEl('stat-users', total);
+            var pills = document.getElementById('stat-roles');
+            if (pills) {
+                pills.innerHTML =
+                    '<span class="role-pill seeker">👤 ' + seekers + ' Seekers</span>' +
+                    '<span class="role-pill employer">🏢 ' + employers + ' Employers</span>' +
+                    (admins ? '<span class="role-pill admin">⚡ ' + admins + ' Admins</span>' : '');
+            }
+            setEl('users-count', total);
+        } catch(e) { console.error('[Dashboard] users listener:', e); }
+    }, function(err) { console.error('[Dashboard] users onSnapshot error:', err); });
+
+    // ── Jobs: total + verified count ───────────────────────────────
+    var unsubJobs = db.collection('jobs').onSnapshot(function (snap) {
+        try {
+            var total    = snap.size;
+            var verified = 0, urgent = 0;
+            snap.forEach(function (doc) {
+                var d = doc.data();
+                if (d.isVerified) verified++;
+                if (d.isUrgent)   urgent++;
+            });
+            setEl('stat-jobs', total);
+            setEl('stat-jobs-sub', verified + ' verified · ' + urgent + ' urgent');
+            setEl('jobs-count', total);
+        } catch(e) { console.error('[Dashboard] jobs listener:', e); }
+    }, function(err) { console.error('[Dashboard] jobs onSnapshot error:', err); });
+
+    // ── Applications: count where status != 'withdrawn' ───────────
+    // Firestore does not support count() with inequality in compat SDK.
+    // We fetch all and filter client-side — acceptable at this scale.
+    var unsubApps = db.collection('applications').onSnapshot(function (snap) {
+        try {
+            var active = 0, hired = 0;
+            snap.forEach(function (doc) {
+                var st = (doc.data().status || '').toLowerCase();
+                if (st !== 'withdrawn') active++;
+                if (st === 'hired')     hired++;
+            });
+            setEl('stat-apps', active);
+            setEl('stat-apps-sub', hired + ' hired · ' + (active - hired) + ' in progress');
+            setEl('hired-count', hired);
+            buildHealthTable(snap.size, active, hired);
+        } catch(e) { console.error('[Dashboard] apps listener:', e); }
+    }, function(err) { console.error('[Dashboard] apps onSnapshot error:', err); });
+
+    // ── Verification requests: pending count ───────────────────────
+    var unsubVerif = db.collection('verification_requests')
+        .where('status', '==', 'pending')
+        .onSnapshot(function (snap) {
+            try {
+                var count = snap.size;
+                setEl('stat-verif', count);
+                setEl('stat-verif-sub', count > 0 ? count + ' request(s) need review' : 'All clear');
+                // Update sidebar badge
+                var badge = document.getElementById('verif-badge');
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? '' : 'none';
+                }
+                setEl('verif-pending-badge', count + ' pending');
+            } catch(e) { console.error('[Dashboard] verif pending listener:', e); }
+        }, function(err) { console.error('[Dashboard] verif onSnapshot error:', err); });
+
+    // ── Recent hires: latest 10 from selection_letters ────────────
+    var unsubLetters = db.collection('selection_letters')
+        .orderBy('hiredAt', 'desc')
+        .limit(10)
+        .onSnapshot(function (snap) {
+            try {
+                var body = document.getElementById('recentHiresBody');
+                if (!body) return;
+                if (snap.empty) { body.innerHTML = emptyState('No hires recorded yet'); return; }
+                var rows = [];
+                snap.forEach(function (doc) {
+                    var d = doc.data();
+                    rows.push(
+                        '<tr>' +
+                        '<td class="td-mono">' + esc(d.referenceNumber || doc.id) + '</td>' +
+                        '<td>' + esc(d.seekerName || '—') + '</td>' +
+                        '<td class="td-muted">' + esc(d.jobTitle || '—') + '</td>' +
+                        '<td class="td-muted">' + esc(d.companyName || '—') + '</td>' +
+                        '<td class="td-muted">' + fmtDate(d.hiredAt) + '</td>' +
+                        '</tr>'
+                    );
+                });
+                body.innerHTML = rows.join('');
+            } catch(e) { console.error('[Dashboard] recent hires:', e); }
+        }, function(err) { console.error('[Dashboard] letters listener:', err); });
+
+    _unsubscribers.push(unsubUsers, unsubJobs, unsubApps, unsubVerif, unsubLetters);
+}
+
+function buildHealthTable(totalApps, activeApps, hiredApps) {
+    var body = document.getElementById('healthTableBody');
+    if (!body) return;
+    var withdrawnApps = totalApps - activeApps;
+    var rows = [
+        ['Total Applications (all-time)', totalApps, 'badge-blue'],
+        ['Active Applications (non-withdrawn)', activeApps, 'badge-green'],
+        ['Withdrawn Applications', withdrawnApps, withdrawnApps > 0 ? 'badge-amber' : 'badge-gray'],
+        ['Hired Candidates (all-time)', hiredApps, hiredApps > 0 ? 'badge-green' : 'badge-gray'],
+        ['Conversion Rate (Applied → Hired)', totalApps > 0 ? Math.round(hiredApps / totalApps * 100) + '%' : '0%', 'badge-blue']
+    ];
+    body.innerHTML = rows.map(function(r){
+        return '<tr><td>' + esc(r[0]) + '</td>' +
+               '<td><strong>' + esc(String(r[1])) + '</strong></td>' +
+               '<td><span class="badge ' + r[2] + '">' + esc(String(r[1])) + '</span></td></tr>';
+    }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   2. VERIFICATION QUEUE LISTENERS
+═══════════════════════════════════════════════════════ */
+function mountVerificationListeners() {
+
+    // ── Pending queue ──────────────────────────────────────────────
+    var unsubPending = db.collection('verification_requests')
+        .where('status', '==', 'pending')
+        .orderBy('requestedAt', 'desc')
+        .onSnapshot(function (snap) {
+            try {
+                var body = document.getElementById('verifTableBody');
+                if (!body) return;
+                setEl('verif-count', snap.size);
+                if (snap.empty) { body.innerHTML = emptyState('No pending verification requests'); return; }
+                var rows = [];
+                snap.forEach(function (doc) {
+                    var d   = doc.data();
+                    var uid = doc.id;
+                    var biz = (d.verificationDetails && d.verificationDetails.businessName)  || d.companyName || '—';
+                    var reg = (d.verificationDetails && d.verificationDetails.registrationNumber) || '—';
+                    rows.push(
+                        '<tr id="vrow_' + esc(uid) + '">' +
+                        '<td><strong>' + esc(d.companyName || d.employerEmail || '—') + '</strong></td>' +
+                        '<td class="td-muted">' + esc(d.employerEmail || '—') + '</td>' +
+                        '<td>' + esc(biz) + '</td>' +
+                        '<td class="td-mono">' + esc(reg) + '</td>' +
+                        '<td class="td-muted">' + fmtDate(d.requestedAt) + '</td>' +
+                        '<td>' +
+                            '<div class="actions-cell">' +
+                            '<button class="btn btn-approve" onclick="approveVerification(\'' + esc(uid) + '\')">✓ Approve</button>' +
+                            '<button class="btn btn-reject"  onclick="rejectVerification(\'' + esc(uid) + '\')">✗ Reject</button>' +
+                            '</div>' +
+                        '</td>' +
+                        '</tr>'
+                    );
+                });
+                body.innerHTML = rows.join('');
+            } catch(e) { console.error('[Verif] pending listener:', e); }
+        }, function(err) {
+            console.error('[Verif] pending onSnapshot error:', err);
+            // != queries need a composite index — surface the error clearly
+            var body = document.getElementById('verifTableBody');
+            if (body) body.innerHTML = '<tr><td colspan="6" style="color:var(--red);padding:1rem;font-size:0.8rem;">⚠️ Query failed: ' + esc(err.message) + '</td></tr>';
+        });
+
+    // ── Processed (approved / rejected) ───────────────────────────
+    var unsubProcessed = db.collection('verification_requests')
+        .where('status', 'in', ['approved', 'rejected'])
+        .orderBy('requestedAt', 'desc')
+        .limit(30)
+        .onSnapshot(function (snap) {
+            try {
+                var body = document.getElementById('verifProcessedBody');
+                if (!body) return;
+                if (snap.empty) { body.innerHTML = emptyState('No processed verifications yet'); return; }
+                var rows = [];
+                snap.forEach(function (doc) {
+                    var d   = doc.data();
+                    var uid = doc.id;
+                    var biz = (d.verificationDetails && d.verificationDetails.businessName) || d.companyName || '—';
+                    var statusBadge = d.status === 'approved'
+                        ? '<span class="badge badge-green">✓ Approved</span>'
+                        : '<span class="badge badge-red">✗ Rejected</span>';
+                    rows.push(
+                        '<tr>' +
+                        '<td>' + esc(d.companyName || d.employerEmail || '—') + '</td>' +
+                        '<td>' + esc(biz) + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '<td class="td-muted">' + fmtDate(d.requestedAt) + '</td>' +
+                        '<td>' +
+                            (d.status === 'approved'
+                                ? '<button class="btn btn-reject btn-ghost" style="font-size:0.72rem;" onclick="revokeVerification(\'' + esc(uid) + '\')">Revoke</button>'
+                                : '<button class="btn btn-approve btn-ghost" style="font-size:0.72rem;" onclick="approveVerification(\'' + esc(uid) + '\')">Re-approve</button>') +
+                        '</td>' +
+                        '</tr>'
+                    );
+                });
+                body.innerHTML = rows.join('');
+            } catch(e) { console.error('[Verif] processed listener:', e); }
+        }, function(err) { console.error('[Verif] processed onSnapshot error:', err); });
+
+    _unsubscribers.push(unsubPending, unsubProcessed);
+}
+
+/* ── Approve: atomic batch ────────────────────────────────────────
+   IMPORTANT PRODUCTION COMMENT:
+   This client-side batch write sets isVerified:true on the /users doc.
+   This works here because the admin UID is in the Firestore allowlist
+   and the callerIsVerified() rule permits it. At scale, move this to a
+   Firebase Cloud Function triggered by verification_requests.status == 'approved'
+   using the Admin SDK, which bypasses all Firestore security rules entirely.
+   That removes the need for the callerIsVerified() rule workaround in
+   your Firestore rules and eliminates any risk of client-side privilege escalation.
+─────────────────────────────────────────────────────────────────── */
+window.approveVerification = function (uid) {
+    confirm(
+        'Approve Verification',
+        'This will grant the employer a Verified badge on all their job listings. This action takes effect immediately.',
+        function () {
+            var batch = db.batch();
+            // Update user document — sets isVerified:true and verificationStatus:'verified'
+            batch.update(db.collection('users').doc(uid), {
+                isVerified:         true,
+                verificationStatus: 'verified',
+                verifiedAt:         firebase.firestore.FieldValue.serverTimestamp(),
+                verifiedBy:         _currentAdminUid
+            });
+            // Update the verification request document
+            batch.update(db.collection('verification_requests').doc(uid), {
+                status:     'approved',
+                reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                reviewedBy: _currentAdminUid
+            });
+            batch.commit()
+                .then(function () { toast('✅ Employer verified and badge granted', 'ok'); })
+                .catch(function (err) {
+                    console.error('[approveVerification] batch error:', err);
+                    toast('⚠️ Approval failed: ' + err.message, 'err');
+                });
+        },
+        'Approve',
+        'btn-approve'
+    );
+};
+
+window.rejectVerification = function (uid) {
+    confirm(
+        'Reject Verification',
+        'This will allow the employer to resubmit their details. Their account remains unverified.',
+        function () {
+            var batch = db.batch();
+            // Reset user document
+            batch.update(db.collection('users').doc(uid), {
+                isVerified:         false,
+                verificationStatus: 'unverified',
+                rejectedAt:         firebase.firestore.FieldValue.serverTimestamp(),
+                rejectedBy:         _currentAdminUid
+            });
+            // Update the request document
+            batch.update(db.collection('verification_requests').doc(uid), {
+                status:     'rejected',
+                reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                reviewedBy: _currentAdminUid
+            });
+            batch.commit()
+                .then(function () { toast('Verification rejected. Employer can resubmit.', 'warn'); })
+                .catch(function (err) {
+                    console.error('[rejectVerification] batch error:', err);
+                    toast('⚠️ Rejection failed: ' + err.message, 'err');
+                });
+        },
+        'Reject',
+        'btn-reject'
+    );
+};
+
+window.revokeVerification = function (uid) {
+    confirm(
+        'Revoke Verification',
+        'This will remove the Verified badge from this employer and all their job listings.',
+        function () {
+            var batch = db.batch();
+            batch.update(db.collection('users').doc(uid), {
+                isVerified:         false,
+                verificationStatus: 'unverified',
+                revokedAt:          firebase.firestore.FieldValue.serverTimestamp(),
+                revokedBy:          _currentAdminUid
+            });
+            batch.update(db.collection('verification_requests').doc(uid), {
+                status:     'rejected',
+                reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                reviewedBy: _currentAdminUid
+            });
+            batch.commit()
+                .then(function () { toast('Verification revoked.', 'warn'); })
+                .catch(function (err) {
+                    console.error('[revokeVerification]:', err);
+                    toast('⚠️ Revoke failed: ' + err.message, 'err');
+                });
+        },
+        'Revoke',
+        'btn-danger'
+    );
+};
+
+/* ═══════════════════════════════════════════════════════
+   3. SELECTION LETTERS LISTENER
+═══════════════════════════════════════════════════════ */
+function mountLettersListener() {
+    var unsub = db.collection('selection_letters')
+        .orderBy('hiredAt', 'desc')
+        .onSnapshot(function (snap) {
+            try {
+                _allLetters = [];
+                snap.forEach(function (doc) {
+                    var d = doc.data();
+                    _allLetters.push({
+                        ref:       d.referenceNumber || doc.id,
+                        candidate: d.seekerName    || '—',
+                        jobTitle:  d.jobTitle      || '—',
+                        company:   d.companyName   || '—',
+                        hiredAt:   d.hiredAt,
+                        id:        doc.id
+                    });
+                });
+                setEl('letters-count', _allLetters.length);
+                filterLetters();
+            } catch(e) { console.error('[Letters] listener:', e); }
+        }, function(err) { console.error('[Letters] onSnapshot error:', err); });
+    _unsubscribers.push(unsub);
+}
+
+window.filterLetters = function () {
+    var q    = (document.getElementById('letterSearch') && document.getElementById('letterSearch').value || '').toLowerCase().trim();
+    var list = q ? _allLetters.filter(function(l){
+        return l.ref.toLowerCase().includes(q) || l.candidate.toLowerCase().includes(q);
+    }) : _allLetters;
+
+    var body = document.getElementById('lettersTableBody');
+    if (!body) return;
+    if (!list.length) { body.innerHTML = emptyState(q ? 'No results for "' + q + '"' : 'No selection letters yet'); return; }
+
+    body.innerHTML = list.map(function(l){
+        return '<tr>' +
+            '<td class="td-mono">' + esc(l.ref) + '</td>' +
+            '<td><strong>' + esc(l.candidate) + '</strong></td>' +
+            '<td class="td-muted">' + esc(l.jobTitle) + '</td>' +
+            '<td class="td-muted">' + esc(l.company)  + '</td>' +
+            '<td class="td-muted">' + fmtDate(l.hiredAt) + '</td>' +
+            '<td>' +
+                '<button class="btn btn-danger" style="font-size:0.72rem;" onclick="invalidateLetter(\'' + esc(l.id) + '\',\'' + esc(l.ref) + '\')">🗑 Invalidate</button>' +
+            '</td>' +
+            '</tr>';
+    }).join('');
+};
+
+window.invalidateLetter = function (docId, refNum) {
+    confirm(
+        'Invalidate Selection Letter',
+        'Delete letter ' + refNum + '? This permanently removes it from the public registry. A third party verifying this reference will see "Invalid". This cannot be undone.',
+        function () {
+            db.collection('selection_letters').doc(docId).delete()
+                .then(function(){ toast('Letter ' + refNum + ' invalidated', 'warn'); })
+                .catch(function(err){
+                    console.error('[invalidateLetter]:', err);
+                    toast('⚠️ Delete failed: ' + err.message, 'err');
+                });
+        },
+        'Invalidate',
+        'btn-danger'
+    );
+};
+
+/* ═══════════════════════════════════════════════════════
+   4a. JOB LISTINGS LISTENER
+═══════════════════════════════════════════════════════ */
+function mountJobsListener() {
+    var unsub = db.collection('jobs')
+        .orderBy('postedAt', 'desc')
+        .onSnapshot(function (snap) {
+            try {
+                _allJobs = [];
+                snap.forEach(function (doc) {
+                    var d = doc.data();
+                    _allJobs.push({
+                        id:         doc.id,
+                        title:      d.title      || '—',
+                        company:    d.companyName || d.company || '—',
+                        location:   d.location   || '—',
+                        jobType:    d.jobType    || '—',
+                        isVerified: !!d.isVerified,
+                        isUrgent:   !!d.isUrgent,
+                        postedAt:   d.postedAt,
+                        employerId: d.employerId || ''
+                    });
+                });
+                filterJobs();
+            } catch(e) { console.error('[Jobs] listener:', e); }
+        }, function(err) { console.error('[Jobs] onSnapshot error:', err); });
+    _unsubscribers.push(unsub);
+}
+
+window.filterJobs = function () {
+    var q      = (document.getElementById('jobSearch')       && document.getElementById('jobSearch').value || '').toLowerCase().trim();
+    var type   = (document.getElementById('jobTypeFilter')   && document.getElementById('jobTypeFilter').value   || 'all');
+    var verif  = (document.getElementById('jobVerifFilter')  && document.getElementById('jobVerifFilter').value  || 'all');
+
+    var list = _allJobs.filter(function(j){
+        var matchQ = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q);
+        var matchT = type === 'all'  || j.jobType === type;
+        var matchV = verif === 'all' || (verif === 'verified' ? j.isVerified : !j.isVerified);
+        return matchQ && matchT && matchV;
+    });
+
+    setEl('jobs-count', list.length);
+    var body = document.getElementById('jobsTableBody');
+    if (!body) return;
+    if (!list.length) { body.innerHTML = emptyState(q ? 'No jobs match your search' : 'No jobs posted yet'); return; }
+
+    body.innerHTML = list.map(function(j){
+        return '<tr>' +
+            '<td><strong>' + esc(j.title) + '</strong></td>' +
+            '<td class="td-muted">' + esc(j.company) + '</td>' +
+            '<td class="td-muted">' + esc(j.location) + '</td>' +
+            '<td><span class="badge badge-blue">' + esc(j.jobType) + '</span></td>' +
+            '<td>' + (j.isVerified ? '<span class="badge badge-green">👑 Yes</span>' : '<span class="badge badge-gray">No</span>') + '</td>' +
+            '<td>' + (j.isUrgent   ? '<span class="badge badge-red">🔥 Yes</span>'  : '<span class="badge badge-gray">No</span>') + '</td>' +
+            '<td class="td-muted">' + fmtDate(j.postedAt) + '</td>' +
+            '<td>' +
+                '<div class="actions-cell">' +
+                '<button class="btn btn-danger" onclick="deleteJob(\'' + esc(j.id) + '\',\'' + esc(j.title) + '\')">🗑 Delete</button>' +
+                '</div>' +
+            '</td>' +
+            '</tr>';
+    }).join('');
+};
+
+window.deleteJob = function (jobId, title) {
+    confirm(
+        'Delete Job Listing',
+        'Permanently delete "' + title + '"? All associated data including applicant references to this job ID will be orphaned. This cannot be undone.',
+        function () {
+            db.collection('jobs').doc(jobId).delete()
+                .then(function(){ toast('Job listing deleted', 'warn'); })
+                .catch(function(err){
+                    console.error('[deleteJob]:', err);
+                    toast('⚠️ Delete failed: ' + err.message, 'err');
+                });
+        },
+        'Delete',
+        'btn-danger'
+    );
+};
+
+/* ═══════════════════════════════════════════════════════
+   4b. USER MANAGEMENT LISTENER
+═══════════════════════════════════════════════════════ */
+function mountUsersListener() {
+    var unsub = db.collection('users')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(function (snap) {
+            try {
+                _allUsers = [];
+                snap.forEach(function (doc) {
+                    var d = doc.data();
+                    _allUsers.push({
+                        id:         doc.id,
+                        name:       d.fullName   || d.displayName || '—',
+                        email:      d.email      || '—',
+                        role:       d.role       || 'seeker',
+                        isVerified: !!d.isVerified,
+                        createdAt:  d.createdAt,
+                        disabled:   !!d.disabled
+                    });
+                });
+                filterUsers();
+            } catch(e) { console.error('[Users] listener:', e); }
+        }, function(err) { console.error('[Users] onSnapshot error:', err); });
+    _unsubscribers.push(unsub);
+}
+
+window.filterUsers = function () {
+    var q    = (document.getElementById('userSearch')     && document.getElementById('userSearch').value     || '').toLowerCase().trim();
+    var role = (document.getElementById('userRoleFilter') && document.getElementById('userRoleFilter').value || 'all');
+
+    var list = _allUsers.filter(function(u){
+        var matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        var matchR = role === 'all' || u.role === role;
+        return matchQ && matchR;
+    });
+
+    setEl('users-count', list.length);
+    var body = document.getElementById('usersTableBody');
+    if (!body) return;
+    if (!list.length) { body.innerHTML = emptyState(q ? 'No users match your search' : 'No users found'); return; }
+
+    var roleBadge = { seeker: 'badge-blue', employer: 'badge-green', admin: 'badge-amber' };
+
+    body.innerHTML = list.map(function(u){
+        var rCls = roleBadge[u.role] || 'badge-gray';
+        // Do not allow admin to disable or reset their own account
+        var isSelf = u.id === _currentAdminUid;
+        return '<tr>' +
+            '<td>' +
+                '<strong>' + esc(u.name) + '</strong>' +
+                (u.disabled ? ' <span class="badge badge-red" style="font-size:0.6rem;">Disabled</span>' : '') +
+            '</td>' +
+            '<td class="td-muted">' + esc(u.email) + '</td>' +
+            '<td><span class="badge ' + rCls + '">' + esc(u.role) + '</span></td>' +
+            '<td>' + (u.isVerified ? '<span class="badge badge-green">👑 Yes</span>' : '<span class="badge badge-gray">—</span>') + '</td>' +
+            '<td class="td-muted">' + fmtDate(u.createdAt) + '</td>' +
+            '<td>' +
+                '<div class="actions-cell">' +
+                    (isSelf ? '<span class="td-muted" style="font-size:0.75rem;">Current session</span>' :
+                        '<button class="btn btn-amber" onclick="resetUserPassword(\'' + esc(u.id) + '\',\'' + esc(u.email) + '\')">📧 Reset PW</button>' +
+                        '<button class="btn ' + (u.disabled ? 'btn-approve' : 'btn-danger') + '" onclick="toggleUserDisabled(\'' + esc(u.id) + '\',' + u.disabled + ')">' +
+                            (u.disabled ? '✓ Re-enable' : '⛔ Disable') +
+                        '</button>'
+                    ) +
+                '</div>' +
+            '</td>' +
+            '</tr>';
+    }).join('');
+};
+
+/* ── Password reset ───────────────────────────────────────────────
+   Firebase Auth password reset is sent via the client SDK using
+   sendPasswordResetEmail(). This sends an email to the user's
+   registered address. In production, use the Admin SDK to force-set
+   a password or revoke refresh tokens for immediate account lockout.
+────────────────────────────────────────────────────────────────── */
+window.resetUserPassword = function (uid, email) {
+    confirm(
+        'Send Password Reset',
+        'A password reset email will be sent to ' + email + '. The user will be able to set a new password via the link.',
+        function () {
+            auth.sendPasswordResetEmail(email)
+                .then(function(){ toast('Password reset email sent to ' + email, 'ok'); })
+                .catch(function(err){
+                    console.error('[resetPassword]:', err);
+                    toast('⚠️ Reset failed: ' + err.message, 'err');
+                });
+        },
+        'Send Reset Email',
+        'btn-amber'
+    );
+};
+
+/* ── Disable / re-enable user ────────────────────────────────────
+   NOTE: Firebase Auth account disable requires the Admin SDK and
+   cannot be done from a client SDK call. This admin panel writes
+   a 'disabled: true' flag to the user's Firestore document as a
+   soft-disable. Your Firestore security rules should check:
+       && !resource.data.disabled
+   on sensitive write operations to enforce this flag.
+   For hard Auth-level disable, call a Cloud Function that uses
+   admin.auth().updateUser(uid, { disabled: true }).
+────────────────────────────────────────────────────────────────── */
+window.toggleUserDisabled = function (uid, currentlyDisabled) {
+    var action     = currentlyDisabled ? 'Re-enable' : 'Disable';
+    var newState   = !currentlyDisabled;
+    var bodyText   = currentlyDisabled
+        ? 'This will re-enable the account. The user will be able to log in and use the platform again.'
+        : 'This sets a soft-disable flag on the Firestore document. For hard Auth-level disable, trigger the Cloud Function. The user will be blocked from platform actions that check this flag.';
+
+    confirm(
+        action + ' Account',
+        bodyText,
+        function () {
+            db.collection('users').doc(uid).update({
+                disabled:   newState,
+                disabledAt: newState ? firebase.firestore.FieldValue.serverTimestamp() : firebase.firestore.FieldValue.delete(),
+                disabledBy: newState ? _currentAdminUid : firebase.firestore.FieldValue.delete()
+            })
+            .then(function(){ toast('User account ' + (newState ? 'disabled' : 're-enabled'), newState ? 'warn' : 'ok'); })
+            .catch(function(err){
+                console.error('[toggleUserDisabled]:', err);
+                toast('⚠️ Action failed: ' + err.message, 'err');
+            });
+        },
+        action,
+        newState ? 'btn-danger' : 'btn-approve'
+    );
+};
+</script>
+</body>
+</html>
