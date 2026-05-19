@@ -12,7 +12,18 @@
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
- <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+ <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script> 
+   <script defer src="/notifications.js" id="notification-script"></script>
+<script defer>
+  // We wait for the notification script to finish loading first
+  document.getElementById('notification-script').addEventListener('load', function() {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        initNotifications(user.uid);
+      }
+    });
+  });
+</script>
     <!-- html2pdf — client-side PDF generation, no Firebase storage needed -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
             integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
