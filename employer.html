@@ -12,7 +12,17 @@
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
+<script defer src="/notifications.js" id="notification-script"></script>
+<script defer>
+  // We wait for the notification script to finish loading first
+  document.getElementById('notification-script').addEventListener('load', function() {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        initNotifications(user.uid);
+      }
+    });
+  });
+</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
