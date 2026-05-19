@@ -360,6 +360,28 @@
     </div>
 </div>
 
+<!-- Rating Modal -->
+<div id="ratingModal" style="display:none; position:fixed; z-index:10000; top:0; left:0; width:100%; height:100%; background:rgba(0,26,94,0.65); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+    <div style="background:var(--card); border-radius:24px; padding:2.5rem; max-width:420px; width:92%; border:2px solid var(--accent); box-shadow:0 30px 60px rgba(245,158,11,0.2); text-align:center;">
+        <div style="font-size:3rem; margin-bottom:0.75rem;">⭐</div>
+        <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-main); margin-bottom:0.25rem;">Rate This Employer</h3>
+        <div id="ratingJobTitle" style="font-size:0.875rem; font-weight:600; color:var(--text-muted); margin-bottom:1.5rem;"></div>
+        <div id="starRow" style="display:flex; justify-content:center; gap:12px; margin-bottom:1rem;">
+            <span class="star-btn" data-val="1" onclick="window.setRating(1)" style="font-size:2.2rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; color:#fbbf24;">★</span>
+            <span class="star-btn" data-val="2" onclick="window.setRating(2)" style="font-size:2.2rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; color:#fbbf24;">★</span>
+            <span class="star-btn" data-val="3" onclick="window.setRating(3)" style="font-size:2.2rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; color:#fbbf24;">★</span>
+            <span class="star-btn" data-val="4" onclick="window.setRating(4)" style="font-size:2.2rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; color:#fbbf24;">★</span>
+            <span class="star-btn" data-val="5" onclick="window.setRating(5)" style="font-size:2.2rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; color:#fbbf24;">★</span>
+        </div>
+        <div id="ratingLabel" style="font-size:0.85rem; font-weight:700; color:var(--accent); margin-bottom:1.25rem; min-height:20px;"></div>
+        <textarea id="ratingReview" rows="3" placeholder="Share your experience (optional)..." style="width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--bg-light); color:var(--text-main); font-weight:600; font-size:0.875rem; resize:vertical; font-family:inherit; margin-bottom:1.25rem; outline:none;"></textarea>
+        <div style="display:flex; gap:10px;">
+            <button onclick="window.closeRatingModal()" class="btn-outline" style="flex:1;">Cancel</button>
+            <button id="submitRatingBtn" onclick="window.submitRating()" class="btn-pri" style="flex:1; background:linear-gradient(135deg,#f59e0b,#fbbf24);">Submit Rating</button>
+        </div>
+    </div>
+</div>
+
 <!-- Selection Letter Modal -->
 <div id="selectionLetterModal" style="display:none; position:fixed; z-index:10000; top:0; left:0; width:100%; height:100%; background:rgba(0,26,94,0.65); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
     <div style="background:var(--card); border-radius:24px; padding:2.5rem; max-width:500px; width:92%; border:2px solid #10b981; box-shadow:0 30px 60px rgba(16,185,129,0.25); text-align:center; position:relative;">
