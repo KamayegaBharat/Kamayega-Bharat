@@ -5,1012 +5,797 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Command Centre | Kamayega Bharat</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/png" href="/favicon.png">
 
 <!-- Firebase compat SDK -->
 <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<!-- Typography: Syne (display) + DM Sans (body) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 /* ═══════════════════════════════════════════
    DESIGN TOKENS
 ═══════════════════════════════════════════ */
 :root {
-  --ink:          #060d18;
-  --ink-2:        #0d1625;
-  --ink-3:        #162030;
-  --surface:      #111c2d;
-  --surface-2:    #172236;
-  --surface-3:    #1e2f47;
-  --border:       rgba(255,255,255,0.06);
-  --border-2:     rgba(255,255,255,0.11);
-  --border-3:     rgba(255,255,255,0.18);
-
-  --accent:       #3b82f6;
-  --accent-2:     #1d4ed8;
-  --accent-dim:   rgba(59,130,246,0.14);
-  --accent-glow:  rgba(59,130,246,0.22);
-
-  --green:        #10b981;
-  --green-bg:     rgba(16,185,129,0.11);
-  --amber:        #f59e0b;
-  --amber-bg:     rgba(245,158,11,0.11);
-  --red:          #ef4444;
-  --red-bg:       rgba(239,68,68,0.11);
-  --purple:       #a78bfa;
-  --purple-bg:    rgba(167,139,250,0.11);
-  --blue-bg:      rgba(59,130,246,0.11);
-  --teal:         #14b8a6;
-  --teal-bg:      rgba(20,184,166,0.11);
-
-  --text-1:       #f0f6ff;
-  --text-2:       #8fa8c8;
-  --text-3:       #4e6480;
-
-  --sidebar-w:    268px;
-  --radius:       14px;
-  --radius-sm:    8px;
-  --radius-xs:    5px;
-  --shadow:       0 12px 40px rgba(0,0,0,0.55);
-  --shadow-sm:    0 3px 14px rgba(0,0,0,0.35);
+    --ink:        #080e1a;
+    --ink-2:      #111827;
+    --ink-3:      #1c2636;
+    --surface:    #141d2b;
+    --surface-2:  #1a2537;
+    --surface-3:  #212f44;
+    --border:     rgba(255,255,255,0.07);
+    --border-2:   rgba(255,255,255,0.12);
+    --accent:     #3b82f6;
+    --accent-2:   #1d4ed8;
+    --accent-glow:rgba(59,130,246,0.18);
+    --green:      #10b981;
+    --green-bg:   rgba(16,185,129,0.12);
+    --amber:      #f59e0b;
+    --amber-bg:   rgba(245,158,11,0.12);
+    --red:        #ef4444;
+    --red-bg:     rgba(239,68,68,0.12);
+    --blue-bg:    rgba(59,130,246,0.12);
+    --purple:     #a855f7;
+    --purple-bg:  rgba(168,85,247,0.12);
+    --text-1:     #f1f5f9;
+    --text-2:     #94a3b8;
+    --text-3:     #64748b;
+    --sidebar-w:  260px;
+    --radius:     14px;
+    --radius-sm:  8px;
+    --shadow:     0 8px 32px rgba(0,0,0,0.45);
+    --shadow-sm:  0 2px 12px rgba(0,0,0,0.3);
 }
 
-/* ═══════════════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
-
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--ink);
-  color: var(--text-1);
-  min-height: 100vh;
-  display: flex;
-  overflow-x: hidden;
-  background-image:
-    radial-gradient(ellipse 90% 55% at 15% -5%,  rgba(59,130,246,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 45% at 85% 105%, rgba(16,185,129,0.05) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 60% 50%,  rgba(167,139,250,0.03) 0%, transparent 60%);
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ink);
+    color: var(--text-1);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+    background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(16,185,129,0.05) 0%, transparent 60%);
 }
 
 /* ═══════════════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════════════ */
 .sidebar {
-  width: var(--sidebar-w);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  position: fixed;
-  height: 100vh;
-  z-index: 200;
-  transition: transform 0.3s ease;
-  overflow-y: auto;
-  overflow-x: hidden;
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 200;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
 }
 
 .sidebar-brand {
-  padding: 1.75rem 1.5rem 1.4rem;
-  border-bottom: 1px solid var(--border);
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
 }
 
 .brand-wordmark {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text-1);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 .brand-sub {
-  font-size: 0.62rem;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  margin-top: 3px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 3px;
 }
 
 .admin-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(59,130,246,0.28);
-  color: var(--accent);
-  font-size: 0.6rem;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 20px;
-  margin-top: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .admin-chip::before {
-  content: '';
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pulse-dot 2s infinite;
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse-dot 2s infinite;
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.35; transform: scale(0.65); }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
 }
 
 .nav-section {
-  padding: 1.2rem 1.1rem 0.45rem;
-  font-size: 0.58rem;
-  font-weight: 700;
-  color: var(--text-3);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+    padding: 1.25rem 1rem 0.5rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 1.2rem;
-  margin: 1px 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.855rem;
-  font-weight: 500;
-  color: var(--text-2);
-  border: none;
-  background: transparent;
-  width: calc(100% - 16px);
-  text-align: left;
-  transition: all 0.15s;
-  position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 1.25rem;
+    margin: 2px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-2);
+    border: none;
+    background: transparent;
+    width: calc(100% - 16px);
+    text-align: left;
+    transition: all 0.15s;
+    position: relative;
 }
 
 .nav-item:hover { background: var(--surface-2); color: var(--text-1); }
 
 .nav-item.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-  font-weight: 600;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 25%; height: 50%;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 0 3px 3px 0;
+    content: '';
+    position: absolute;
+    left: 0; top: 25%; height: 50%; width: 3px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
 }
 
-.nav-icon { font-size: 0.95rem; flex-shrink: 0; width: 18px; text-align: center; }
+.nav-icon { font-size: 1rem; flex-shrink: 0; }
 
 .nav-badge {
-  margin-left: auto;
-  background: var(--red);
-  color: white;
-  font-size: 0.58rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 20px;
-  min-width: 17px;
-  text-align: center;
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
 }
 
 .sidebar-footer {
-  margin-top: auto;
-  padding: 1.1rem 1.25rem;
-  border-top: 1px solid var(--border);
+    margin-top: auto;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
 }
 
-.admin-user-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.admin-user-row { display: flex; align-items: center; gap: 10px; }
 
 .admin-avatar {
-  width: 33px; height: 33px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--green));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.78rem;
-  font-weight: 700;
-  flex-shrink: 0;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
 }
 
 .admin-meta { flex: 1; min-width: 0; }
-.admin-name { font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-role-label { font-size: 0.62rem; color: var(--text-3); }
+.admin-name { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-role-label { font-size: 0.65rem; color: var(--text-3); }
 
 .btn-logout {
-  background: transparent;
-  border: 1px solid var(--border-2);
-  color: var(--text-3);
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.68rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-3);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
 }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-.sidebar-backdrop {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 199;
-}
+.sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
 .mobile-toggle { display: none; }
 
 /* ═══════════════════════════════════════════
    MAIN CONTENT
 ═══════════════════════════════════════════ */
 .main {
-  margin-left: var(--sidebar-w);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-width: 0;
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-width: 0;
 }
 
-/* ── Top bar ── */
 .topbar {
-  padding: 0.9rem 2rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  gap: 1rem;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 1rem;
 }
 
-.topbar-left  { display: flex; align-items: center; gap: 12px; }
-.topbar-right { display: flex; align-items: center; gap: 8px;  }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
 
 .mobile-toggle {
-  display: none;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text-1);
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
+    display: none;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
 }
 
 .page-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text-1);
-  letter-spacing: -0.02em;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
 }
 
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
 .live-badge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--green-bg);
-  border: 1px solid rgba(16,185,129,0.22);
-  color: var(--green);
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 4px 11px;
-  border-radius: 20px;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--green-bg);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: var(--green);
+    font-size: 0.7rem; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+    letter-spacing: 0.05em;
 }
 .live-badge::before {
-  content: '';
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: pulse-dot 1.5s infinite;
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--green);
+    animation: pulse-dot 1.5s infinite;
 }
 
 .btn-refresh {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text-2);
-  padding: 6px 13px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'DM Sans', sans-serif;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 0.8rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
 }
 .btn-refresh:hover { background: var(--surface-3); color: var(--text-1); }
 
 .content {
-  padding: 1.75rem 2rem;
-  flex: 1;
+    padding: 2rem;
+    flex: 1;
+    max-width: 1500px;
+    width: 100%;
 }
 
-/* Tabs */
 .tab-pane { display: none; animation: fadeUp 0.25s ease; }
 .tab-pane.active { display: block; }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ═══════════════════════════════════════════
    STATS GRID
 ═══════════════════════════════════════════ */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 .stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.4rem 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.4s ease both;
 }
-
 .stat-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+.stat-card:nth-child(5) { animation-delay: 0.25s; }
 
 .stat-card::after {
-  content: '';
-  position: absolute;
-  top: 0; right: 0;
-  width: 90px; height: 90px;
-  border-radius: 50%;
-  opacity: 0.06;
-  transform: translate(35%, -35%);
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%; opacity: 0.07;
+    transform: translate(30%, -30%);
 }
+.stat-card.blue::after  { background: var(--accent); }
+.stat-card.green::after { background: var(--green); }
+.stat-card.amber::after { background: var(--amber); }
+.stat-card.red::after   { background: var(--red); }
+.stat-card.purple::after{ background: var(--purple); }
 
-.stat-card.blue::after   { background: var(--accent); }
-.stat-card.green::after  { background: var(--green); }
-.stat-card.amber::after  { background: var(--amber); }
-.stat-card.red::after    { background: var(--red); }
-.stat-card.purple::after { background: var(--purple); }
-.stat-card.teal::after   { background: var(--teal); }
-
-.stat-icon { font-size: 1.2rem; margin-bottom: 0.7rem; display: block; }
+.stat-icon { font-size: 1.3rem; margin-bottom: 0.75rem; display: block; }
 
 .stat-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 2.1rem;
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1;
-  margin-bottom: 4px;
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    letter-spacing: -0.04em; line-height: 1;
+    margin-bottom: 4px;
 }
-
-.stat-card.blue   .stat-num { color: var(--accent); }
-.stat-card.green  .stat-num { color: var(--green); }
-.stat-card.amber  .stat-num { color: var(--amber); }
-.stat-card.red    .stat-num { color: var(--red); }
+.stat-card.blue .stat-num   { color: var(--accent); }
+.stat-card.green .stat-num  { color: var(--green); }
+.stat-card.amber .stat-num  { color: var(--amber); }
+.stat-card.red .stat-num    { color: var(--red); }
 .stat-card.purple .stat-num { color: var(--purple); }
-.stat-card.teal   .stat-num { color: var(--teal); }
 
-.stat-label { font-size: 0.77rem; font-weight: 500; color: var(--text-2); }
+.stat-label { font-size: 0.78rem; font-weight: 500; color: var(--text-2); }
 
 .stat-sub {
-  font-size: 0.68rem;
-  color: var(--text-3);
-  margin-top: 9px;
-  padding-top: 9px;
-  border-top: 1px solid var(--border);
+    font-size: 0.7rem; color: var(--text-3);
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
 }
 
-.role-pills { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+.role-pills { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .role-pill {
-  font-size: 0.62rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
+    font-size: 0.65rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
 }
 .role-pill.seeker   { background: var(--blue-bg);   color: var(--accent); }
 .role-pill.employer { background: var(--green-bg);  color: var(--green); }
 .role-pill.admin    { background: var(--amber-bg);  color: var(--amber); }
 
 /* ═══════════════════════════════════════════
-   ANALYTICS MATRIX
-═══════════════════════════════════════════ */
-.analytics-matrix {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-}
-
-.matrix-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.4rem 1.5rem;
-}
-
-.matrix-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.ratio-bar-wrap { margin-bottom: 1rem; }
-
-.ratio-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.ratio-label { font-size: 0.78rem; font-weight: 500; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
-.ratio-pct   { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 800; }
-
-.ratio-bar {
-  height: 8px;
-  background: var(--surface-3);
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
-}
-
-.ratio-fill {
-  height: 100%;
-  border-radius: 20px;
-  transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.ratio-fill.blue   { background: linear-gradient(90deg, var(--accent), #60a5fa); }
-.ratio-fill.green  { background: linear-gradient(90deg, var(--green), #34d399); }
-.ratio-fill.amber  { background: linear-gradient(90deg, var(--amber), #fcd34d); }
-.ratio-fill.red    { background: linear-gradient(90deg, var(--red),   #f87171); }
-.ratio-fill.purple { background: linear-gradient(90deg, var(--purple), #c4b5fd); }
-.ratio-fill.teal   { background: linear-gradient(90deg, var(--teal),   #2dd4bf); }
-
-/* Funnel chart */
-.funnel-wrap { display: flex; flex-direction: column; gap: 6px; }
-
-.funnel-step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.funnel-bar-outer {
-  flex: 1;
-  height: 28px;
-  background: var(--surface-3);
-  border-radius: var(--radius-xs);
-  overflow: hidden;
-  position: relative;
-}
-
-.funnel-bar-inner {
-  height: 100%;
-  border-radius: var(--radius-xs);
-  display: flex;
-  align-items: center;
-  padding-left: 10px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.9);
-  transition: width 0.9s cubic-bezier(0.25, 1, 0.5, 1);
-  white-space: nowrap;
-  min-width: 50px;
-}
-
-.funnel-bar-inner.blue   { background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
-.funnel-bar-inner.green  { background: linear-gradient(90deg, #059669, var(--green)); }
-.funnel-bar-inner.amber  { background: linear-gradient(90deg, #d97706, var(--amber)); }
-.funnel-bar-inner.teal   { background: linear-gradient(90deg, #0d9488, var(--teal)); }
-
-.funnel-label {
-  font-size: 0.72rem;
-  color: var(--text-3);
-  width: 115px;
-  flex-shrink: 0;
-  text-align: right;
-}
-
-.funnel-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 800;
-  width: 38px;
-  flex-shrink: 0;
-  color: var(--text-1);
-}
-
-/* ═══════════════════════════════════════════
    SECTION HEADER
 ═══════════════════════════════════════════ */
 .section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.1rem;
-  gap: 1rem;
-  flex-wrap: wrap;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem; flex-wrap: wrap;
 }
 
 .section-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.96rem;
-  font-weight: 800;
-  color: var(--text-1);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--text-1); letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 8px;
 }
 
 .section-count {
-  background: var(--surface-3);
-  color: var(--text-2);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.66rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
+    background: var(--surface-3);
+    color: var(--text-2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
 }
 
 /* ═══════════════════════════════════════════
-   PANELS
+   PANELS / CARDS
 ═══════════════════════════════════════════ */
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
 }
 
 .panel-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
 }
 
 /* ═══════════════════════════════════════════
    TABLES
 ═══════════════════════════════════════════ */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap { overflow-x: auto; }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.83rem;
-}
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 
 thead th {
-  padding: 0.75rem 1.1rem;
-  text-align: left;
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-3);
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    font-size: 0.65rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 tbody td {
-  padding: 0.85rem 1.1rem;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-1);
-  vertical-align: middle;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-1);
+    vertical-align: middle;
 }
 
 tbody tr:last-child td { border-bottom: none; }
-tbody tr { transition: background 0.1s; }
+tbody tr { transition: background 0.12s; }
 tbody tr:hover { background: var(--surface-2); }
 
-.td-muted  { color: var(--text-2); font-size: 0.78rem; }
-.td-mono   { font-family: 'Courier New', monospace; font-size: 0.76rem; color: var(--accent); letter-spacing: 0.05em; }
-.td-small  { font-size: 0.75rem; color: var(--text-2); }
-.td-strong { font-weight: 600; }
+.td-muted { color: var(--text-2); font-size: 0.8rem; }
+.td-mono  { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--accent); letter-spacing: 0.02em; }
 
 /* ═══════════════════════════════════════════
    BADGES
 ═══════════════════════════════════════════ */
 .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em;
 }
-
 .badge-green  { background: var(--green-bg);  color: var(--green); }
 .badge-amber  { background: var(--amber-bg);  color: var(--amber); }
 .badge-red    { background: var(--red-bg);    color: var(--red); }
 .badge-blue   { background: var(--blue-bg);   color: var(--accent); }
+.badge-gray   { background: rgba(100,116,139,0.12); color: var(--text-3); }
 .badge-purple { background: var(--purple-bg); color: var(--purple); }
-.badge-teal   { background: var(--teal-bg);   color: var(--teal); }
-.badge-gray   { background: rgba(78,100,128,0.15); color: var(--text-3); }
 
 /* ═══════════════════════════════════════════
    BUTTONS
 ═══════════════════════════════════════════ */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  white-space: nowrap;
-  font-family: 'DM Sans', sans-serif;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.15s; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
 }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.btn-approve { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+.btn-approve:hover:not(:disabled) { background: var(--green); color: #fff; border-color: var(--green); }
 
-.btn-approve {
-  background: var(--green-bg);
-  color: var(--green);
-  border: 1px solid rgba(16,185,129,0.22);
-}
-.btn-approve:hover:not(:disabled) { background: var(--green); color: #fff; }
+.btn-reject { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+.btn-reject:hover:not(:disabled) { background: var(--red); color: #fff; border-color: var(--red); }
 
-.btn-reject {
-  background: var(--red-bg);
-  color: var(--red);
-  border: 1px solid rgba(239,68,68,0.22);
-}
-.btn-reject:hover:not(:disabled) { background: var(--red); color: #fff; }
-
-.btn-danger {
-  background: var(--red-bg);
-  color: var(--red);
-  border: 1px solid rgba(239,68,68,0.2);
-}
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
 .btn-danger:hover:not(:disabled) { background: var(--red); color: #fff; }
 
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
-}
+.btn-primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
 .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--text-2);
-  border: 1px solid var(--border-2);
-}
+.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border-2); }
 .btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
 
-.btn-amber {
-  background: var(--amber-bg);
-  color: var(--amber);
-  border: 1px solid rgba(245,158,11,0.22);
-}
+.btn-amber { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
 .btn-amber:hover:not(:disabled) { background: var(--amber); color: #fff; }
 
-.btn-teal {
-  background: var(--teal-bg);
-  color: var(--teal);
-  border: 1px solid rgba(20,184,166,0.22);
-}
-.btn-teal:hover:not(:disabled) { background: var(--teal); color: #fff; }
-
-.btn-purple {
-  background: var(--purple-bg);
-  color: var(--purple);
-  border: 1px solid rgba(167,139,250,0.22);
-}
+.btn-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
 .btn-purple:hover:not(:disabled) { background: var(--purple); color: #fff; }
 
-.actions-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+.btn-sm { padding: 5px 10px; font-size: 0.72rem; }
 
-/* ═══════════════════════════════════════════
-   TOGGLE SWITCH
-═══════════════════════════════════════════ */
-.toggle-wrap { display: flex; align-items: center; gap: 6px; }
-
-.toggle-switch {
-  position: relative;
-  width: 34px; height: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-
-.toggle-track {
-  position: absolute; inset: 0;
-  background: var(--surface-3);
-  border-radius: 20px;
-  border: 1px solid var(--border-2);
-  transition: background 0.2s;
-}
-
-.toggle-switch input:checked + .toggle-track { background: var(--green); border-color: var(--green); }
-
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  background: var(--text-3);
-  transition: transform 0.2s, background 0.2s;
-}
-
-.toggle-switch input:checked + .toggle-track::after { transform: translateX(16px); background: #fff; }
-
-.toggle-label { font-size: 0.7rem; color: var(--text-3); }
+.actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
 
 /* ═══════════════════════════════════════════
    SEARCH / FILTER BAR
 ═══════════════════════════════════════════ */
-.search-bar { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.search-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 .search-input {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text-1);
-  padding: 7px 13px;
-  border-radius: var(--radius-sm);
-  font-size: 0.83rem;
-  font-family: 'DM Sans', sans-serif;
-  outline: none;
-  transition: border-color 0.15s;
-  min-width: 200px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 8px 14px; border-radius: var(--radius-sm);
+    font-size: 0.85rem; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.15s;
+    min-width: 220px;
 }
 .search-input::placeholder { color: var(--text-3); }
 .search-input:focus { border-color: var(--accent); }
 
 .filter-select {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text-2);
-  padding: 7px 11px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-family: 'DM Sans', sans-serif;
-  outline: none;
-  cursor: pointer;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    font-size: 0.82rem; font-family: 'DM Sans', sans-serif;
+    outline: none; cursor: pointer;
 }
 
 /* ═══════════════════════════════════════════
    EMPTY STATES
 ═══════════════════════════════════════════ */
-.empty-state {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-3);
-}
-.empty-state .e-icon  { font-size: 2.2rem; margin-bottom: 0.7rem; opacity: 0.35; }
-.empty-state .e-title { font-size: 0.88rem; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
-.empty-state .e-sub   { font-size: 0.76rem; }
+.empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--text-3); }
+.empty-state .e-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
+.empty-state .e-title { font-size: 0.9rem; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+.empty-state .e-sub { font-size: 0.78rem; }
 
 /* ═══════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════ */
 #toast {
-  position: fixed;
-  bottom: 22px; right: 22px;
-  background: var(--surface-3);
-  border: 1px solid var(--border-2);
-  color: var(--text-1);
-  padding: 11px 18px;
-  border-radius: var(--radius-sm);
-  font-size: 0.83rem;
-  font-weight: 500;
-  z-index: 99999;
-  transform: translateY(80px);
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
-  box-shadow: var(--shadow);
-  max-width: 340px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 12px 20px; border-radius: var(--radius-sm);
+    font-size: 0.85rem; font-weight: 500;
+    z-index: 99999;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none; box-shadow: var(--shadow);
+    max-width: 360px; display: flex; align-items: center; gap: 8px;
 }
-#toast.show      { transform: translateY(0); opacity: 1; }
-#toast.toast-ok  { border-color: rgba(16,185,129,0.4); color: var(--green); }
-#toast.toast-err { border-color: rgba(239,68,68,0.4);  color: var(--red); }
-#toast.toast-warn{ border-color: rgba(245,158,11,0.4); color: var(--amber); }
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.toast-ok   { border-color: rgba(16,185,129,0.4);  color: var(--green); }
+#toast.toast-err  { border-color: rgba(239,68,68,0.4);   color: var(--red); }
+#toast.toast-warn { border-color: rgba(245,158,11,0.4);  color: var(--amber); }
 
 /* ═══════════════════════════════════════════
-   MODAL
+   CONFIRM MODAL
 ═══════════════════════════════════════════ */
 .modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(10px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9000;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9000;
 }
 .modal-overlay.open { display: flex; }
 
 .modal-box {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius);
-  padding: 1.9rem;
-  max-width: 420px;
-  width: 92%;
-  box-shadow: var(--shadow);
-  animation: fadeUp 0.2s ease;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    padding: 2rem; max-width: 400px; width: 90%;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.2s ease;
 }
 
 .modal-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.98rem;
-  font-weight: 800;
-  color: var(--text-1);
-  margin-bottom: 0.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--text-1); margin-bottom: 0.5rem;
 }
-
-.modal-body {
-  font-size: 0.83rem;
-  color: var(--text-2);
-  margin-bottom: 1.4rem;
-  line-height: 1.65;
-}
-
+.modal-body { font-size: 0.85rem; color: var(--text-2); margin-bottom: 1.5rem; line-height: 1.6; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ═══════════════════════════════════════════
-   SKELETON
+   USER DETAIL MODAL (WIDE)
+═══════════════════════════════════════════ */
+#userDetailModal .modal-box {
+    max-width: 680px;
+    width: 95%;
+    padding: 0;
+    overflow: hidden;
+}
+
+.ud-header {
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--surface-3);
+}
+
+.ud-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem; font-weight: 800;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+}
+
+.ud-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 800;
+    color: var(--text-1); letter-spacing: -0.02em;
+}
+
+.ud-email { font-size: 0.8rem; color: var(--text-3); margin-top: 2px; }
+
+.ud-body { padding: 1.5rem 2rem; max-height: 65vh; overflow-y: auto; }
+
+.ud-section {
+    margin-bottom: 1.5rem;
+}
+
+.ud-section-title {
+    font-size: 0.62rem; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 6px;
+}
+
+.ud-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ud-field {
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+}
+
+.ud-field-label { font-size: 0.65rem; color: var(--text-3); margin-bottom: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+.ud-field-value { font-size: 0.82rem; color: var(--text-1); font-weight: 500; word-break: break-all; }
+.ud-field-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--accent); }
+.ud-field.full { grid-column: 1 / -1; }
+
+.ud-link-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.ud-link-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 0.78rem; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    border: none; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.ud-link-btn.resume { background: var(--blue-bg); color: var(--accent); border: 1px solid rgba(59,130,246,0.25); }
+.ud-link-btn.resume:hover { background: var(--accent); color: #fff; }
+.ud-link-btn.cert   { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+.ud-link-btn.cert:hover   { background: var(--purple); color: #fff; }
+.ud-link-btn.disabled-url { background: rgba(100,116,139,0.1); color: var(--text-3); cursor: not-allowed; border: 1px solid var(--border); }
+
+.skills-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.skill-tag {
+    background: var(--purple-bg);
+    color: var(--purple);
+    border: 1px solid rgba(168,85,247,0.2);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+}
+
+.fcm-token-box {
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--text-3);
+    word-break: break-all; line-height: 1.5;
+    position: relative;
+    margin-top: 6px;
+}
+
+.copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--surface-2); border: 1px solid var(--border-2);
+    color: var(--text-3); font-size: 0.65rem; font-weight: 600;
+    padding: 3px 8px; border-radius: 5px;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+}
+.copy-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.ud-footer {
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface-3);
+    gap: 8px; flex-wrap: wrap;
+}
+
+.ud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════
+   LOADING
 ═══════════════════════════════════════════ */
 .skeleton {
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 6px;
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.skel-row { height: 50px; margin-bottom: 2px; }
+.skel-row { height: 52px; margin-bottom: 2px; }
 
 /* ═══════════════════════════════════════════
    AUTH GATE
 ═══════════════════════════════════════════ */
 #authGate {
-  position: fixed; inset: 0;
-  background: var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  flex-direction: column;
-  gap: 1rem;
+    position: fixed; inset: 0; background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999; flex-direction: column; gap: 1rem;
 }
-
-.auth-gate-logo {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-1);
-  letter-spacing: -0.03em;
-}
-.auth-gate-sub { font-size: 0.78rem; color: var(--text-3); }
-
-.spinner {
-  width: 26px; height: 26px;
-  border: 3px solid var(--border-2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+.auth-gate-logo { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text-1); letter-spacing: -0.03em; }
+.auth-gate-sub { font-size: 0.8rem; color: var(--text-3); }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--border-2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ═══════════════════════════════════════════
-   STAGGERED ENTRY
+   NOTIFICATION BROADCAST BOX
 ═══════════════════════════════════════════ */
-.stat-card { animation: fadeUp 0.4s ease both; }
-.stat-card:nth-child(1) { animation-delay: 0.04s; }
-.stat-card:nth-child(2) { animation-delay: 0.08s; }
-.stat-card:nth-child(3) { animation-delay: 0.12s; }
-.stat-card:nth-child(4) { animation-delay: 0.16s; }
-.stat-card:nth-child(5) { animation-delay: 0.2s;  }
-.stat-card:nth-child(6) { animation-delay: 0.24s; }
-
-/* ═══════════════════════════════════════════
-   PRODUCTION ALERT BOX
-═══════════════════════════════════════════ */
-.prod-note {
-  background: var(--amber-bg);
-  border: 1px solid rgba(245,158,11,0.22);
-  border-radius: var(--radius-sm);
-  padding: 11px 15px;
-  font-size: 0.77rem;
-  color: var(--amber);
-  margin-bottom: 1.1rem;
-  line-height: 1.65;
-}
-.prod-note code {
-  background: rgba(245,158,11,0.12);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 0.73rem;
+.notif-compose {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
-/* ═══════════════════════════════════════════
-   JHARKHAND LOCATION INDICATOR
-═══════════════════════════════════════════ */
-.loc-jh {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.68rem;
-  color: var(--teal);
-  background: var(--teal-bg);
-  padding: 2px 7px;
-  border-radius: 20px;
-  font-weight: 600;
+.notif-form { display: flex; flex-direction: column; gap: 10px; }
+
+.notif-input, .notif-textarea {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    font-size: 0.85rem; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.15s;
+    width: 100%;
 }
+.notif-input:focus, .notif-textarea:focus { border-color: var(--accent); }
+.notif-textarea { min-height: 80px; resize: vertical; }
+
+.notif-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 
 /* ═══════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════ */
-@media (max-width: 1100px) {
-  .analytics-matrix { grid-template-columns: 1fr; }
-}
-
 @media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .sidebar-backdrop.open { display: block; }
-  .main { margin-left: 0; }
-  .mobile-toggle { display: flex; }
-  .content { padding: 1.1rem 1.25rem; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .topbar { padding: 0.9rem 1.25rem; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-backdrop.open { display: block; }
+    .main { margin-left: 0; }
+    .mobile-toggle { display: flex; }
+    .content { padding: 1.25rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .topbar { padding: 1rem 1.25rem; }
+    .ud-grid { grid-template-columns: 1fr; }
+    #userDetailModal .modal-box { max-width: 98vw; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -1018,1564 +803,1311 @@ tbody tr:hover { background: var(--surface-2); }
 
 <!-- ═══ AUTH GATE ═══ -->
 <div id="authGate">
-  <div class="auth-gate-logo">Kamayega Bharat</div>
-  <div class="auth-gate-sub">Verifying admin session…</div>
-  <div class="spinner"></div>
+    <div class="auth-gate-logo">Kamayega Bharat</div>
+    <div class="auth-gate-sub">Verifying admin session…</div>
+    <div class="spinner"></div>
 </div>
 
 <!-- ═══ CONFIRM MODAL ═══ -->
 <div class="modal-overlay" id="confirmModal">
-  <div class="modal-box">
-    <div class="modal-title" id="modalTitle">Confirm Action</div>
-    <div class="modal-body"  id="modalBody">Are you sure?</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Confirm Action</div>
+        <div class="modal-body"  id="modalBody">Are you sure?</div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+        </div>
     </div>
-  </div>
+</div>
+
+<!-- ═══ USER DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="userDetailModal">
+    <div class="modal-box">
+        <div class="ud-header">
+            <div class="ud-avatar" id="udAvatar">A</div>
+            <div>
+                <div class="ud-name" id="udName">—</div>
+                <div class="ud-email" id="udEmail">—</div>
+                <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;" id="udBadgeRow"></div>
+            </div>
+        </div>
+
+        <div class="ud-body">
+            <!-- Identity -->
+            <div class="ud-section">
+                <div class="ud-section-title">🪪 Identity & Account</div>
+                <div class="ud-grid">
+                    <div class="ud-field">
+                        <div class="ud-field-label">UID</div>
+                        <div class="ud-field-value mono" id="udUID">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Role</div>
+                        <div class="ud-field-value" id="udRole">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Joined</div>
+                        <div class="ud-field-value" id="udJoined">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Verification Status</div>
+                        <div class="ud-field-value" id="udVerifStatus">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Verified At</div>
+                        <div class="ud-field-value" id="udVerifiedAt">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Notifications</div>
+                        <div class="ud-field-value" id="udNotif">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="ud-section" id="udSkillsSection">
+                <div class="ud-section-title">🛠 Skills</div>
+                <div class="skills-tags" id="udSkills"></div>
+            </div>
+
+            <!-- Documents -->
+            <div class="ud-section">
+                <div class="ud-section-title">📁 Documents & Assets</div>
+                <div class="ud-link-row" id="udDocLinks"></div>
+            </div>
+
+            <!-- Verification Details -->
+            <div class="ud-section" id="udVerifDetailsSection" style="display:none;">
+                <div class="ud-section-title">🏅 Verification Details (Business)</div>
+                <div class="ud-grid">
+                    <div class="ud-field">
+                        <div class="ud-field-label">Business Name</div>
+                        <div class="ud-field-value" id="udBizName">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">GSTIN / Reg. No.</div>
+                        <div class="ud-field-value mono" id="udRegNum">—</div>
+                    </div>
+                    <div class="ud-field">
+                        <div class="ud-field-label">Verification Requested</div>
+                        <div class="ud-field-value" id="udVerifReqAt">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FCM Token -->
+            <div class="ud-section" id="udFcmSection">
+                <div class="ud-section-title">🔔 Push Notification Token (FCM)</div>
+                <div class="fcm-token-box" id="udFcmBox">
+                    <span id="udFcmToken">—</span>
+                    <button class="copy-btn" onclick="copyFcmToken()">Copy</button>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-3); margin-top:6px;" id="udFcmUpdated"></div>
+            </div>
+        </div>
+
+        <div class="ud-footer">
+            <div class="ud-actions" id="udFooterActions"></div>
+            <button class="btn btn-ghost btn-sm" onclick="closeUserDetail()">Close</button>
+        </div>
+    </div>
 </div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-wordmark">Kamayega Bharat</div>
-    <div class="brand-sub">Admin Command Centre</div>
-    <div class="admin-chip">Restricted Access</div>
-  </div>
-
-  <div class="nav-section">Platform</div>
-  <button class="nav-item active" onclick="switchTab('dashboard', this)">
-    <span class="nav-icon">📊</span> Dashboard
-  </button>
-  <button class="nav-item" onclick="switchTab('analytics', this)">
-    <span class="nav-icon">📈</span> Analytics Matrix
-  </button>
-
-  <div class="nav-section">Workflows</div>
-  <button class="nav-item" onclick="switchTab('verification', this)">
-    <span class="nav-icon">🏅</span> Verifications
-    <span class="nav-badge" id="verif-badge" style="display:none">0</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('letters', this)">
-    <span class="nav-icon">📄</span> Selection Letters
-  </button>
-
-  <div class="nav-section">Moderation</div>
-  <button class="nav-item" onclick="switchTab('jobs', this)">
-    <span class="nav-icon">💼</span> Job Listings
-  </button>
-  <button class="nav-item" onclick="switchTab('users', this)">
-    <span class="nav-icon">👥</span> Users
-  </button>
-
-  <div class="sidebar-footer">
-    <div class="admin-user-row">
-      <div class="admin-avatar" id="sidebarAvatar">A</div>
-      <div class="admin-meta">
-        <div class="admin-name" id="sidebarName">Admin</div>
-        <div class="admin-role-label">Super Admin</div>
-      </div>
-      <button class="btn-logout" onclick="doLogout()">Out</button>
+    <div class="sidebar-brand">
+        <div class="brand-wordmark">Kamayega Bharat</div>
+        <div class="brand-sub">Admin Command Centre</div>
+        <div class="admin-chip">Restricted Access</div>
     </div>
-  </div>
+
+    <div class="nav-section">Platform</div>
+    <button class="nav-item active" onclick="switchTab('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+    </button>
+
+    <div class="nav-section">Workflows</div>
+    <button class="nav-item" onclick="switchTab('verification', this)">
+        <span class="nav-icon">🏅</span> Verifications
+        <span class="nav-badge" id="verif-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('letters', this)">
+        <span class="nav-icon">📄</span> Selection Letters
+    </button>
+
+    <div class="nav-section">Moderation</div>
+    <button class="nav-item" onclick="switchTab('jobs', this)">
+        <span class="nav-icon">💼</span> Job Listings
+    </button>
+    <button class="nav-item" onclick="switchTab('users', this)">
+        <span class="nav-icon">👥</span> Users
+    </button>
+
+    <div class="nav-section">Tools</div>
+    <button class="nav-item" onclick="switchTab('notifications', this)">
+        <span class="nav-icon">🔔</span> Notifications
+    </button>
+
+    <div class="sidebar-footer">
+        <div class="admin-user-row">
+            <div class="admin-avatar" id="sidebarAvatar">A</div>
+            <div class="admin-meta">
+                <div class="admin-name" id="sidebarName">Admin</div>
+                <div class="admin-role-label">Super Admin</div>
+            </div>
+            <button class="btn-logout" onclick="doLogout()">Out</button>
+        </div>
+    </div>
 </aside>
 
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
 <!-- ═══ MAIN ═══ -->
 <div class="main">
-
-  <div class="topbar">
-    <div class="topbar-left">
-      <button class="mobile-toggle btn btn-ghost" onclick="toggleSidebar()">☰</button>
-      <div class="page-title" id="pageTitle">Dashboard</div>
-    </div>
-    <div class="topbar-right">
-      <div class="live-badge">Live</div>
-      <button class="btn-refresh" onclick="hardRefresh()">↻ Refresh</button>
-    </div>
-  </div>
-
-  <div class="content">
-
-    <!-- ════════════════════════════════════
-         TAB: DASHBOARD
-    ════════════════════════════════════ -->
-    <div id="tab-dashboard" class="tab-pane active">
-
-      <div class="stats-grid">
-        <div class="stat-card blue">
-          <span class="stat-icon">👥</span>
-          <div class="stat-num" id="stat-users">—</div>
-          <div class="stat-label">Registered Users</div>
-          <div class="role-pills" id="stat-roles"></div>
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-toggle btn btn-ghost" onclick="toggleSidebar()">☰</button>
+            <div class="page-title" id="pageTitle">Dashboard</div>
         </div>
-        <div class="stat-card green">
-          <span class="stat-icon">💼</span>
-          <div class="stat-num" id="stat-jobs">—</div>
-          <div class="stat-label">Total Jobs Posted</div>
-          <div class="stat-sub" id="stat-jobs-sub">Loading…</div>
+        <div class="topbar-right">
+            <div class="live-badge">Live</div>
+            <button class="btn-refresh" onclick="hardRefresh()">
+                <span>↻</span> Refresh
+            </button>
         </div>
-        <div class="stat-card amber">
-          <span class="stat-icon">📋</span>
-          <div class="stat-num" id="stat-apps">—</div>
-          <div class="stat-label">Active Applications</div>
-          <div class="stat-sub" id="stat-apps-sub">Withdrawn excluded</div>
-        </div>
-        <div class="stat-card red">
-          <span class="stat-icon">🏅</span>
-          <div class="stat-num" id="stat-verif">—</div>
-          <div class="stat-label">Pending Verifications</div>
-          <div class="stat-sub" id="stat-verif-sub">Awaiting admin review</div>
-        </div>
-        <div class="stat-card purple">
-          <span class="stat-icon">✅</span>
-          <div class="stat-num" id="stat-hired">—</div>
-          <div class="stat-label">Total Hires</div>
-          <div class="stat-sub" id="stat-hired-sub">All-time placements</div>
-        </div>
-        <div class="stat-card teal">
-          <span class="stat-icon">📍</span>
-          <div class="stat-num" id="stat-jh">—</div>
-          <div class="stat-label">Jharkhand Users</div>
-          <div class="stat-sub">Local region targeting</div>
-        </div>
-      </div>
-
-      <!-- Platform health -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="section-title">⚡ Platform Health Summary</div>
-          <div class="badge badge-green">All systems operational</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
-            </thead>
-            <tbody id="healthTableBody">
-              <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Recent hires -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="section-title">🎉 Recent Hires <span class="section-count" id="hired-count">0</span></div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Reference</th><th>Candidate</th><th>Job Title</th><th>Company</th><th>Date</th></tr>
-            </thead>
-            <tbody id="recentHiresBody">
-              <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
-    <!-- ════════════════════════════════════
-         TAB: ANALYTICS MATRIX
-    ════════════════════════════════════ -->
-    <div id="tab-analytics" class="tab-pane">
+    <div class="content">
 
-      <div class="section-head">
-        <div class="section-title">📈 Platform Health &amp; Analytics Matrix</div>
-      </div>
-
-      <div class="analytics-matrix">
-
-        <!-- Seeker vs Employer ratio -->
-        <div class="matrix-card">
-          <div class="matrix-title">👥 User Distribution</div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--accent)">●</span> Job Seekers</div>
-              <div class="ratio-pct" id="mx-seeker-pct" style="color:var(--accent)">—%</div>
+        <!-- ══ TAB: DASHBOARD ══ -->
+        <div id="tab-dashboard" class="tab-pane active">
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-num" id="stat-users">—</div>
+                    <div class="stat-label">Registered Users</div>
+                    <div class="role-pills" id="stat-roles"></div>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-icon">💼</span>
+                    <div class="stat-num" id="stat-jobs">—</div>
+                    <div class="stat-label">Total Jobs Posted</div>
+                    <div class="stat-sub" id="stat-jobs-sub">Loading…</div>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-icon">📋</span>
+                    <div class="stat-num" id="stat-apps">—</div>
+                    <div class="stat-label">Active Applications</div>
+                    <div class="stat-sub" id="stat-apps-sub">Withdrawn excluded</div>
+                </div>
+                <div class="stat-card red">
+                    <span class="stat-icon">🏅</span>
+                    <div class="stat-num" id="stat-verif">—</div>
+                    <div class="stat-label">Pending Verifications</div>
+                    <div class="stat-sub" id="stat-verif-sub">Awaiting admin review</div>
+                </div>
+                <div class="stat-card purple">
+                    <span class="stat-icon">🔔</span>
+                    <div class="stat-num" id="stat-fcm">—</div>
+                    <div class="stat-label">FCM-Enabled Users</div>
+                    <div class="stat-sub" id="stat-fcm-sub">Push notifications active</div>
+                </div>
             </div>
-            <div class="ratio-bar"><div class="ratio-fill blue" id="mx-seeker-bar" style="width:0%"></div></div>
-            <div style="margin-top:6px;font-size:0.7rem;color:var(--text-3)" id="mx-seeker-abs">— users</div>
-          </div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--green)">●</span> Employers</div>
-              <div class="ratio-pct" id="mx-employer-pct" style="color:var(--green)">—%</div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title">⚡ Platform Health</div>
+                    <div class="badge badge-green">All systems operational</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Metric</th><th>Value</th><th>Status</th></tr></thead>
+                        <tbody id="healthTableBody">
+                            <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
+                            <tr><td colspan="3"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="ratio-bar"><div class="ratio-fill green" id="mx-employer-bar" style="width:0%"></div></div>
-            <div style="margin-top:6px;font-size:0.7rem;color:var(--text-3)" id="mx-employer-abs">— users</div>
-          </div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--teal)">●</span> Jharkhand Region</div>
-              <div class="ratio-pct" id="mx-jh-pct" style="color:var(--teal)">—%</div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title">🎉 Recent Hires <span class="section-count" id="hired-count">0</span></div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Reference</th><th>Candidate</th><th>Job Title</th><th>Company</th><th>Date</th></tr>
+                        </thead>
+                        <tbody id="recentHiresBody">
+                            <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="ratio-bar"><div class="ratio-fill teal" id="mx-jh-bar" style="width:0%"></div></div>
-            <div style="margin-top:6px;font-size:0.7rem;color:var(--text-3)" id="mx-jh-abs">— users</div>
-          </div>
         </div>
 
-        <!-- Job & Application funnel -->
-        <div class="matrix-card">
-          <div class="matrix-title">🔬 Jobs &amp; Application Funnel</div>
-          <div class="funnel-wrap" id="funnelWrap">
-            <div style="color:var(--text-3);font-size:0.78rem;padding:1rem 0;">Loading funnel data…</div>
-          </div>
-        </div>
-
-        <!-- Verification health -->
-        <div class="matrix-card">
-          <div class="matrix-title">🏅 Verification Status</div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--green)">●</span> Verified Employers</div>
-              <div class="ratio-pct" id="mx-vyes-pct" style="color:var(--green)">—%</div>
+        <!-- ══ TAB: VERIFICATION ══ -->
+        <div id="tab-verification" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">🏅 Employer Verification Queue <span class="section-count" id="verif-count">0</span></div>
             </div>
-            <div class="ratio-bar"><div class="ratio-fill green" id="mx-vyes-bar" style="width:0%"></div></div>
-          </div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--red)">●</span> Pending Review</div>
-              <div class="ratio-pct" id="mx-vpend-pct" style="color:var(--red)">—%</div>
+            <div style="background:var(--amber-bg); border:1px solid rgba(245,158,11,0.25); border-radius:var(--radius-sm); padding:12px 16px; font-size:0.8rem; color:var(--amber); margin-bottom:1.25rem; line-height:1.6;">
+                ⚠️ <strong>Production note:</strong> APPROVE writes <code>isVerified: true</code> directly via this admin client. In production, move to a Firebase Cloud Function with Admin SDK for security.
             </div>
-            <div class="ratio-bar"><div class="ratio-fill red" id="mx-vpend-bar" style="width:0%"></div></div>
-          </div>
-          <div class="ratio-bar-wrap">
-            <div class="ratio-label-row">
-              <div class="ratio-label"><span style="color:var(--text-3)">●</span> Unverified</div>
-              <div class="ratio-pct" id="mx-vno-pct" style="color:var(--text-3)">—%</div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">Pending Requests</div>
+                    <div class="badge badge-amber" id="verif-pending-badge">Loading…</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th><th>Email</th><th>Business Name</th>
+                                <th>GSTIN / Reg. No.</th><th>Requested</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verifTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="ratio-bar"><div class="ratio-fill" id="mx-vno-bar" style="width:0%;background:var(--surface-3)"></div></div>
-          </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">Processed Verifications</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Full Name</th><th>Business Name</th><th>Status</th><th>Requested</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="verifProcessedBody">
+                            <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- Job type breakdown -->
-        <div class="matrix-card">
-          <div class="matrix-title">💼 Job Type Breakdown</div>
-          <div id="jobTypeBreakdown" class="funnel-wrap">
-            <div style="color:var(--text-3);font-size:0.78rem;padding:1rem 0;">Loading…</div>
-          </div>
+        <!-- ══ TAB: SELECTION LETTERS ══ -->
+        <div id="tab-letters" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">📄 Selection Letter Audit Registry <span class="section-count" id="letters-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="letterSearch"
+                           placeholder="Search by Reference or Candidate…"
+                           oninput="filterLetters()">
+                </div>
+            </div>
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Reference No.</th><th>Candidate Name</th><th>Job Title</th><th>Company</th><th>Hired Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="lettersTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════
-         TAB: VERIFICATION QUEUE
-    ════════════════════════════════════ -->
-    <div id="tab-verification" class="tab-pane">
-
-      <div class="section-head">
-        <div class="section-title">🏅 Employer Verification Queue <span class="section-count" id="verif-count">0</span></div>
-      </div>
-
-      <div class="prod-note">
-        ⚠️ <strong>Security Note:</strong> The APPROVE action writes <code>isVerified: true</code> to Firestore using the admin client UID, which is explicitly allowed by the security rules below. For large-scale production, migrate this to a Firebase Cloud Function using Admin SDK triggered on <code>/verification_requests/{uid}</code> status change.
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div class="section-title" style="font-size:0.875rem;">Pending Requests</div>
-          <div class="badge badge-amber" id="verif-pending-badge">Loading…</div>
+        <!-- ══ TAB: JOB LISTINGS ══ -->
+        <div id="tab-jobs" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">💼 Job Listings <span class="section-count" id="jobs-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="jobSearch"
+                           placeholder="Search by title or company…"
+                           oninput="filterJobs()">
+                    <select class="filter-select" id="jobTypeFilter" onchange="filterJobs()">
+                        <option value="all">All Types</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                    <select class="filter-select" id="jobVerifFilter" onchange="filterJobs()">
+                        <option value="all">All Verification</option>
+                        <option value="verified">Verified Only</option>
+                        <option value="unverified">Unverified Only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Job Title</th><th>Company</th><th>Location</th><th>Type</th><th>Verified</th><th>Urgent</th><th>Posted</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="jobsTableBody">
+                            <tr><td colspan="8"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Business Name</th>
-                <th>GST / Reg. No.</th>
-                <th>Requested</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="verifTableBody">
-              <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div class="section-title" style="font-size:0.875rem;">Processed Verifications</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Full Name</th>
-                <th>Business Name</th>
-                <th>Status</th>
-                <th>Requested</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="verifProcessedBody">
-              <tr><td colspan="5"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        <!-- ══ TAB: USERS ══ -->
+        <div id="tab-users" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">👥 User Management <span class="section-count" id="users-count">0</span></div>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="userSearch"
+                           placeholder="Search by name or email…"
+                           oninput="filterUsers()">
+                    <select class="filter-select" id="userRoleFilter" onchange="filterUsers()">
+                        <option value="all">All Roles</option>
+                        <option value="seeker">Seekers</option>
+                        <option value="employer">Employers</option>
+                        <option value="admin">Admins</option>
+                    </select>
+                    <select class="filter-select" id="userVerifFilter" onchange="filterUsers()">
+                        <option value="all">All Verified</option>
+                        <option value="verified">Verified Only</option>
+                        <option value="unverified">Unverified Only</option>
+                    </select>
+                    <select class="filter-select" id="userFcmFilter" onchange="filterUsers()">
+                        <option value="all">All Notif.</option>
+                        <option value="fcm">FCM Active</option>
+                        <option value="nofcm">No FCM</option>
+                    </select>
+                </div>
+            </div>
 
-    <!-- ════════════════════════════════════
-         TAB: SELECTION LETTERS
-    ════════════════════════════════════ -->
-    <div id="tab-letters" class="tab-pane">
-      <div class="section-head">
-        <div class="section-title">📄 Selection Letter Audit Registry <span class="section-count" id="letters-count">0</span></div>
-        <div class="search-bar">
-          <input type="text" class="search-input" id="letterSearch"
-                 placeholder="Search by Reference or Candidate…"
-                 oninput="filterLetters()">
+            <div class="panel">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th><th>Email</th><th>Role</th><th>Verified</th>
+                                <th>Skills</th><th>Resume</th><th>Cert</th><th>FCM</th>
+                                <th>Joined</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="10"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="panel">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Reference No.</th>
-                <th>Candidate Name</th>
-                <th>Job Title</th>
-                <th>Company</th>
-                <th>Hired Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="lettersTableBody">
-              <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
+        <!-- ══ TAB: NOTIFICATIONS ══ -->
+        <div id="tab-notifications" class="tab-pane">
+            <div class="section-head">
+                <div class="section-title">🔔 Push Notification Centre</div>
+            </div>
+
+            <div style="background:var(--blue-bg); border:1px solid rgba(59,130,246,0.25); border-radius:var(--radius-sm); padding:12px 16px; font-size:0.8rem; color:var(--accent); margin-bottom:1.25rem; line-height:1.6;">
+                ℹ️ <strong>Implementation note:</strong> The FCM token table below shows all registered device tokens. To broadcast, you need a Firebase Cloud Function / server with the Firebase Admin SDK — client-side SDK cannot send to other users' devices. This panel surfaces all tokens for your backend to consume.
+            </div>
+
+            <div class="notif-compose">
+                <div class="section-title" style="margin-bottom:1rem; font-size:0.9rem;">📝 Compose Broadcast (Server-side)</div>
+                <div class="notif-form">
+                    <div class="notif-row">
+                        <div style="flex:1;">
+                            <div style="font-size:0.7rem; color:var(--text-3); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em;">Notification Title</div>
+                            <input type="text" class="notif-input" id="notifTitle" placeholder="e.g. New Job Alert in Your Area">
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem; color:var(--text-3); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em;">Body</div>
+                        <textarea class="notif-textarea" id="notifBody" placeholder="Notification body text…"></textarea>
+                    </div>
+                    <div class="notif-row">
+                        <div style="flex:1;">
+                            <div style="font-size:0.7rem; color:var(--text-3); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em;">Target Audience</div>
+                            <select class="filter-select" id="notifTarget" style="width:100%;">
+                                <option value="all">All Users (All FCM Tokens)</option>
+                                <option value="seeker">Seekers Only</option>
+                                <option value="employer">Employers Only</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" style="margin-top:22px;" onclick="generateFcmPayload()">⚡ Generate Payload</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FCM Payload Output -->
+            <div class="panel" id="fcmPayloadPanel" style="display:none;">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">📋 FCM Payload (copy to your Cloud Function)</div>
+                    <button class="btn btn-ghost btn-sm" onclick="copyPayload()">📋 Copy Payload</button>
+                </div>
+                <div style="padding:1rem 1.5rem;">
+                    <pre id="fcmPayloadOutput" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--accent); white-space:pre-wrap; word-break:break-all; line-height:1.6;"></pre>
+                </div>
+            </div>
+
+            <!-- FCM Token Registry -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="section-title" style="font-size:0.875rem;">📱 Registered FCM Tokens <span class="section-count" id="fcm-token-count">0</span></div>
+                    <button class="btn btn-ghost btn-sm" onclick="exportFcmTokens()">⬇ Export CSV</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>User Name</th><th>Email</th><th>Role</th><th>FCM Token (truncated)</th><th>Updated</th><th>Notif. Enabled</th></tr>
+                        </thead>
+                        <tbody id="fcmTableBody">
+                            <tr><td colspan="6"><div class="skeleton skel-row"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ════════════════════════════════════
-         TAB: JOB LISTINGS (UPGRADED)
-    ════════════════════════════════════ -->
-    <div id="tab-jobs" class="tab-pane">
-      <div class="section-head">
-        <div class="section-title">💼 Job Listings <span class="section-count" id="jobs-count">0</span></div>
-        <div class="search-bar">
-          <input type="text" class="search-input" id="jobSearch"
-                 placeholder="Search by title or company…"
-                 oninput="filterJobs()">
-          <select class="filter-select" id="jobTypeFilter" onchange="filterJobs()">
-            <option value="all">All Types</option>
-            <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Contract">Contract</option>
-            <option value="Internship">Internship</option>
-          </select>
-          <select class="filter-select" id="jobVerifFilter" onchange="filterJobs()">
-            <option value="all">All Verification</option>
-            <option value="verified">Verified Only</option>
-            <option value="unverified">Unverified Only</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Job Title</th>
-                <th>Company / Employer</th>
-                <th>Location</th>
-                <th>Type</th>
-                <th>Salary Range</th>
-                <th>GST / Reg. Proof</th>
-                <th>Verified</th>
-                <th>Urgent 🔥</th>
-                <th>Published</th>
-                <th>Posted</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="jobsTableBody">
-              <tr><td colspan="11"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="11"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="11"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════
-         TAB: USERS (UPGRADED)
-    ════════════════════════════════════ -->
-    <div id="tab-users" class="tab-pane">
-      <div class="section-head">
-        <div class="section-title">👥 User Management <span class="section-count" id="users-count">0</span></div>
-        <div class="search-bar">
-          <input type="text" class="search-input" id="userSearch"
-                 placeholder="Search by name, email or mobile…"
-                 oninput="filterUsers()">
-          <select class="filter-select" id="userRoleFilter" onchange="filterUsers()">
-            <option value="all">All Roles</option>
-            <option value="seeker">Seekers</option>
-            <option value="employer">Employers</option>
-            <option value="admin">Admins</option>
-          </select>
-          <select class="filter-select" id="userLocationFilter" onchange="filterUsers()">
-            <option value="all">All Locations</option>
-            <option value="jharkhand">Jharkhand Only</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Mobile</th>
-                <th>Location</th>
-                <th>Role</th>
-                <th>Verified</th>
-                <th>Joined</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <tr><td colspan="9"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="9"><div class="skeleton skel-row"></div></td></tr>
-              <tr><td colspan="9"><div class="skeleton skel-row"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end .content -->
+    </div><!-- end .content -->
 </div><!-- end .main -->
 
 <div id="toast"></div>
 
-<!-- ════════════════════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    FIREBASE CONFIG
-   ► Swap the object below with your new Firebase project's
-     config when migrating accounts. All other code is unchanged.
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
-  apiKey:            'AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk',
-  authDomain:        'kamayega-bharat.firebaseapp.com',
-  projectId:         'kamayega-bharat',
-  storageBucket:     'kamayega-bharat.appspot.com',
-  messagingSenderId: '595460672260',
-  appId:             '1:595460672260:web:6584856313e2d740805e51'
+    apiKey:            'AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk',
+    authDomain:        'kamayega-bharat.firebaseapp.com',
+    projectId:         'kamayega-bharat',
+    storageBucket:     'kamayega-bharat.appspot.com',
+    messagingSenderId: '595460672260',
+    appId:             '1:595460672260:web:6584856313e2d740805e51'
 };
 
-/* ────────────────────────────────────────────────────────────
-   ADMIN ACCESS CONTROL
-   ─────────────────────────────────────────────────────────
-   SECURITY MODEL (layered):
-   1. UID allowlist — synchronous, instant gate.
-      An attacker who sets their Firestore role to 'admin'
-      is still blocked because their UID is not here.
-   2. Firestore role check — async belt-and-suspenders.
-      Reads /users/{uid}.role from the DB.
-   3. Matching Firestore Security Rules (paste into console):
-   ─────────────────────────────────────────────────────────
-
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-
-       // ── Helper functions ──────────────────────────────
-       function isAdmin() {
-         return request.auth != null
-           && request.auth.uid in [
-               '2Mx9kxqRLrOxuxlW7Ihrb3uswhJ3'
-               // Add additional admin UIDs here
-             ]
-           && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-           && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-       }
-
-       function isOwner(uid) {
-         return request.auth != null && request.auth.uid == uid;
-       }
-
-       function isVerifiedUser() {
-         return request.auth != null
-           && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-           && !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('disabled', false);
-       }
-
-       // ── Users collection ──────────────────────────────
-       match /users/{uid} {
-         allow read:  if isOwner(uid) || isAdmin();
-         // Owners can update their own doc EXCEPT isVerified (admin-only field)
-         allow update: if isAdmin()
-           || (isOwner(uid)
-               && (!request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['isVerified','verificationStatus','role','disabled'])));
-         allow create: if isOwner(uid);
-         allow delete: if isAdmin();
-       }
-
-       // ── Jobs ──────────────────────────────────────────
-       match /jobs/{jobId} {
-         allow read:   if true;                          // Public
-         allow create: if isVerifiedUser();
-         allow update: if isAdmin()                      // Full control
-           || (isVerifiedUser()
-               && resource.data.employerId == request.auth.uid
-               && !request.resource.data.diff(resource.data)
-                   .affectedKeys().hasAny(['isVerified','isPublished']));
-         allow delete: if isAdmin()
-           || (isVerifiedUser() && resource.data.employerId == request.auth.uid);
-       }
-
-       // ── Applications ──────────────────────────────────
-       match /applications/{appId} {
-         allow read:   if isAdmin()
-           || (request.auth != null
-               && (resource.data.seekerId == request.auth.uid
-                   || resource.data.employerId == request.auth.uid));
-         allow create: if isVerifiedUser();
-         allow update: if isAdmin()
-           || (request.auth != null
-               && (resource.data.seekerId == request.auth.uid
-                   || resource.data.employerId == request.auth.uid));
-         allow delete: if isAdmin();
-       }
-
-       // ── Verification requests ─────────────────────────
-       match /verification_requests/{uid} {
-         allow read:   if isOwner(uid) || isAdmin();
-         allow create: if isOwner(uid);
-         // Only admins may update status; owner may update details only
-         allow update: if isAdmin()
-           || (isOwner(uid)
-               && !request.resource.data.diff(resource.data)
-                   .affectedKeys().hasAny(['status','reviewedAt','reviewedBy']));
-         allow delete: if isAdmin();
-       }
-
-       // ── Selection letters ─────────────────────────────
-       match /selection_letters/{letterId} {
-         allow read:   if true;                          // Public (for verification)
-         allow create: if isAdmin();
-         allow delete: if isAdmin();
-         allow update: if isAdmin();
-       }
-
-       // ── Catch-all: deny everything else ──────────────
-       match /{document=**} {
-         allow read, write: if false;
-       }
-     }
-   }
-
-   ─────────────────────────────────────────────────────────
-   END OF SECURITY RULES COMMENT
-──────────────────────────────────────────────────────────── */
 const ALLOWED_ADMIN_UIDS = [
-  '2Mx9kxqRLrOxuxlW7Ihrb3uswhJ3'
-  // Add additional admin UIDs here
+    '2Mx9kxqRLrOxuxlW7Ihrb3uswhJ3'
 ];
 
-/* Jharkhand districts for local matching */
-const JHARKHAND_KEYWORDS = [
-  'jharkhand','ranchi','dhanbad','jamshedpur','bokaro','deoghar','giridih',
-  'hazaribagh','dumka','chaibasa','pakur','lohardaga','gumla','simdega',
-  'ramgarh','chatra','latehar','palamu','garhwa','sahibganj','godda',
-  'jamtara','khunti','seraikela','west singhbhum','east singhbhum',
-  'dhanbad','bokaro steel city'
-];
-
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    MODULE STATE
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 var auth, db;
-var _unsubscribers    = [];
-var _allLetters       = [];
-var _allJobs          = [];
-var _allUsers         = [];
-var _dashStats        = { users:0, seekers:0, employers:0, admins:0, jhUsers:0,
-                          jobs:0, verifiedJobs:0, urgentJobs:0,
-                          totalApps:0, activeApps:0, hiredApps:0, withdrawnApps:0,
-                          pendingVerif:0 };
-var _currentAdminUid  = null;
-var _currentAdminName = 'Admin';
+var _unsubscribers      = [];
+var _allLetters         = [];
+var _allJobs            = [];
+var _allUsers           = [];
+var _currentAdminUid    = null;
+var _currentAdminName   = 'Admin';
+var _currentUserDetail  = null;  // for copy helpers
+var _fcmPayloadCache    = '';    // for copy helpers
 
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    INIT
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  auth = firebase.auth();
-  db   = firebase.firestore();
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth = firebase.auth();
+    db   = firebase.firestore();
 
-  auth.onAuthStateChanged(function (user) {
-    if (!user) { redirectUnauthorized(); return; }
-
-    // Gate 1: UID allowlist (synchronous)
-    if (!ALLOWED_ADMIN_UIDS.includes(user.uid)) {
-      console.warn('[Admin] UID not in allowlist:', user.uid);
-      redirectUnauthorized();
-      return;
-    }
-
-    // Gate 2: Firestore role check (async, belt-and-suspenders)
-    db.collection('users').doc(user.uid).get()
-      .then(function (doc) {
-        var role = doc.exists ? (doc.data().role || '') : '';
-        if (role !== 'admin') {
-          console.warn('[Admin] Firestore role check failed:', role);
-          redirectUnauthorized();
-          return;
+    auth.onAuthStateChanged(function (user) {
+        if (!user) { window.location.href = 'index.html'; return; }
+        if (!ALLOWED_ADMIN_UIDS.includes(user.uid)) {
+            window.location.href = 'index.html'; return;
         }
-        _currentAdminUid  = user.uid;
-        _currentAdminName = doc.data().fullName || user.email || 'Admin';
-        bootAdminPanel(user);
-      })
-      .catch(function (err) {
-        console.error('[Admin] Role check error:', err);
-        // Fail closed — never grant access on error
-        redirectUnauthorized();
-      });
-  });
+        db.collection('users').doc(user.uid).get()
+            .then(function (doc) {
+                var role = doc.exists ? (doc.data().role || '') : '';
+                if (role !== 'admin') { window.location.href = 'index.html'; return; }
+                _currentAdminUid  = user.uid;
+                _currentAdminName = doc.data().fullName || user.email || 'Admin';
+                bootAdminPanel(user);
+            })
+            .catch(function () { window.location.href = 'index.html'; });
+    });
 });
 
-/* ────────────────────────────────────────────────────────────
-   REDIRECT — fixed to use absolute root path (no 404 in subfolders)
-──────────────────────────────────────────────────────────── */
-function redirectUnauthorized() {
-  window.location.href = '/index.html';
+function bootAdminPanel() {
+    var gate = document.getElementById('authGate');
+    if (gate) { gate.style.transition='opacity 0.4s'; gate.style.opacity='0'; setTimeout(function(){ gate.style.display='none'; },400); }
+    var initials = _currentAdminName.split(' ').map(function(n){ return n[0]||''; }).join('').substring(0,2).toUpperCase()||'A';
+    var a=document.getElementById('sidebarAvatar'), n=document.getElementById('sidebarName');
+    if(a) a.textContent=initials;
+    if(n) n.textContent=_currentAdminName;
+    mountDashboardListeners();
+    mountVerificationListeners();
+    mountLettersListener();
+    mountJobsListener();
+    mountUsersListener();
 }
 
-/* ────────────────────────────────────────────────────────────
-   BOOT
-──────────────────────────────────────────────────────────── */
-function bootAdminPanel(user) {
-  var gate = document.getElementById('authGate');
-  if (gate) {
-    gate.style.transition = 'opacity 0.4s';
-    gate.style.opacity = '0';
-    setTimeout(function () { gate.style.display = 'none'; }, 420);
-  }
-
-  var initials = _currentAdminName
-    .split(' ')
-    .map(function (n) { return n[0] || ''; })
-    .join('')
-    .substring(0, 2)
-    .toUpperCase() || 'A';
-
-  var avatarEl = document.getElementById('sidebarAvatar');
-  var nameEl   = document.getElementById('sidebarName');
-  if (avatarEl) avatarEl.textContent = initials;
-  if (nameEl)   nameEl.textContent   = _currentAdminName;
-
-  mountDashboardListeners();
-  mountVerificationListeners();
-  mountLettersListener();
-  mountJobsListener();
-  mountUsersListener();
-}
-
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    UTILITIES
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 function esc(str) {
-  return String(str == null ? '' : str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return String(str==null?'':str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function fmtDate(ts) {
-  if (!ts) return '—';
-  try {
-    var d = ts.toDate ? ts.toDate()
-          : ts.seconds ? new Date(ts.seconds * 1000)
-          : new Date(ts);
-    return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-  } catch (_) { return '—'; }
+    if (!ts) return '—';
+    try {
+        var d = ts.toDate ? ts.toDate() : ts.seconds ? new Date(ts.seconds*1000) : new Date(ts);
+        return isNaN(d) ? '—' : d.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    } catch(_) { return '—'; }
 }
 
-function isJharkhand(location) {
-  if (!location) return false;
-  var loc = location.toLowerCase();
-  return JHARKHAND_KEYWORDS.some(function (kw) { return loc.includes(kw); });
+function fmtDateTime(ts) {
+    if (!ts) return '—';
+    try {
+        var d = ts.toDate ? ts.toDate() : ts.seconds ? new Date(ts.seconds*1000) : new Date(ts);
+        return isNaN(d) ? '—' : d.toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+    } catch(_) { return '—'; }
 }
 
 var _toastTimer = null;
 function toast(msg, type) {
-  var t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className   = 'show' + (type ? ' toast-' + type : '');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function () { t.className = ''; }, 3800);
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'show' + (type ? ' toast-'+type : '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function(){ t.className=''; }, 3800);
 }
 
-function setEl(id, val) {
-  var el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
 
 function emptyState(msg) {
-  return '<tr><td colspan="99"><div class="empty-state">' +
-    '<div class="e-icon">📭</div>' +
-    '<div class="e-title">' + esc(msg) + '</div>' +
-    '<div class="e-sub">Nothing to show here yet.</div>' +
-    '</div></td></tr>';
+    return '<tr><td colspan="99"><div class="empty-state"><div class="e-icon">📭</div><div class="e-title">'+esc(msg)+'</div><div class="e-sub">Nothing to show here yet.</div></div></td></tr>';
 }
 
-function safeSnapshotError(section, err, tbody, cols) {
-  console.error('[' + section + '] onSnapshot error:', err);
-  if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="' + (cols || 6) + '" style="color:var(--red);padding:1rem 1.25rem;font-size:0.8rem;">' +
-      '⚠️ ' + esc(err.message || 'Permission denied or query requires index.') + '</td></tr>';
-  }
-}
-
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    CONFIRM MODAL
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 function confirm(title, body, onConfirm, confirmLabel, confirmClass) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').textContent  = body;
-  var btn = document.getElementById('modalConfirmBtn');
-  btn.textContent = confirmLabel || 'Confirm';
-  btn.className   = 'btn ' + (confirmClass || 'btn-primary');
-  btn.onclick     = function () { closeModal(); onConfirm(); };
-  document.getElementById('confirmModal').classList.add('open');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').textContent  = body;
+    var btn = document.getElementById('modalConfirmBtn');
+    btn.textContent = confirmLabel||'Confirm';
+    btn.className   = 'btn '+(confirmClass||'btn-primary');
+    btn.onclick     = function(){ closeModal(); onConfirm(); };
+    document.getElementById('confirmModal').classList.add('open');
 }
+function closeModal() { document.getElementById('confirmModal').classList.remove('open'); }
 
-function closeModal() {
-  document.getElementById('confirmModal').classList.remove('open');
-}
-
-/* ────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    NAVIGATION
-──────────────────────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 var TAB_TITLES = {
-  dashboard:    'Dashboard',
-  analytics:    'Analytics Matrix',
-  verification: 'Verification Queue',
-  letters:      'Selection Letters',
-  jobs:         'Job Listings',
-  users:        'User Management'
+    dashboard:'Dashboard', verification:'Verification Queue',
+    letters:'Selection Letters', jobs:'Job Listings',
+    users:'User Management', notifications:'Notification Centre'
 };
 
 function switchTab(name, el) {
-  document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
-  document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
-  var pane = document.getElementById('tab-' + name);
-  if (pane) pane.classList.add('active');
-  if (el)   el.classList.add('active');
-  setEl('pageTitle', TAB_TITLES[name] || name);
-  closeSidebar();
-  if (name === 'analytics') refreshAnalytics();
+    document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    var pane = document.getElementById('tab-'+name);
+    if (pane) pane.classList.add('active');
+    if (el)   el.classList.add('active');
+    setEl('pageTitle', TAB_TITLES[name]||name);
+    closeSidebar();
 }
 
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarBackdrop').classList.toggle('open');
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
 }
 function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarBackdrop').classList.remove('open');
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('open');
 }
 
 function doLogout() {
-  confirm('Sign Out', 'Are you sure you want to end your admin session?', function () {
-    auth.signOut().then(function () { window.location.href = '/index.html'; });
-  }, 'Sign Out', 'btn-danger');
+    confirm('Sign Out','Are you sure you want to end your admin session?', function(){
+        auth.signOut().then(function(){ window.location.href='index.html'; });
+    },'Sign Out','btn-danger');
 }
 
 function hardRefresh() {
-  _unsubscribers.forEach(function (unsub) { try { unsub(); } catch (_) {} });
-  _unsubscribers = [];
-  mountDashboardListeners();
-  mountVerificationListeners();
-  mountLettersListener();
-  mountJobsListener();
-  mountUsersListener();
-  toast('Data refreshed', 'ok');
+    _unsubscribers.forEach(function(u){ try{u();}catch(_){} });
+    _unsubscribers=[];
+    mountDashboardListeners(); mountVerificationListeners();
+    mountLettersListener(); mountJobsListener(); mountUsersListener();
+    toast('Data refreshed','ok');
 }
 
-/* ════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    1. DASHBOARD LISTENERS
-════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 function mountDashboardListeners() {
 
-  /* ── Users ──────────────────────────────────────────────── */
-  var unsubUsers = db.collection('users').onSnapshot(function (snap) {
-    try {
-      var total = snap.size;
-      var seekers = 0, employers = 0, admins = 0, jh = 0;
-      snap.forEach(function (doc) {
-        var d = doc.data();
-        var r = (d.role || '').toLowerCase();
-        if (r === 'seeker')       seekers++;
-        else if (r === 'employer') employers++;
-        else if (r === 'admin')    admins++;
-        var loc = d.location || d.state || d.district || '';
-        if (isJharkhand(loc)) jh++;
-      });
-      _dashStats.users = total; _dashStats.seekers = seekers;
-      _dashStats.employers = employers; _dashStats.admins = admins;
-      _dashStats.jhUsers = jh;
+    // Users
+    var unsubUsers = db.collection('users').onSnapshot(function(snap){
+        try {
+            var total=snap.size, seekers=0, employers=0, admins=0, fcmCount=0;
+            snap.forEach(function(doc){
+                var d = doc.data();
+                var r = (d.role||'').toLowerCase();
+                if(r==='seeker')   seekers++;
+                else if(r==='employer') employers++;
+                else if(r==='admin')    admins++;
+                if(d.fcmToken && d.notificationsEnabled) fcmCount++;
+            });
+            setEl('stat-users', total);
+            setEl('stat-fcm', fcmCount);
+            setEl('stat-fcm-sub', fcmCount+' of '+total+' users active');
+            var pills=document.getElementById('stat-roles');
+            if(pills) pills.innerHTML=
+                '<span class="role-pill seeker">👤 '+seekers+' Seekers</span>'+
+                '<span class="role-pill employer">🏢 '+employers+' Employers</span>'+
+                (admins?'<span class="role-pill admin">⚡ '+admins+' Admins</span>':'');
+            setEl('users-count', total);
+        } catch(e){ console.error('[Dashboard] users:', e); }
+    }, function(err){ console.error('[Dashboard] users err:', err); });
 
-      setEl('stat-users', total);
-      setEl('stat-jh', jh);
-      setEl('users-count', total);
-      var pills = document.getElementById('stat-roles');
-      if (pills) {
-        pills.innerHTML =
-          '<span class="role-pill seeker">👤 ' + seekers + ' Seekers</span>' +
-          '<span class="role-pill employer">🏢 ' + employers + ' Employers</span>' +
-          (admins ? '<span class="role-pill admin">⚡ ' + admins + ' Admins</span>' : '');
-      }
-    } catch (e) { console.error('[Dashboard] users:', e); }
-  }, function (err) {
-    console.error('[Dashboard] users onSnapshot error:', err);
-    setEl('stat-users', '⚠️');
-  });
+    // Jobs
+    var unsubJobs = db.collection('jobs').onSnapshot(function(snap){
+        try {
+            var total=snap.size, verified=0, urgent=0;
+            snap.forEach(function(doc){
+                var d=doc.data();
+                if(d.isVerified) verified++;
+                if(d.isUrgent)   urgent++;
+            });
+            setEl('stat-jobs', total);
+            setEl('stat-jobs-sub', verified+' verified · '+urgent+' urgent');
+            setEl('jobs-count', total);
+        } catch(e){ console.error('[Dashboard] jobs:', e); }
+    }, function(err){ console.error('[Dashboard] jobs err:', err); });
 
-  /* ── Jobs ───────────────────────────────────────────────── */
-  var unsubJobs = db.collection('jobs').onSnapshot(function (snap) {
-    try {
-      var total = snap.size, verified = 0, urgent = 0, published = 0;
-      var typeMap = {};
-      snap.forEach(function (doc) {
-        var d = doc.data();
-        if (d.isVerified)  verified++;
-        if (d.isUrgent)    urgent++;
-        if (d.isPublished) published++;
-        var jt = d.jobType || 'Other';
-        typeMap[jt] = (typeMap[jt] || 0) + 1;
-      });
-      _dashStats.jobs = total; _dashStats.verifiedJobs = verified;
-      _dashStats.urgentJobs = urgent; _dashStats.publishedJobs = published;
-      _dashStats.jobTypeMap = typeMap;
+    // Applications
+    var unsubApps = db.collection('applications').onSnapshot(function(snap){
+        try {
+            var active=0, hired=0;
+            snap.forEach(function(doc){
+                var st=(doc.data().status||'').toLowerCase();
+                if(st!=='withdrawn') active++;
+                if(st==='hired')     hired++;
+            });
+            setEl('stat-apps', active);
+            setEl('stat-apps-sub', hired+' hired · '+(active-hired)+' in progress');
+            setEl('hired-count', hired);
+            buildHealthTable(snap.size, active, hired);
+        } catch(e){ console.error('[Dashboard] apps:', e); }
+    }, function(err){ console.error('[Dashboard] apps err:', err); });
 
-      setEl('stat-jobs', total);
-      setEl('stat-jobs-sub', verified + ' verified · ' + urgent + ' urgent · ' + published + ' published');
-      setEl('jobs-count', total);
-    } catch (e) { console.error('[Dashboard] jobs:', e); }
-  }, function (err) {
-    console.error('[Dashboard] jobs onSnapshot error:', err);
-    setEl('stat-jobs', '⚠️');
-  });
+    // Pending verifs
+    var unsubVerif = db.collection('verification_requests').where('status','==','pending').onSnapshot(function(snap){
+        try {
+            var count=snap.size;
+            setEl('stat-verif', count);
+            setEl('stat-verif-sub', count>0?count+' request(s) need review':'All clear');
+            var badge=document.getElementById('verif-badge');
+            if(badge){ badge.textContent=count; badge.style.display=count>0?'':'none'; }
+            setEl('verif-pending-badge', count+' pending');
+        } catch(e){ console.error('[Dashboard] verif:', e); }
+    }, function(err){ console.error('[Dashboard] verif err:', err); });
 
-  /* ── Applications ───────────────────────────────────────── */
-  var unsubApps = db.collection('applications').onSnapshot(function (snap) {
-    try {
-      var active = 0, hired = 0, withdrawn = 0;
-      snap.forEach(function (doc) {
-        var st = (doc.data().status || '').toLowerCase();
-        if (st === 'withdrawn') withdrawn++;
-        else active++;
-        if (st === 'hired') hired++;
-      });
-      _dashStats.totalApps = snap.size; _dashStats.activeApps = active;
-      _dashStats.hiredApps = hired; _dashStats.withdrawnApps = withdrawn;
+    // Recent hires
+    var unsubLetters = db.collection('selection_letters').orderBy('hiredAt','desc').limit(10).onSnapshot(function(snap){
+        try {
+            var body=document.getElementById('recentHiresBody');
+            if(!body) return;
+            if(snap.empty){ body.innerHTML=emptyState('No hires recorded yet'); return; }
+            var rows=[];
+            snap.forEach(function(doc){
+                var d=doc.data();
+                rows.push('<tr>'+
+                    '<td class="td-mono">'+esc(d.referenceNumber||doc.id)+'</td>'+
+                    '<td>'+esc(d.seekerName||'—')+'</td>'+
+                    '<td class="td-muted">'+esc(d.jobTitle||'—')+'</td>'+
+                    '<td class="td-muted">'+esc(d.companyName||'—')+'</td>'+
+                    '<td class="td-muted">'+fmtDate(d.hiredAt)+'</td>'+
+                    '</tr>');
+            });
+            body.innerHTML=rows.join('');
+        } catch(e){ console.error('[Dashboard] hires:', e); }
+    }, function(err){ console.error('[Dashboard] letters err:', err); });
 
-      setEl('stat-apps', active);
-      setEl('stat-apps-sub', hired + ' hired · ' + (active - hired) + ' in progress');
-      setEl('stat-hired', hired);
-      setEl('stat-hired-sub', snap.size + ' total applications ever');
-      setEl('hired-count', hired);
-      buildHealthTable();
-    } catch (e) { console.error('[Dashboard] apps:', e); }
-  }, function (err) {
-    console.error('[Dashboard] apps onSnapshot error:', err);
-    setEl('stat-apps', '⚠️');
-  });
-
-  /* ── Pending verifications ──────────────────────────────── */
-  var unsubVerif = db.collection('verification_requests')
-    .where('status', '==', 'pending')
-    .onSnapshot(function (snap) {
-      try {
-        var count = snap.size;
-        _dashStats.pendingVerif = count;
-        setEl('stat-verif', count);
-        setEl('stat-verif-sub', count > 0 ? count + ' request(s) need review' : 'All clear');
-        var badge = document.getElementById('verif-badge');
-        if (badge) { badge.textContent = count; badge.style.display = count > 0 ? '' : 'none'; }
-        setEl('verif-pending-badge', count + ' pending');
-      } catch (e) { console.error('[Dashboard] verif pending:', e); }
-    }, function (err) {
-      console.error('[Dashboard] verif onSnapshot error:', err);
-    });
-
-  /* ── Recent hires ───────────────────────────────────────── */
-  var unsubLetters = db.collection('selection_letters')
-    .orderBy('hiredAt', 'desc')
-    .limit(10)
-    .onSnapshot(function (snap) {
-      try {
-        var body = document.getElementById('recentHiresBody');
-        if (!body) return;
-        if (snap.empty) { body.innerHTML = emptyState('No hires recorded yet'); return; }
-        var rows = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          rows.push(
-            '<tr>' +
-            '<td class="td-mono">' + esc(d.referenceNumber || doc.id) + '</td>' +
-            '<td><strong>' + esc(d.seekerName || '—') + '</strong></td>' +
-            '<td class="td-muted">' + esc(d.jobTitle || '—') + '</td>' +
-            '<td class="td-muted">' + esc(d.companyName || '—') + '</td>' +
-            '<td class="td-muted">' + fmtDate(d.hiredAt) + '</td>' +
-            '</tr>'
-          );
-        });
-        body.innerHTML = rows.join('');
-      } catch (e) { console.error('[Dashboard] recent hires:', e); }
-    }, function (err) { console.error('[Dashboard] letters listener:', err); });
-
-  _unsubscribers.push(unsubUsers, unsubJobs, unsubApps, unsubVerif, unsubLetters);
+    _unsubscribers.push(unsubUsers, unsubJobs, unsubApps, unsubVerif, unsubLetters);
 }
 
-function buildHealthTable() {
-  var body = document.getElementById('healthTableBody');
-  if (!body) return;
-  var s = _dashStats;
-  var convRate = s.totalApps > 0 ? Math.round(s.hiredApps / s.totalApps * 100) + '%' : '0%';
-  var rows = [
-    ['Total Applications (all-time)',       s.totalApps,     'badge-blue'],
-    ['Active Applications (non-withdrawn)', s.activeApps,    'badge-green'],
-    ['Withdrawn Applications',              s.withdrawnApps, s.withdrawnApps > 0 ? 'badge-amber' : 'badge-gray'],
-    ['Hired Candidates (all-time)',         s.hiredApps,     s.hiredApps > 0 ? 'badge-green' : 'badge-gray'],
-    ['Conversion Rate (Applied → Hired)',   convRate,        'badge-blue'],
-    ['Published Job Listings',              s.publishedJobs || '—', 'badge-teal'],
-    ['Verified Employers',                  s.verifiedJobs || '—', 'badge-green'],
-    ['Jharkhand Region Users',              s.jhUsers,       'badge-teal']
-  ];
-  body.innerHTML = rows.map(function (r) {
-    return '<tr><td>' + esc(r[0]) + '</td>' +
-           '<td><strong>' + esc(String(r[1])) + '</strong></td>' +
-           '<td><span class="badge ' + r[2] + '">' + esc(String(r[1])) + '</span></td></tr>';
-  }).join('');
-}
-
-/* ────────────────────────────────────────────────────────────
-   ANALYTICS MATRIX RENDERER
-──────────────────────────────────────────────────────────── */
-function refreshAnalytics() {
-  var s = _dashStats;
-
-  // User distribution
-  var totalU  = s.users || 1;
-  var sPct    = Math.round(s.seekers   / totalU * 100);
-  var ePct    = Math.round(s.employers / totalU * 100);
-  var jhPct   = Math.round(s.jhUsers   / totalU * 100);
-  setEl('mx-seeker-pct',   sPct  + '%'); setEl('mx-seeker-abs',   s.seekers   + ' users');
-  setEl('mx-employer-pct', ePct  + '%'); setEl('mx-employer-abs', s.employers + ' users');
-  setEl('mx-jh-pct',       jhPct + '%'); setEl('mx-jh-abs',       s.jhUsers   + ' users');
-  setTimeout(function () {
-    var sb = document.getElementById('mx-seeker-bar');
-    var eb = document.getElementById('mx-employer-bar');
-    var jb = document.getElementById('mx-jh-bar');
-    if (sb) sb.style.width = sPct  + '%';
-    if (eb) eb.style.width = ePct  + '%';
-    if (jb) jb.style.width = jhPct + '%';
-  }, 50);
-
-  // Funnel
-  var total = Math.max(s.totalApps, 1);
-  var steps = [
-    { label: 'Jobs Posted',           count: s.jobs,       cls: 'blue'  },
-    { label: 'Total Applications',    count: s.totalApps,  cls: 'blue'  },
-    { label: 'Active (non-withdrawn)',count: s.activeApps, cls: 'amber' },
-    { label: 'Hired / Placed',        count: s.hiredApps,  cls: 'teal'  }
-  ];
-  var maxVal = Math.max.apply(null, steps.map(function(x){ return x.count || 0; })) || 1;
-  var fw = document.getElementById('funnelWrap');
-  if (fw) {
-    fw.innerHTML = steps.map(function (st) {
-      var pct = Math.round((st.count || 0) / maxVal * 100);
-      return '<div class="funnel-step">' +
-        '<div class="funnel-label">' + esc(st.label) + '</div>' +
-        '<div class="funnel-bar-outer">' +
-          '<div class="funnel-bar-inner ' + st.cls + '" style="width:' + pct + '%">' +
-            (pct > 18 ? st.count : '') +
-          '</div>' +
-        '</div>' +
-        '<div class="funnel-num">' + (pct <= 18 ? st.count : '') + '</div>' +
-        '</div>';
+function buildHealthTable(totalApps, activeApps, hiredApps) {
+    var body=document.getElementById('healthTableBody');
+    if(!body) return;
+    var withdrawn=totalApps-activeApps;
+    var rows=[
+        ['Total Applications (all-time)', totalApps, 'badge-blue'],
+        ['Active Applications (non-withdrawn)', activeApps, 'badge-green'],
+        ['Withdrawn Applications', withdrawn, withdrawn>0?'badge-amber':'badge-gray'],
+        ['Hired Candidates (all-time)', hiredApps, hiredApps>0?'badge-green':'badge-gray'],
+        ['Conversion Rate (Applied → Hired)', totalApps>0?Math.round(hiredApps/totalApps*100)+'%':'0%', 'badge-blue']
+    ];
+    body.innerHTML=rows.map(function(r){
+        return '<tr><td>'+esc(r[0])+'</td><td><strong>'+esc(String(r[1]))+'</strong></td>'+
+               '<td><span class="badge '+r[2]+'">'+esc(String(r[1]))+'</span></td></tr>';
     }).join('');
-  }
-
-  // Verification health (employers only)
-  db.collection('verification_requests').get().then(function (snap) {
-    var approved = 0, pending = 0, rejected = 0;
-    snap.forEach(function (doc) {
-      var st = doc.data().status || '';
-      if (st === 'approved') approved++;
-      else if (st === 'pending') pending++;
-      else rejected++;
-    });
-    var totalV = Math.max(approved + pending + rejected, 1);
-    var vYesPct  = Math.round(approved / totalV * 100);
-    var vPendPct = Math.round(pending  / totalV * 100);
-    var vNoPct   = Math.round(rejected / totalV * 100);
-    setEl('mx-vyes-pct',  vYesPct  + '%');
-    setEl('mx-vpend-pct', vPendPct + '%');
-    setEl('mx-vno-pct',   vNoPct   + '%');
-    setTimeout(function () {
-      var a = document.getElementById('mx-vyes-bar');
-      var b = document.getElementById('mx-vpend-bar');
-      var c = document.getElementById('mx-vno-bar');
-      if (a) a.style.width = vYesPct  + '%';
-      if (b) b.style.width = vPendPct + '%';
-      if (c) c.style.width = vNoPct   + '%';
-    }, 50);
-  }).catch(function (err) { console.error('[Analytics] verif health:', err); });
-
-  // Job type breakdown
-  var typeMap = s.jobTypeMap || {};
-  var types   = Object.keys(typeMap);
-  var maxT    = Math.max.apply(null, types.map(function(t){ return typeMap[t]; })) || 1;
-  var palette = ['blue','green','amber','teal','purple','red'];
-  var jtEl    = document.getElementById('jobTypeBreakdown');
-  if (jtEl) {
-    if (!types.length) {
-      jtEl.innerHTML = '<div style="color:var(--text-3);font-size:0.78rem;padding:1rem 0;">No job data yet.</div>';
-    } else {
-      jtEl.innerHTML = types.map(function (t, i) {
-        var pct = Math.round(typeMap[t] / maxT * 100);
-        var cls = palette[i % palette.length];
-        return '<div class="funnel-step">' +
-          '<div class="funnel-label">' + esc(t) + '</div>' +
-          '<div class="funnel-bar-outer">' +
-            '<div class="funnel-bar-inner ' + cls + '" style="width:' + pct + '%">' +
-              (pct > 18 ? typeMap[t] : '') +
-            '</div>' +
-          '</div>' +
-          '<div class="funnel-num">' + (pct <= 18 ? typeMap[t] : '') + '</div>' +
-          '</div>';
-      }).join('');
-    }
-  }
 }
 
-/* ════════════════════════════════════════════════════════════
-   2. VERIFICATION QUEUE LISTENERS
-════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   2. VERIFICATION LISTENERS
+═══════════════════════════════════════════ */
 function mountVerificationListeners() {
-  var bodyPend = document.getElementById('verifTableBody');
-  var bodyProc = document.getElementById('verifProcessedBody');
-
-  var unsubPending = db.collection('verification_requests')
-    .where('status', '==', 'pending')
-    .orderBy('requestedAt', 'desc')
-    .onSnapshot(function (snap) {
-      try {
-        setEl('verif-count', snap.size);
-        if (!bodyPend) return;
-        if (snap.empty) { bodyPend.innerHTML = emptyState('No pending verification requests'); return; }
-        var rows = [];
-        snap.forEach(function (doc) {
-          var d   = doc.data();
-          var uid = doc.id;
-          var biz = (d.verificationDetails && d.verificationDetails.businessName)       || d.companyName      || '—';
-          var reg = (d.verificationDetails && d.verificationDetails.registrationNumber) || d.gstNumber || d.gstin || '—';
-          rows.push(
-            '<tr id="vrow_' + esc(uid) + '">' +
-            '<td><strong>' + esc(d.companyName || d.employerEmail || '—') + '</strong></td>' +
-            '<td class="td-muted">' + esc(d.employerEmail || '—') + '</td>' +
-            '<td>' + esc(biz) + '</td>' +
-            '<td class="td-mono">' + esc(reg) + '</td>' +
-            '<td class="td-muted">' + fmtDate(d.requestedAt) + '</td>' +
-            '<td><div class="actions-cell">' +
-              '<button class="btn btn-approve" onclick="approveVerification(\'' + esc(uid) + '\')">✓ Approve</button>' +
-              '<button class="btn btn-reject"  onclick="rejectVerification(\'' + esc(uid) + '\')">✗ Reject</button>' +
-            '</div></td>' +
-            '</tr>'
-          );
+    var unsubPending = db.collection('verification_requests')
+        .where('status','==','pending').orderBy('requestedAt','desc')
+        .onSnapshot(function(snap){
+            try {
+                var body=document.getElementById('verifTableBody');
+                if(!body) return;
+                setEl('verif-count', snap.size);
+                if(snap.empty){ body.innerHTML=emptyState('No pending verification requests'); return; }
+                var rows=[];
+                snap.forEach(function(doc){
+                    var d=doc.data(), uid=doc.id;
+                    var biz=(d.verificationDetails&&d.verificationDetails.businessName)||d.companyName||'—';
+                    var reg=(d.verificationDetails&&d.verificationDetails.registrationNumber)||'—';
+                    rows.push('<tr>'+
+                        '<td><strong>'+esc(d.companyName||d.employerEmail||'—')+'</strong></td>'+
+                        '<td class="td-muted">'+esc(d.employerEmail||'—')+'</td>'+
+                        '<td>'+esc(biz)+'</td>'+
+                        '<td class="td-mono">'+esc(reg)+'</td>'+
+                        '<td class="td-muted">'+fmtDate(d.requestedAt)+'</td>'+
+                        '<td><div class="actions-cell">'+
+                            '<button class="btn btn-approve" onclick="approveVerification(\''+esc(uid)+'\')">✓ Approve</button>'+
+                            '<button class="btn btn-reject"  onclick="rejectVerification(\''+esc(uid)+'\')">✗ Reject</button>'+
+                        '</div></td></tr>');
+                });
+                body.innerHTML=rows.join('');
+            } catch(e){ console.error('[Verif] pending:', e); }
+        }, function(err){
+            var body=document.getElementById('verifTableBody');
+            if(body) body.innerHTML='<tr><td colspan="6" style="color:var(--red);padding:1rem;font-size:0.8rem;">⚠️ Query failed: '+esc(err.message)+'</td></tr>';
         });
-        bodyPend.innerHTML = rows.join('');
-      } catch (e) { console.error('[Verif] pending:', e); }
-    }, function (err) { safeSnapshotError('Verif-pending', err, bodyPend, 6); });
 
-  var unsubProcessed = db.collection('verification_requests')
-    .where('status', 'in', ['approved', 'rejected'])
-    .orderBy('requestedAt', 'desc')
-    .limit(30)
-    .onSnapshot(function (snap) {
-      try {
-        if (!bodyProc) return;
-        if (snap.empty) { bodyProc.innerHTML = emptyState('No processed verifications yet'); return; }
-        var rows = [];
-        snap.forEach(function (doc) {
-          var d   = doc.data();
-          var uid = doc.id;
-          var biz = (d.verificationDetails && d.verificationDetails.businessName) || d.companyName || '—';
-          var statusBadge = d.status === 'approved'
-            ? '<span class="badge badge-green">✓ Approved</span>'
-            : '<span class="badge badge-red">✗ Rejected</span>';
-          rows.push(
-            '<tr>' +
-            '<td>' + esc(d.companyName || d.employerEmail || '—') + '</td>' +
-            '<td>' + esc(biz) + '</td>' +
-            '<td>' + statusBadge + '</td>' +
-            '<td class="td-muted">' + fmtDate(d.requestedAt) + '</td>' +
-            '<td>' +
-              (d.status === 'approved'
-                ? '<button class="btn btn-reject btn-ghost" style="font-size:0.71rem;" onclick="revokeVerification(\'' + esc(uid) + '\')">Revoke</button>'
-                : '<button class="btn btn-approve btn-ghost" style="font-size:0.71rem;" onclick="approveVerification(\'' + esc(uid) + '\')">Re-approve</button>') +
-            '</td>' +
-            '</tr>'
-          );
-        });
-        bodyProc.innerHTML = rows.join('');
-      } catch (e) { console.error('[Verif] processed:', e); }
-    }, function (err) { safeSnapshotError('Verif-processed', err, bodyProc, 5); });
+    var unsubProcessed = db.collection('verification_requests')
+        .where('status','in',['approved','rejected']).orderBy('requestedAt','desc').limit(30)
+        .onSnapshot(function(snap){
+            try {
+                var body=document.getElementById('verifProcessedBody');
+                if(!body) return;
+                if(snap.empty){ body.innerHTML=emptyState('No processed verifications yet'); return; }
+                var rows=[];
+                snap.forEach(function(doc){
+                    var d=doc.data(), uid=doc.id;
+                    var biz=(d.verificationDetails&&d.verificationDetails.businessName)||d.companyName||'—';
+                    var statusBadge=d.status==='approved'
+                        ?'<span class="badge badge-green">✓ Approved</span>'
+                        :'<span class="badge badge-red">✗ Rejected</span>';
+                    rows.push('<tr>'+
+                        '<td>'+esc(d.companyName||d.employerEmail||'—')+'</td>'+
+                        '<td>'+esc(biz)+'</td>'+
+                        '<td>'+statusBadge+'</td>'+
+                        '<td class="td-muted">'+fmtDate(d.requestedAt)+'</td>'+
+                        '<td>'+(d.status==='approved'
+                            ?'<button class="btn btn-reject btn-ghost btn-sm" onclick="revokeVerification(\''+esc(uid)+'\')">Revoke</button>'
+                            :'<button class="btn btn-approve btn-ghost btn-sm" onclick="approveVerification(\''+esc(uid)+'\')">Re-approve</button>')+
+                        '</td></tr>');
+                });
+                body.innerHTML=rows.join('');
+            } catch(e){ console.error('[Verif] processed:', e); }
+        }, function(err){ console.error('[Verif] processed err:', err); });
 
-  _unsubscribers.push(unsubPending, unsubProcessed);
+    _unsubscribers.push(unsubPending, unsubProcessed);
 }
 
-/* ── Approve ── */
-window.approveVerification = function (uid) {
-  confirm(
-    'Approve Verification',
-    'This grants the employer a Verified badge visible on all job listings. Takes effect immediately.',
-    function () {
-      var batch = db.batch();
-      // These writes are explicitly allowed for admin UIDs by the Firestore rules above
-      batch.update(db.collection('users').doc(uid), {
-        isVerified:         true,
-        verificationStatus: 'verified',
-        verifiedAt:         firebase.firestore.FieldValue.serverTimestamp(),
-        verifiedBy:         _currentAdminUid
-      });
-      batch.update(db.collection('verification_requests').doc(uid), {
-        status:     'approved',
-        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        reviewedBy: _currentAdminUid
-      });
-      batch.commit()
-        .then(function () { toast('✅ Employer verified and badge granted', 'ok'); })
-        .catch(function (err) {
-          console.error('[approveVerification]:', err);
-          toast('⚠️ Approval failed: ' + err.message, 'err');
+window.approveVerification = function(uid){
+    confirm('Approve Verification','This will grant the employer a Verified badge on all their job listings.',function(){
+        var batch=db.batch();
+        batch.update(db.collection('users').doc(uid),{
+            isVerified:true, verificationStatus:'verified',
+            verifiedAt:firebase.firestore.FieldValue.serverTimestamp(), verifiedBy:_currentAdminUid
         });
-    },
-    'Approve', 'btn-approve'
-  );
+        batch.update(db.collection('verification_requests').doc(uid),{
+            status:'approved', reviewedAt:firebase.firestore.FieldValue.serverTimestamp(), reviewedBy:_currentAdminUid
+        });
+        batch.commit().then(function(){ toast('✅ Employer verified and badge granted','ok'); })
+            .catch(function(err){ toast('⚠️ Approval failed: '+err.message,'err'); });
+    },'Approve','btn-approve');
 };
 
-window.rejectVerification = function (uid) {
-  confirm(
-    'Reject Verification',
-    'Allows the employer to resubmit. Their account remains unverified.',
-    function () {
-      var batch = db.batch();
-      batch.update(db.collection('users').doc(uid), {
-        isVerified:         false,
-        verificationStatus: 'unverified',
-        rejectedAt:         firebase.firestore.FieldValue.serverTimestamp(),
-        rejectedBy:         _currentAdminUid
-      });
-      batch.update(db.collection('verification_requests').doc(uid), {
-        status:     'rejected',
-        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        reviewedBy: _currentAdminUid
-      });
-      batch.commit()
-        .then(function () { toast('Verification rejected. Employer can resubmit.', 'warn'); })
-        .catch(function (err) {
-          console.error('[rejectVerification]:', err);
-          toast('⚠️ Rejection failed: ' + err.message, 'err');
+window.rejectVerification = function(uid){
+    confirm('Reject Verification','Employer can resubmit. Account remains unverified.',function(){
+        var batch=db.batch();
+        batch.update(db.collection('users').doc(uid),{
+            isVerified:false, verificationStatus:'unverified',
+            rejectedAt:firebase.firestore.FieldValue.serverTimestamp(), rejectedBy:_currentAdminUid
         });
-    },
-    'Reject', 'btn-reject'
-  );
+        batch.update(db.collection('verification_requests').doc(uid),{
+            status:'rejected', reviewedAt:firebase.firestore.FieldValue.serverTimestamp(), reviewedBy:_currentAdminUid
+        });
+        batch.commit().then(function(){ toast('Verification rejected. Employer can resubmit.','warn'); })
+            .catch(function(err){ toast('⚠️ Rejection failed: '+err.message,'err'); });
+    },'Reject','btn-reject');
 };
 
-window.revokeVerification = function (uid) {
-  confirm(
-    'Revoke Verification',
-    'Removes the Verified badge from this employer and all their job listings.',
-    function () {
-      var batch = db.batch();
-      batch.update(db.collection('users').doc(uid), {
-        isVerified:         false,
-        verificationStatus: 'unverified',
-        revokedAt:          firebase.firestore.FieldValue.serverTimestamp(),
-        revokedBy:          _currentAdminUid
-      });
-      batch.update(db.collection('verification_requests').doc(uid), {
-        status:     'rejected',
-        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        reviewedBy: _currentAdminUid
-      });
-      batch.commit()
-        .then(function () { toast('Verification revoked.', 'warn'); })
-        .catch(function (err) {
-          console.error('[revokeVerification]:', err);
-          toast('⚠️ Revoke failed: ' + err.message, 'err');
+window.revokeVerification = function(uid){
+    confirm('Revoke Verification','This removes the Verified badge from this employer.',function(){
+        var batch=db.batch();
+        batch.update(db.collection('users').doc(uid),{
+            isVerified:false, verificationStatus:'unverified',
+            revokedAt:firebase.firestore.FieldValue.serverTimestamp(), revokedBy:_currentAdminUid
         });
-    },
-    'Revoke', 'btn-danger'
-  );
+        batch.update(db.collection('verification_requests').doc(uid),{
+            status:'rejected', reviewedAt:firebase.firestore.FieldValue.serverTimestamp(), reviewedBy:_currentAdminUid
+        });
+        batch.commit().then(function(){ toast('Verification revoked.','warn'); })
+            .catch(function(err){ toast('⚠️ Revoke failed: '+err.message,'err'); });
+    },'Revoke','btn-danger');
 };
 
-/* ════════════════════════════════════════════════════════════
-   3. SELECTION LETTERS LISTENER
-════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   3. SELECTION LETTERS
+═══════════════════════════════════════════ */
 function mountLettersListener() {
-  var unsub = db.collection('selection_letters')
-    .orderBy('hiredAt', 'desc')
-    .onSnapshot(function (snap) {
-      try {
-        _allLetters = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          _allLetters.push({
-            ref:       d.referenceNumber || doc.id,
-            candidate: d.seekerName    || '—',
-            jobTitle:  d.jobTitle      || '—',
-            company:   d.companyName   || '—',
-            hiredAt:   d.hiredAt,
-            id:        doc.id
-          });
-        });
-        setEl('letters-count', _allLetters.length);
-        filterLetters();
-      } catch (e) { console.error('[Letters]:', e); }
-    }, function (err) {
-      safeSnapshotError('Letters', err, document.getElementById('lettersTableBody'), 6);
-    });
-  _unsubscribers.push(unsub);
+    var unsub=db.collection('selection_letters').orderBy('hiredAt','desc').onSnapshot(function(snap){
+        try {
+            _allLetters=[];
+            snap.forEach(function(doc){
+                var d=doc.data();
+                _allLetters.push({ ref:d.referenceNumber||doc.id, candidate:d.seekerName||'—', jobTitle:d.jobTitle||'—', company:d.companyName||'—', hiredAt:d.hiredAt, id:doc.id });
+            });
+            setEl('letters-count', _allLetters.length);
+            filterLetters();
+        } catch(e){ console.error('[Letters]:', e); }
+    }, function(err){ console.error('[Letters] err:', err); });
+    _unsubscribers.push(unsub);
 }
 
-window.filterLetters = function () {
-  var q = ((document.getElementById('letterSearch') || {}).value || '').toLowerCase().trim();
-  var list = q ? _allLetters.filter(function (l) {
-    return l.ref.toLowerCase().includes(q) || l.candidate.toLowerCase().includes(q);
-  }) : _allLetters;
-
-  var body = document.getElementById('lettersTableBody');
-  if (!body) return;
-  if (!list.length) { body.innerHTML = emptyState(q ? 'No results for "' + q + '"' : 'No selection letters yet'); return; }
-
-  body.innerHTML = list.map(function (l) {
-    return '<tr>' +
-      '<td class="td-mono">' + esc(l.ref) + '</td>' +
-      '<td><strong>' + esc(l.candidate) + '</strong></td>' +
-      '<td class="td-muted">' + esc(l.jobTitle) + '</td>' +
-      '<td class="td-muted">' + esc(l.company)  + '</td>' +
-      '<td class="td-muted">' + fmtDate(l.hiredAt) + '</td>' +
-      '<td><button class="btn btn-danger" style="font-size:0.71rem;" ' +
-        'onclick="invalidateLetter(\'' + esc(l.id) + '\',\'' + esc(l.ref) + '\')">🗑 Invalidate</button></td>' +
-      '</tr>';
-  }).join('');
+window.filterLetters=function(){
+    var q=(document.getElementById('letterSearch')&&document.getElementById('letterSearch').value||'').toLowerCase().trim();
+    var list=q?_allLetters.filter(function(l){ return l.ref.toLowerCase().includes(q)||l.candidate.toLowerCase().includes(q); }):_allLetters;
+    var body=document.getElementById('lettersTableBody');
+    if(!body) return;
+    if(!list.length){ body.innerHTML=emptyState(q?'No results for "'+q+'"':'No selection letters yet'); return; }
+    body.innerHTML=list.map(function(l){
+        return '<tr>'+
+            '<td class="td-mono">'+esc(l.ref)+'</td>'+
+            '<td><strong>'+esc(l.candidate)+'</strong></td>'+
+            '<td class="td-muted">'+esc(l.jobTitle)+'</td>'+
+            '<td class="td-muted">'+esc(l.company)+'</td>'+
+            '<td class="td-muted">'+fmtDate(l.hiredAt)+'</td>'+
+            '<td><button class="btn btn-danger btn-sm" onclick="invalidateLetter(\''+esc(l.id)+'\',\''+esc(l.ref)+'\')">🗑 Invalidate</button></td>'+
+            '</tr>';
+    }).join('');
 };
 
-window.invalidateLetter = function (docId, refNum) {
-  confirm(
-    'Invalidate Selection Letter',
-    'Delete letter ' + refNum + '? A third party verifying this reference will see "Invalid". Cannot be undone.',
-    function () {
-      db.collection('selection_letters').doc(docId).delete()
-        .then(function () { toast('Letter ' + refNum + ' invalidated', 'warn'); })
-        .catch(function (err) {
-          console.error('[invalidateLetter]:', err);
-          toast('⚠️ Delete failed: ' + err.message, 'err');
-        });
-    },
-    'Invalidate', 'btn-danger'
-  );
+window.invalidateLetter=function(docId, refNum){
+    confirm('Invalidate Selection Letter','Delete letter '+refNum+'? Cannot be undone.',function(){
+        db.collection('selection_letters').doc(docId).delete()
+            .then(function(){ toast('Letter '+refNum+' invalidated','warn'); })
+            .catch(function(err){ toast('⚠️ Delete failed: '+err.message,'err'); });
+    },'Invalidate','btn-danger');
 };
 
-/* ════════════════════════════════════════════════════════════
-   4. JOB LISTINGS LISTENER (UPGRADED)
-════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   4a. JOB LISTINGS
+═══════════════════════════════════════════ */
 function mountJobsListener() {
-  var unsub = db.collection('jobs')
-    .orderBy('postedAt', 'desc')
-    .onSnapshot(function (snap) {
-      try {
-        _allJobs = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          _allJobs.push({
-            id:          doc.id,
-            title:       d.title       || '—',
-            company:     d.companyName || d.company || '—',
-            employerId:  d.employerId  || '',
-            location:    d.location    || '—',
-            jobType:     d.jobType     || '—',
-            salaryMin:   d.salaryMin   || d.minSalary   || '',
-            salaryMax:   d.salaryMax   || d.maxSalary   || '',
-            salaryLabel: d.salaryRange || d.salary      || '',
-            gstin:       d.gstin       || d.registrationNumber || d.gstNumber || '',
-            isVerified:  !!d.isVerified,
-            isUrgent:    !!d.isUrgent,
-            isPublished: !!d.isPublished,
-            postedAt:    d.postedAt
-          });
-        });
-        filterJobs();
-      } catch (e) { console.error('[Jobs]:', e); }
-    }, function (err) {
-      safeSnapshotError('Jobs', err, document.getElementById('jobsTableBody'), 11);
-    });
-  _unsubscribers.push(unsub);
+    var unsub=db.collection('jobs').orderBy('postedAt','desc').onSnapshot(function(snap){
+        try {
+            _allJobs=[];
+            snap.forEach(function(doc){
+                var d=doc.data();
+                _allJobs.push({ id:doc.id, title:d.title||'—', company:d.companyName||d.company||'—', location:d.location||'—', jobType:d.jobType||'—', isVerified:!!d.isVerified, isUrgent:!!d.isUrgent, postedAt:d.postedAt, employerId:d.employerId||'' });
+            });
+            filterJobs();
+        } catch(e){ console.error('[Jobs]:', e); }
+    }, function(err){ console.error('[Jobs] err:', err); });
+    _unsubscribers.push(unsub);
 }
 
-window.filterJobs = function () {
-  var q     = ((document.getElementById('jobSearch')      || {}).value || '').toLowerCase().trim();
-  var type  = ((document.getElementById('jobTypeFilter')  || {}).value || 'all');
-  var verif = ((document.getElementById('jobVerifFilter') || {}).value || 'all');
-
-  var list = _allJobs.filter(function (j) {
-    var mQ = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q);
-    var mT = type  === 'all' || j.jobType === type;
-    var mV = verif === 'all' || (verif === 'verified' ? j.isVerified : !j.isVerified);
-    return mQ && mT && mV;
-  });
-
-  setEl('jobs-count', list.length);
-  var body = document.getElementById('jobsTableBody');
-  if (!body) return;
-  if (!list.length) { body.innerHTML = emptyState(q ? 'No jobs match your search' : 'No jobs posted yet'); return; }
-
-  body.innerHTML = list.map(function (j) {
-    // Salary display
-    var salaryStr = j.salaryLabel
-      ? esc(j.salaryLabel)
-      : (j.salaryMin && j.salaryMax
-          ? '₹' + esc(j.salaryMin) + '–₹' + esc(j.salaryMax)
-          : j.salaryMin ? '₹' + esc(j.salaryMin) + '+'
-          : '<span class="td-muted">—</span>');
-
-    // GST badge
-    var gstBadge = j.gstin
-      ? '<span class="td-mono" style="font-size:0.72rem;">' + esc(j.gstin) + '</span>'
-      : '<span class="badge badge-gray">None</span>';
-
-    return '<tr>' +
-      '<td><strong>' + esc(j.title) + '</strong></td>' +
-      '<td class="td-muted">' + esc(j.company) + '</td>' +
-      '<td class="td-muted">' + esc(j.location) + '</td>' +
-      '<td><span class="badge badge-blue">' + esc(j.jobType) + '</span></td>' +
-      '<td>' + salaryStr + '</td>' +
-      '<td>' + gstBadge + '</td>' +
-      '<td>' + (j.isVerified  ? '<span class="badge badge-green">👑 Yes</span>'  : '<span class="badge badge-gray">No</span>') + '</td>' +
-      '<td>' + (j.isUrgent    ? '<span class="badge badge-red">🔥 Yes</span>'    : '<span class="badge badge-gray">No</span>') + '</td>' +
-      '<td>' + (j.isPublished ? '<span class="badge badge-teal">✓ Live</span>'   : '<span class="badge badge-amber">Draft</span>') + '</td>' +
-      '<td class="td-muted">' + fmtDate(j.postedAt) + '</td>' +
-      '<td><div class="actions-cell">' +
-        '<button class="btn btn-teal" style="font-size:0.7rem;" onclick="toggleJobField(\'' + esc(j.id) + '\',\'isUrgent\',' + j.isUrgent + ')">' +
-          (j.isUrgent ? '▼ Unurgent' : '🔥 Mark Urgent') +
-        '</button>' +
-        '<button class="btn btn-purple" style="font-size:0.7rem;" onclick="toggleJobField(\'' + esc(j.id) + '\',\'isPublished\',' + j.isPublished + ')">' +
-          (j.isPublished ? '⏸ Unpublish' : '▶ Publish') +
-        '</button>' +
-        '<button class="btn btn-danger" style="font-size:0.7rem;" onclick="deleteJob(\'' + esc(j.id) + '\',\'' + esc(j.title) + '\')">🗑</button>' +
-      '</div></td>' +
-      '</tr>';
-  }).join('');
-};
-
-window.toggleJobField = function (jobId, field, currentVal) {
-  var labels = { isUrgent: 'Urgent flag', isPublished: 'Published status' };
-  var update = {};
-  update[field] = !currentVal;
-  update.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-  update.updatedBy = _currentAdminUid;
-
-  db.collection('jobs').doc(jobId).update(update)
-    .then(function () { toast(labels[field] + ' toggled', 'ok'); })
-    .catch(function (err) {
-      console.error('[toggleJobField]:', err);
-      toast('⚠️ Update failed: ' + err.message, 'err');
+window.filterJobs=function(){
+    var q=(document.getElementById('jobSearch')&&document.getElementById('jobSearch').value||'').toLowerCase().trim();
+    var type=(document.getElementById('jobTypeFilter')&&document.getElementById('jobTypeFilter').value||'all');
+    var verif=(document.getElementById('jobVerifFilter')&&document.getElementById('jobVerifFilter').value||'all');
+    var list=_allJobs.filter(function(j){
+        var matchQ=!q||j.title.toLowerCase().includes(q)||j.company.toLowerCase().includes(q);
+        var matchT=type==='all'||j.jobType===type;
+        var matchV=verif==='all'||(verif==='verified'?j.isVerified:!j.isVerified);
+        return matchQ&&matchT&&matchV;
     });
+    setEl('jobs-count', list.length);
+    var body=document.getElementById('jobsTableBody');
+    if(!body) return;
+    if(!list.length){ body.innerHTML=emptyState(q?'No jobs match your search':'No jobs posted yet'); return; }
+    body.innerHTML=list.map(function(j){
+        return '<tr>'+
+            '<td><strong>'+esc(j.title)+'</strong></td>'+
+            '<td class="td-muted">'+esc(j.company)+'</td>'+
+            '<td class="td-muted">'+esc(j.location)+'</td>'+
+            '<td><span class="badge badge-blue">'+esc(j.jobType)+'</span></td>'+
+            '<td>'+(j.isVerified?'<span class="badge badge-green">👑 Yes</span>':'<span class="badge badge-gray">No</span>')+'</td>'+
+            '<td>'+(j.isUrgent?'<span class="badge badge-red">🔥 Yes</span>':'<span class="badge badge-gray">No</span>')+'</td>'+
+            '<td class="td-muted">'+fmtDate(j.postedAt)+'</td>'+
+            '<td><div class="actions-cell">'+
+                '<button class="btn btn-danger btn-sm" onclick="deleteJob(\''+esc(j.id)+'\',\''+esc(j.title)+'\')">🗑 Delete</button>'+
+            '</div></td></tr>';
+    }).join('');
 };
 
-window.deleteJob = function (jobId, title) {
-  confirm(
-    'Delete Job Listing',
-    'Permanently delete "' + title + '"? All associated applicant references will be orphaned. Cannot be undone.',
-    function () {
-      db.collection('jobs').doc(jobId).delete()
-        .then(function () { toast('Job listing deleted', 'warn'); })
-        .catch(function (err) {
-          console.error('[deleteJob]:', err);
-          toast('⚠️ Delete failed: ' + err.message, 'err');
-        });
-    },
-    'Delete', 'btn-danger'
-  );
+window.deleteJob=function(jobId, title){
+    confirm('Delete Job Listing','Permanently delete "'+title+'"? Cannot be undone.',function(){
+        db.collection('jobs').doc(jobId).delete()
+            .then(function(){ toast('Job listing deleted','warn'); })
+            .catch(function(err){ toast('⚠️ Delete failed: '+err.message,'err'); });
+    },'Delete','btn-danger');
 };
 
-/* ════════════════════════════════════════════════════════════
-   5. USER MANAGEMENT LISTENER (UPGRADED)
-════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   4b. USER MANAGEMENT — ENHANCED
+   (includes UID, certUrl, resumeUrl, fcmToken,
+    fcmUpdatedAt, skills, verificationDetails,
+    verificationStatus, notificationsEnabled)
+═══════════════════════════════════════════ */
 function mountUsersListener() {
-  var unsub = db.collection('users')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(function (snap) {
-      try {
-        _allUsers = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          // Normalise location: may be stored as { state, district } or flat string
-          var locStr = '';
-          if (typeof d.location === 'string') locStr = d.location;
-          else if (d.state || d.district) locStr = [d.district, d.state].filter(Boolean).join(', ');
-          else locStr = '';
+    var unsub=db.collection('users').orderBy('createdAt','desc').onSnapshot(function(snap){
+        try {
+            _allUsers=[];
+            snap.forEach(function(doc){
+                var d=doc.data();
+                _allUsers.push({
+                    id:              doc.id,
+                    name:            d.fullName||d.displayName||'—',
+                    email:           d.email||'—',
+                    role:            d.role||'seeker',
+                    isVerified:      !!d.isVerified,
+                    verificationStatus: d.verificationStatus||'',
+                    createdAt:       d.createdAt,
+                    verifiedAt:      d.verifiedAt||null,
+                    disabled:        !!d.disabled,
+                    // New fields
+                    resumeUrl:       d.resumeUrl||'',
+                    certUrl:         d.certUrl||'',
+                    skills:          d.skills||'',
+                    fcmToken:        d.fcmToken||'',
+                    fcmUpdatedAt:    d.fcmUpdatedAt||null,
+                    notificationsEnabled: !!d.notificationsEnabled,
+                    verificationDetails: d.verificationDetails||null,
+                    verificationRequestedAt: d.verificationDetails&&d.verificationDetails.verificationRequestedAt
+                                            ? d.verificationDetails.verificationRequestedAt
+                                            : null,
+                    // raw for modal
+                    _raw: d
+                });
+            });
 
-          _allUsers.push({
-            id:         doc.id,
-            name:       d.fullName   || d.displayName || '—',
-            email:      d.email      || '—',
-            mobile:     d.mobile     || d.phone       || d.mobileNumber || '—',
-            location:   locStr       || '—',
-            isJH:       isJharkhand(locStr),
-            role:       d.role       || 'seeker',
-            isVerified: !!d.isVerified,
-            createdAt:  d.createdAt,
-            disabled:   !!d.disabled
-          });
-        });
-        filterUsers();
-      } catch (e) { console.error('[Users]:', e); }
-    }, function (err) {
-      safeSnapshotError('Users', err, document.getElementById('usersTableBody'), 9);
-    });
-  _unsubscribers.push(unsub);
+            // Rebuild FCM table
+            buildFcmTable();
+            filterUsers();
+        } catch(e){ console.error('[Users]:', e); }
+    }, function(err){ console.error('[Users] err:', err); });
+    _unsubscribers.push(unsub);
 }
 
-window.filterUsers = function () {
-  var q    = ((document.getElementById('userSearch')        || {}).value || '').toLowerCase().trim();
-  var role = ((document.getElementById('userRoleFilter')    || {}).value || 'all');
-  var loc  = ((document.getElementById('userLocationFilter')|| {}).value || 'all');
+window.filterUsers=function(){
+    var q=(document.getElementById('userSearch')&&document.getElementById('userSearch').value||'').toLowerCase().trim();
+    var role=(document.getElementById('userRoleFilter')&&document.getElementById('userRoleFilter').value||'all');
+    var verifF=(document.getElementById('userVerifFilter')&&document.getElementById('userVerifFilter').value||'all');
+    var fcmF=(document.getElementById('userFcmFilter')&&document.getElementById('userFcmFilter').value||'all');
 
-  var list = _allUsers.filter(function (u) {
-    var mQ = !q || u.name.toLowerCase().includes(q)
-              || u.email.toLowerCase().includes(q)
-              || u.mobile.toLowerCase().includes(q);
-    var mR = role === 'all' || u.role === role;
-    var mL = loc  === 'all' || (loc === 'jharkhand' && u.isJH);
-    return mQ && mR && mL;
-  });
+    var list=_allUsers.filter(function(u){
+        var matchQ=!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q);
+        var matchR=role==='all'||u.role===role;
+        var matchV=verifF==='all'||(verifF==='verified'?u.isVerified:!u.isVerified);
+        var matchF=fcmF==='all'||(fcmF==='fcm'?(u.fcmToken&&u.notificationsEnabled):!u.fcmToken);
+        return matchQ&&matchR&&matchV&&matchF;
+    });
 
-  setEl('users-count', list.length);
-  var body = document.getElementById('usersTableBody');
-  if (!body) return;
-  if (!list.length) { body.innerHTML = emptyState(q ? 'No users match your search' : 'No users found'); return; }
+    setEl('users-count', list.length);
+    var body=document.getElementById('usersTableBody');
+    if(!body) return;
+    if(!list.length){ body.innerHTML=emptyState(q?'No users match your search':'No users found'); return; }
 
-  var roleBadge = { seeker: 'badge-blue', employer: 'badge-green', admin: 'badge-amber' };
+    var roleBadge={seeker:'badge-blue', employer:'badge-green', admin:'badge-amber'};
 
-  body.innerHTML = list.map(function (u) {
-    var rCls   = roleBadge[u.role] || 'badge-gray';
-    var isSelf = u.id === _currentAdminUid;
+    body.innerHTML=list.map(function(u){
+        var rCls=roleBadge[u.role]||'badge-gray';
+        var isSelf=u.id===_currentAdminUid;
 
-    var locCell = esc(u.location) +
-      (u.isJH ? ' <span class="loc-jh">📍 JH</span>' : '');
+        // Skills — show first 2 tags
+        var skillTags='<span class="td-muted">—</span>';
+        if(u.skills && u.skills.trim()){
+            var sk=u.skills.split(/[,;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+            if(sk.length){
+                skillTags=sk.slice(0,2).map(function(s){ return '<span class="badge badge-purple" style="font-size:0.6rem;">'+esc(s)+'</span>'; }).join(' ');
+                if(sk.length>2) skillTags+=' <span class="td-muted" style="font-size:0.72rem;">+'+( sk.length-2)+'</span>';
+            }
+        }
 
-    return '<tr>' +
-      '<td>' +
-        '<strong>' + esc(u.name) + '</strong>' +
-        (u.disabled ? ' <span class="badge badge-red" style="font-size:0.6rem;margin-left:4px;">Disabled</span>' : '') +
-      '</td>' +
-      '<td class="td-muted">' + esc(u.email) + '</td>' +
-      '<td class="td-muted">' + esc(u.mobile) + '</td>' +
-      '<td class="td-small">' + locCell + '</td>' +
-      '<td><span class="badge ' + rCls + '">' + esc(u.role) + '</span></td>' +
-      '<td>' + (u.isVerified ? '<span class="badge badge-green">👑 Yes</span>' : '<span class="badge badge-gray">—</span>') + '</td>' +
-      '<td class="td-muted">' + fmtDate(u.createdAt) + '</td>' +
-      '<td>' + (u.disabled
-        ? '<span class="badge badge-red">Disabled</span>'
-        : '<span class="badge badge-green">Active</span>') + '</td>' +
-      '<td><div class="actions-cell">' +
-        (isSelf
-          ? '<span class="td-muted" style="font-size:0.73rem;">Current session</span>'
-          : '<button class="btn btn-amber" style="font-size:0.71rem;" ' +
-              'onclick="resetUserPassword(\'' + esc(u.id) + '\',\'' + esc(u.email) + '\')">📧 Reset PW</button>' +
-            '<button class="btn ' + (u.disabled ? 'btn-approve' : 'btn-danger') + '" style="font-size:0.71rem;" ' +
-              'onclick="toggleUserDisabled(\'' + esc(u.id) + '\',' + u.disabled + ')">' +
-              (u.disabled ? '✓ Re-enable' : '⛔ Disable') +
-            '</button>'
-        ) +
-      '</div></td>' +
-      '</tr>';
-  }).join('');
+        // Resume / cert links
+        var resumeCell=u.resumeUrl
+            ?'<a href="'+esc(u.resumeUrl)+'" target="_blank" class="badge badge-blue" style="font-size:0.62rem; text-decoration:none;">📄 View</a>'
+            :'<span class="badge badge-gray" style="font-size:0.62rem;">—</span>';
+        var certCell=u.certUrl
+            ?'<a href="'+esc(u.certUrl)+'" target="_blank" class="badge badge-purple" style="font-size:0.62rem; text-decoration:none;">🏅 View</a>'
+            :'<span class="badge badge-gray" style="font-size:0.62rem;">—</span>';
+
+        // FCM status
+        var fcmCell=u.fcmToken&&u.notificationsEnabled
+            ?'<span class="badge badge-green" style="font-size:0.62rem;">🔔 On</span>'
+            :u.fcmToken
+                ?'<span class="badge badge-amber" style="font-size:0.62rem;">🔕 Off</span>'
+                :'<span class="badge badge-gray" style="font-size:0.62rem;">—</span>';
+
+        return '<tr>'+
+            '<td>'+
+                '<strong>'+esc(u.name)+'</strong>'+
+                (u.disabled?'<br><span class="badge badge-red" style="font-size:0.58rem;">Disabled</span>':'')+
+            '</td>'+
+            '<td class="td-muted">'+esc(u.email)+'</td>'+
+            '<td><span class="badge '+rCls+'">'+esc(u.role)+'</span></td>'+
+            '<td>'+(u.isVerified?'<span class="badge badge-green">👑 Yes</span>':'<span class="badge badge-gray">—</span>')+'</td>'+
+            '<td>'+skillTags+'</td>'+
+            '<td>'+resumeCell+'</td>'+
+            '<td>'+certCell+'</td>'+
+            '<td>'+fcmCell+'</td>'+
+            '<td class="td-muted">'+fmtDate(u.createdAt)+'</td>'+
+            '<td><div class="actions-cell">'+
+                '<button class="btn btn-ghost btn-sm" onclick="openUserDetail(\''+esc(u.id)+'\')">👁 View</button>'+
+                (isSelf?'<span class="td-muted" style="font-size:0.72rem;">You</span>':
+                    '<button class="btn btn-amber btn-sm" onclick="resetUserPassword(\''+esc(u.id)+'\',\''+esc(u.email)+'\')">📧 PW</button>'+
+                    '<button class="btn '+(u.disabled?'btn-approve':'btn-danger')+' btn-sm" onclick="toggleUserDisabled(\''+esc(u.id)+'\','+u.disabled+')">'+(u.disabled?'✓ Enable':'⛔ Disable')+'</button>'
+                )+
+            '</div></td>'+
+            '</tr>';
+    }).join('');
 };
 
-/* ── Password reset ── */
-window.resetUserPassword = function (uid, email) {
-  confirm(
-    'Send Password Reset',
-    'A password reset email will be sent to ' + email + '. The user will be able to set a new password via the link.',
-    function () {
-      auth.sendPasswordResetEmail(email)
-        .then(function () { toast('Password reset email sent to ' + email, 'ok'); })
-        .catch(function (err) {
-          console.error('[resetPassword]:', err);
-          toast('⚠️ Reset failed: ' + err.message, 'err');
-        });
-    },
-    'Send Reset Email', 'btn-amber'
-  );
+/* ═══════════════════════════════════════════
+   USER DETAIL MODAL
+═══════════════════════════════════════════ */
+window.openUserDetail = function(uid){
+    var u = _allUsers.find(function(x){ return x.id===uid; });
+    if(!u){ toast('User not found in cache','err'); return; }
+    _currentUserDetail = u;
+    var d = u._raw;
+
+    // Header
+    var initials=(u.name||'?').split(' ').map(function(n){ return n[0]||''; }).join('').substring(0,2).toUpperCase()||'?';
+    document.getElementById('udAvatar').textContent=initials;
+    document.getElementById('udName').textContent=u.name;
+    document.getElementById('udEmail').textContent=u.email;
+
+    // Badges
+    var roleBadge={seeker:'badge-blue', employer:'badge-green', admin:'badge-amber'};
+    var bRow=document.getElementById('udBadgeRow');
+    bRow.innerHTML=
+        '<span class="badge '+(roleBadge[u.role]||'badge-gray')+'">'+esc(u.role)+'</span>'+
+        (u.isVerified?'<span class="badge badge-green">👑 Verified</span>':'<span class="badge badge-gray">Unverified</span>')+
+        (u.disabled?'<span class="badge badge-red">⛔ Disabled</span>':'')+
+        (u.notificationsEnabled&&u.fcmToken?'<span class="badge badge-purple">🔔 FCM Active</span>':'');
+
+    // Identity fields
+    document.getElementById('udUID').textContent=u.id;
+    document.getElementById('udRole').textContent=u.role;
+    document.getElementById('udJoined').textContent=fmtDateTime(u.createdAt);
+    document.getElementById('udVerifStatus').textContent=u.verificationStatus||'—';
+    document.getElementById('udVerifiedAt').textContent=fmtDateTime(u.verifiedAt||d.verifiedAt||null);
+    document.getElementById('udNotif').textContent=u.notificationsEnabled?'Enabled':'Disabled';
+
+    // Skills
+    var skillsEl=document.getElementById('udSkills');
+    var skillsSec=document.getElementById('udSkillsSection');
+    if(u.skills&&u.skills.trim()){
+        var sk=u.skills.split(/[,;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+        skillsEl.innerHTML=sk.map(function(s){ return '<span class="skill-tag">'+esc(s)+'</span>'; }).join('');
+        skillsSec.style.display='';
+    } else {
+        skillsSec.style.display='none';
+    }
+
+    // Documents
+    var docLinks=document.getElementById('udDocLinks');
+    docLinks.innerHTML='';
+    if(u.resumeUrl&&u.resumeUrl.trim()){
+        docLinks.innerHTML+='<a href="'+esc(u.resumeUrl)+'" target="_blank" class="ud-link-btn resume">📄 View Resume</a>';
+    } else {
+        docLinks.innerHTML+='<span class="ud-link-btn disabled-url">📄 No Resume</span>';
+    }
+    if(u.certUrl&&u.certUrl.trim()){
+        docLinks.innerHTML+='<a href="'+esc(u.certUrl)+'" target="_blank" class="ud-link-btn cert">🏅 View Certificate</a>';
+    } else {
+        docLinks.innerHTML+='<span class="ud-link-btn disabled-url">🏅 No Certificate</span>';
+    }
+
+    // Verification details
+    var vSec=document.getElementById('udVerifDetailsSection');
+    if(d.verificationDetails){
+        vSec.style.display='';
+        document.getElementById('udBizName').textContent=d.verificationDetails.businessName||'—';
+        document.getElementById('udRegNum').textContent=d.verificationDetails.registrationNumber||'—';
+        document.getElementById('udVerifReqAt').textContent=fmtDateTime(d.verificationDetails.verificationRequestedAt||null);
+    } else {
+        vSec.style.display='none';
+    }
+
+    // FCM Token
+    var fcmEl=document.getElementById('udFcmToken');
+    var fcmUpd=document.getElementById('udFcmUpdated');
+    if(u.fcmToken){
+        fcmEl.textContent=u.fcmToken;
+        fcmUpd.textContent='Last updated: '+fmtDateTime(u.fcmUpdatedAt);
+    } else {
+        fcmEl.textContent='No FCM token registered';
+        fcmUpd.textContent='';
+    }
+
+    // Footer actions
+    var footerActs=document.getElementById('udFooterActions');
+    var isSelf=u.id===_currentAdminUid;
+    if(isSelf){
+        footerActs.innerHTML='<span class="td-muted" style="font-size:0.78rem;">This is your account</span>';
+    } else {
+        footerActs.innerHTML=
+            '<button class="btn btn-amber btn-sm" onclick="resetUserPassword(\''+esc(u.id)+'\',\''+esc(u.email)+'\')">📧 Reset Password</button>'+
+            '<button class="btn '+(u.disabled?'btn-approve':'btn-danger')+' btn-sm" onclick="toggleUserDisabled(\''+esc(u.id)+'\','+u.disabled+')">'+(u.disabled?'✓ Re-enable':'⛔ Disable')+'</button>'+
+            (u.role!=='admin'
+                ?'<button class="btn btn-purple btn-sm" onclick="promoteToAdmin(\''+esc(u.id)+'\',\''+esc(u.name)+'\')">⚡ Make Admin</button>'
+                :'<button class="btn btn-amber btn-sm" onclick="demoteFromAdmin(\''+esc(u.id)+'\',\''+esc(u.name)+'\')">↓ Remove Admin</button>'
+            );
+    }
+
+    document.getElementById('userDetailModal').classList.add('open');
 };
 
-/* ── Disable / re-enable (soft flag in Firestore) ─────────────────
-   NOTE: Firebase Auth account disable requires Admin SDK / Cloud Function.
-   This writes a 'disabled: true' flag to Firestore. Enforce this in
-   your security rules with: && !resource.data.get('disabled', false)
-   For hard Auth-level disable call: admin.auth().updateUser(uid, { disabled: true })
-   from a Cloud Function.
-──────────────────────────────────────────────────────────────── */
-window.toggleUserDisabled = function (uid, currentlyDisabled) {
-  var action   = currentlyDisabled ? 'Re-enable' : 'Disable';
-  var newState = !currentlyDisabled;
-  var bodyText = currentlyDisabled
-    ? 'This re-enables the account. The user can log in and use the platform again.'
-    : 'Sets a soft-disable flag on the Firestore document. For hard Auth-level disable, trigger the Cloud Function. The user will be blocked from platform actions that check this flag.';
+function closeUserDetail() { document.getElementById('userDetailModal').classList.remove('open'); }
+window.closeUserDetail = closeUserDetail;
 
-  confirm(
-    action + ' Account',
-    bodyText,
-    function () {
-      var update = {
-        disabled:   newState,
-        disabledAt: newState ? firebase.firestore.FieldValue.serverTimestamp() : firebase.firestore.FieldValue.delete(),
-        disabledBy: newState ? _currentAdminUid : firebase.firestore.FieldValue.delete()
-      };
-      db.collection('users').doc(uid).update(update)
-        .then(function () { toast('User account ' + (newState ? 'disabled' : 're-enabled'), newState ? 'warn' : 'ok'); })
-        .catch(function (err) {
-          console.error('[toggleUserDisabled]:', err);
-          toast('⚠️ Action failed: ' + err.message, 'err');
-        });
-    },
-    action, newState ? 'btn-danger' : 'btn-approve'
-  );
+function copyFcmToken() {
+    var token=document.getElementById('udFcmToken').textContent;
+    if(!token||token==='No FCM token registered'){ toast('No token to copy','warn'); return; }
+    navigator.clipboard.writeText(token).then(function(){ toast('FCM token copied','ok'); }).catch(function(){ toast('Copy failed — select manually','err'); });
+}
+window.copyFcmToken=copyFcmToken;
+
+/* ═══════════════════════════════════════════
+   USER ACTIONS
+═══════════════════════════════════════════ */
+window.resetUserPassword=function(uid, email){
+    confirm('Send Password Reset','A reset email will be sent to '+email+'.',function(){
+        auth.sendPasswordResetEmail(email)
+            .then(function(){ toast('Password reset email sent to '+email,'ok'); })
+            .catch(function(err){ toast('⚠️ Reset failed: '+err.message,'err'); });
+    },'Send Reset Email','btn-amber');
+};
+
+window.toggleUserDisabled=function(uid, currentlyDisabled){
+    var action=currentlyDisabled?'Re-enable':'Disable';
+    var newState=!currentlyDisabled;
+    confirm(action+' Account',
+        newState?'Sets a soft-disable flag. User blocked from platform actions.':'Re-enables the user account.',
+        function(){
+            db.collection('users').doc(uid).update({
+                disabled: newState,
+                disabledAt: newState?firebase.firestore.FieldValue.serverTimestamp():firebase.firestore.FieldValue.delete(),
+                disabledBy: newState?_currentAdminUid:firebase.firestore.FieldValue.delete()
+            })
+            .then(function(){
+                toast('User account '+(newState?'disabled':'re-enabled'), newState?'warn':'ok');
+                closeUserDetail();
+            })
+            .catch(function(err){ toast('⚠️ Action failed: '+err.message,'err'); });
+        }, action, newState?'btn-danger':'btn-approve');
+};
+
+window.promoteToAdmin=function(uid, name){
+    confirm('Promote to Admin',
+        'Grant admin role to '+name+'? They will gain full access to this admin panel. Ensure their UID is also added to the ALLOWED_ADMIN_UIDS list in code.',
+        function(){
+            db.collection('users').doc(uid).update({ role:'admin', promotedAt:firebase.firestore.FieldValue.serverTimestamp(), promotedBy:_currentAdminUid })
+                .then(function(){ toast(name+' promoted to admin','ok'); closeUserDetail(); })
+                .catch(function(err){ toast('⚠️ Promote failed: '+err.message,'err'); });
+        }, 'Promote','btn-primary');
+};
+
+window.demoteFromAdmin=function(uid, name){
+    confirm('Remove Admin Role',
+        'Remove admin role from '+name+'? They will lose access to this panel.',
+        function(){
+            db.collection('users').doc(uid).update({ role:'employer', demotedAt:firebase.firestore.FieldValue.serverTimestamp(), demotedBy:_currentAdminUid })
+                .then(function(){ toast(name+' admin role removed','warn'); closeUserDetail(); })
+                .catch(function(err){ toast('⚠️ Demote failed: '+err.message,'err'); });
+        }, 'Remove Admin','btn-danger');
+};
+
+/* ═══════════════════════════════════════════
+   5. FCM TABLE & NOTIFICATIONS TAB
+═══════════════════════════════════════════ */
+function buildFcmTable(){
+    var fcmUsers=_allUsers.filter(function(u){ return !!u.fcmToken; });
+    setEl('fcm-token-count', fcmUsers.length);
+    var body=document.getElementById('fcmTableBody');
+    if(!body) return;
+    if(!fcmUsers.length){ body.innerHTML=emptyState('No FCM tokens registered'); return; }
+    body.innerHTML=fcmUsers.map(function(u){
+        var truncated=u.fcmToken.length>40?u.fcmToken.substring(0,40)+'…':u.fcmToken;
+        return '<tr>'+
+            '<td>'+esc(u.name)+'</td>'+
+            '<td class="td-muted">'+esc(u.email)+'</td>'+
+            '<td><span class="badge '+(u.role==='seeker'?'badge-blue':u.role==='employer'?'badge-green':'badge-amber')+'">'+esc(u.role)+'</span></td>'+
+            '<td class="td-mono" style="font-size:0.68rem; max-width:200px; overflow:hidden; text-overflow:ellipsis;" title="'+esc(u.fcmToken)+'">'+esc(truncated)+'</td>'+
+            '<td class="td-muted">'+fmtDate(u.fcmUpdatedAt)+'</td>'+
+            '<td>'+(u.notificationsEnabled?'<span class="badge badge-green">✓ Yes</span>':'<span class="badge badge-gray">No</span>')+'</td>'+
+            '</tr>';
+    }).join('');
+}
+
+window.generateFcmPayload=function(){
+    var title=document.getElementById('notifTitle').value.trim();
+    var body=document.getElementById('notifBody').value.trim();
+    var target=document.getElementById('notifTarget').value;
+    if(!title||!body){ toast('Enter a title and body first','warn'); return; }
+
+    var tokens=_allUsers
+        .filter(function(u){ return u.fcmToken&&u.notificationsEnabled&&(target==='all'||u.role===target); })
+        .map(function(u){ return u.fcmToken; });
+
+    var payload={
+        notification:{ title:title, body:body },
+        tokens:tokens,
+        target_role: target,
+        recipient_count: tokens.length,
+        generated_at: new Date().toISOString(),
+        generated_by: _currentAdminUid,
+        instructions:'POST this payload to your Firebase Cloud Function endpoint that calls admin.messaging().sendEachForMulticast()'
+    };
+
+    _fcmPayloadCache = JSON.stringify(payload, null, 2);
+    document.getElementById('fcmPayloadOutput').textContent=_fcmPayloadCache;
+    document.getElementById('fcmPayloadPanel').style.display='';
+    toast('Payload generated for '+tokens.length+' device(s)','ok');
+};
+
+window.copyPayload=function(){
+    if(!_fcmPayloadCache){ toast('Generate payload first','warn'); return; }
+    navigator.clipboard.writeText(_fcmPayloadCache)
+        .then(function(){ toast('Payload copied to clipboard','ok'); })
+        .catch(function(){ toast('Copy failed','err'); });
+};
+
+window.exportFcmTokens=function(){
+    var fcmUsers=_allUsers.filter(function(u){ return !!u.fcmToken; });
+    if(!fcmUsers.length){ toast('No FCM tokens to export','warn'); return; }
+    var csv='Name,Email,Role,FCM Token,Notif Enabled,Updated\n'+
+        fcmUsers.map(function(u){
+            return ['"'+u.name+'"','"'+u.email+'"',u.role,'"'+u.fcmToken+'"',u.notificationsEnabled?'Yes':'No',fmtDate(u.fcmUpdatedAt)].join(',');
+        }).join('\n');
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download='fcm_tokens_'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('FCM tokens exported','ok');
 };
 </script>
 </body>
