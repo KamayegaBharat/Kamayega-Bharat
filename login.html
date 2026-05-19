@@ -238,7 +238,7 @@
         setTimeout(() => t.style.display='none', 4000);
     }
 
-    async function handleAuth() {
+   async function handleAuth() {
         const email = document.getElementById('email').value.trim();
         const pass = document.getElementById('password').value;
         if(!email || !pass) return showToast("Enter email and password");
@@ -247,6 +247,8 @@
         btn.innerText = "Processing..."; btn.disabled = true;
 
         try {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
             if(isLogin) {
                 const cred = await auth.signInWithEmailAndPassword(email, pass);
                 redirect(cred.user.uid);
@@ -265,7 +267,6 @@
             btn.innerText = isLogin ? "Sign In" : "Register Now";
         }
     }
-
     async function forgotPassword() {
         const email = document.getElementById('email').value.trim();
         if(!email) return showToast("Enter your email above first!");
