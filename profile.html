@@ -1473,18 +1473,30 @@ function buildAppCard(appDocId, a) {
         var safeCompany   = hiredCompany.replace(/'/g, '');
         var safeCandidate = ((userData && userData.fullName) || '').replace(/'/g, '') || 'Candidate';
 
-       var safeRef = (a.referenceNumber || '').replace(/'/g, '');
+     var safeRef = (a.referenceNumber || '').replace(/'/g, '');
+        var alreadyRated = a.rated === true;
         actionBtn =
-            '<button ' +
-                'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\',\'' + safeRef + '\')" ' +
-                'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
-                    'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
-                    'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
-                    'box-shadow:0 2px 8px rgba(16,185,129,0.35); transition:opacity 0.2s;" ' +
-                'onmouseover="this.style.opacity=\'0.85\'" ' +
-                'onmouseout="this.style.opacity=\'1\'">' +
-                '📄 Download<br><span style="font-size:0.68rem; font-weight:600;">Selection Letter</span>' +
-            '</button>';
+            '<div style="display:flex; flex-direction:column; gap:6px; align-items:center;">' +
+                '<button ' +
+                    'onclick="window.showSelectionLetter(\'' + safeCandidate + '\',\'' + safeCompany + '\',\'' + safeTitle + '\',\'' + appDocId + '\',\'' + safeRef + '\')" ' +
+                    'style="padding:8px 14px; background:linear-gradient(135deg,#059669,#10b981); ' +
+                        'border:none; border-radius:8px; font-weight:700; font-size:0.78rem; ' +
+                        'color:white; cursor:pointer; line-height:1.4; text-align:center; ' +
+                        'box-shadow:0 2px 8px rgba(16,185,129,0.35); transition:opacity 0.2s;" ' +
+                    'onmouseover="this.style.opacity=\'0.85\'" ' +
+                    'onmouseout="this.style.opacity=\'1\'">' +
+                    '📄 Download<br><span style="font-size:0.68rem; font-weight:600;">Selection Letter</span>' +
+                '</button>' +
+                (alreadyRated
+                    ? '<span style="font-size:0.72rem; font-weight:700; color:#f59e0b;">★ Rated</span>'
+                    : '<button onclick="window.openRatingModal(\'' + appDocId + '\',\'' + (a.jobId || '') + '\',\'' + safeTitle + '\',\'' + safeCompany + '\')" ' +
+                        'style="padding:6px 14px; background:none; border:1.5px solid #f59e0b; color:#f59e0b; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer; transition:0.2s;" ' +
+                        'onmouseover="this.style.background=\'#f59e0b\';this.style.color=\'white\'" ' +
+                        'onmouseout="this.style.background=\'none\';this.style.color=\'#f59e0b\'">' +
+                        '★ Rate Employer' +
+                      '</button>'
+                ) +
+            '</div>';
     } else if (['applied','pending','review','interview'].includes(stLower)) {
         // ── Active: show Withdraw button ──────────────────────────────
         actionBtn =
@@ -1981,10 +1993,96 @@ function loadSkillGap() {
 }
 
 // ═══════════════════════════════════════════════════════
+// RATING SYSTEM
+// ═══════════════════════════════════════════════════════
+var _ratingData = {};
+var _selectedRating = 0;
+var _ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+window.openRatingModal = function(appDocId, jobId, jobTitle, company) {
+    _ratingData     = { appDocId: appDocId, jobId: jobId, jobTitle: jobTitle, company: company };
+    _selectedRating = 0;
+    document.getElementById('ratingJobTitle').innerText = jobTitle + ' · ' + company;
+    document.getElementById('ratingReview').value       = '';
+    document.getElementById('ratingLabel').innerText    = '';
+    document.querySelectorAll('.star-btn').forEach(function(s) {
+        s.style.opacity = '0.3';
+    });
+    document.getElementById('ratingModal').style.display = 'flex';
+};
+
+window.closeRatingModal = function() {
+    document.getElementById('ratingModal').style.display = 'none';
+};
+
+window.setRating = function(val) {
+    _selectedRating = val;
+    document.getElementById('ratingLabel').innerText = _ratingLabels[val] || '';
+    document.querySelectorAll('.star-btn').forEach(function(s) {
+        s.style.opacity = parseInt(s.getAttribute('data-val')) <= val ? '1' : '0.3';
+    });
+};
+
+window.submitRating = function() {
+    if (!_selectedRating) {
+        window.toast('⚠️ Please select a star rating first.');
+        return;
+    }
+    var btn = document.getElementById('submitRatingBtn');
+    btn.disabled  = true;
+    btn.innerText = '⏳ Saving...';
+
+    var review   = document.getElementById('ratingReview').value.trim();
+    var jobId    = _ratingData.jobId;
+    var appDocId = _ratingData.appDocId;
+
+    db.collection('jobs').doc(jobId).get().then(function(jobSnap) {
+        var current   = jobSnap.exists ? (jobSnap.data() || {}) : {};
+        var oldRating = current.rating      || 0;
+        var oldCount  = current.ratingCount || 0;
+        var newCount  = oldCount + 1;
+        var newRating = ((oldRating * oldCount) + _selectedRating) / newCount;
+
+        var batch = db.batch();
+
+        batch.update(db.collection('jobs').doc(jobId), {
+            rating:      parseFloat(newRating.toFixed(1)),
+            ratingCount: newCount
+        });
+
+        batch.update(db.collection('applications').doc(appDocId), {
+            rated: true
+        });
+
+        var reviewRef = db.collection('jobs').doc(jobId)
+                          .collection('reviews').doc();
+        batch.set(reviewRef, {
+            rating:     _selectedRating,
+            review:     review,
+            seekerName: userData.fullName || (auth.currentUser && auth.currentUser.displayName) || 'Anonymous',
+            seekerId:   auth.currentUser ? auth.currentUser.uid : '',
+            appDocId:   appDocId,
+            createdAt:  firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        return batch.commit();
+    }).then(function() {
+        window.closeRatingModal();
+        window.toast('⭐ Thank you for your rating!');
+        btn.disabled  = false;
+        btn.innerText = 'Submit Rating';
+    }).catch(function(err) {
+        console.error('[submitRating]', err);
+        window.toast('⚠️ Could not save rating — check Firestore rules.');
+        btn.disabled  = false;
+        btn.innerText = 'Submit Rating';
+    });
+};
+
+// ═══════════════════════════════════════════════════════
 // SELECTION LETTER — popup + html2pdf download
 // ═══════════════════════════════════════════════════════
 var _slData = {};
-
 // appDocId is passed in so the download guard can write back to Firestore.
 window.showSelectionLetter = function(candidateName, company, jobTitle, appDocId, referenceNumber) {
     _slData = {
