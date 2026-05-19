@@ -1819,6 +1819,13 @@ service cloud.firestore {
         );
       }
     }
+    // ── /jobs/{jobId}/reviews/{reviewId} ─────────────────────────────
+    // Any authenticated seeker can write one review per application.
+    // Anyone can read reviews (shown on job cards).
+    match /jobs/{jobId}/reviews/{reviewId} {
+      allow read   : if true;
+      allow create : if isSignedIn();
+    }
 
     // ── /verification_requests/{uid} ─────────────────────────────────
     // FIX 3: Employers can only create/update their own request doc.
