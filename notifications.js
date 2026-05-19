@@ -28,7 +28,7 @@
     // ── VAPID key — get this from Firebase Console ────────────────────────────
     // Console → Project Settings → Cloud Messaging → Web Push certificates
     // Click "Generate key pair" if you haven't already, then paste the key below.
-    var VAPID_KEY = 'YOUR_VAPID_PUBLIC_KEY_HERE';
+    var VAPID_KEY = 'BMUZXGCttN0MKdOP1qhQw8mHR07ym5LihceUUTc5qYbXvx3VvJQKOpS8vkI5UApgOKQVbrOo9DeyPg7ChNkpzwk';
 
     // ── Firestore collection where FCM tokens are stored ──────────────────────
     // Document path: users/{uid}  →  field: fcmTokens (array)
