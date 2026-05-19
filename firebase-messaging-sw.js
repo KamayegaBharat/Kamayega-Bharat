@@ -85,7 +85,7 @@ messaging.onBackgroundMessage(function(payload) {
     // Default to the seeker console so they land on the right page.
     var clickUrl = notification.click_action
                 || data.click_action
-                || '/seeker-console.html';
+                || '/profile.html';
 
     var notificationOptions = {
         body:  body,
@@ -117,7 +117,7 @@ self.addEventListener('notificationclick', function(event) {
 
     var action   = event.action;  // 'open', 'dismiss', or '' (body tap)
     var clickUrl = (event.notification.data && event.notification.data.url)
-                 || '/seeker-console.html';
+                 || '/profile.html';
 
     // If user explicitly dismissed, do nothing more
     if (action === 'dismiss') return;
