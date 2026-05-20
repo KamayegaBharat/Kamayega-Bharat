@@ -9,21 +9,10 @@
     <!-- Favicon — consistent path used here and in firebase-messaging-sw.js -->
     <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="manifest" href="manifest.json">
-    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
- <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script> 
-   <script defer src="/notifications.js" id="notification-script"></script>
-<script defer>
-  // We wait for the notification script to finish loading first
-  document.getElementById('notification-script').addEventListener('load', function() {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        initNotifications(user.uid);
-      }
-    });
-  });
-</script>
+   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
     <!-- html2pdf — client-side PDF generation, no Firebase storage needed -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
             integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
@@ -727,17 +716,21 @@ document.addEventListener('DOMContentLoaded', function() {
     db        = firebase.firestore();
     // Messaging is only available in secure contexts (HTTPS / localhost).
     // Wrap in try/catch so the rest of the app still works on plain HTTP during dev.
-    try {
+ try {
+    if (typeof firebase.messaging === 'function') {
         messaging = firebase.messaging();
-        // Handle foreground push messages (app is open in browser tab)
         messaging.onMessage(function(payload) {
             var n = payload.notification || {};
             window.toast('🔔 ' + (n.title || 'Notification') + (n.body ? ': ' + n.body : ''));
         });
-    } catch(e) {
-        console.warn('FCM not available (HTTP or unsupported browser):', e);
+    } else {
+        console.warn('FCM: messaging SDK not loaded yet.');
         messaging = null;
     }
+} catch(e) {
+    console.warn('FCM not available:', e.message);
+    messaging = null;
+}
 
     auth.onAuthStateChanged(function(user) {
         if (user) {
