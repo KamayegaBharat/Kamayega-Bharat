@@ -1,279 +1,286 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// firebase-messaging-sw.js  v3.0
+// firebase-messaging-sw.js  v4.0
 // Kamayega Bharat — FCM Background Message Handler
 //
-// ROOT CAUSE OF THE DEVTOOLS SIMULATION BUG (and why this file fixes it):
+// WHAT CHANGED FROM v3 → v4  (fixes "No Firebase App '[DEFAULT]'" error):
 //
-//   Chrome DevTools → Application → Service Workers → "Push" simulation
-//   sends a RAW browser push event. Firebase's onBackgroundMessage() only
-//   intercepts pushes that go through Firebase's own internal SW router.
-//   When DevTools simulates a push directly, Firebase's router never sees it,
-//   so onBackgroundMessage() is never called — and you get the fallback text.
+//   The error fires when firebase.messaging() is called at the TOP LEVEL of
+//   the script. Chrome evaluates SW scripts multiple times during their
+//   lifetime (install, update, browser restart, DevTools "Update" click).
+//   On a re-evaluation the compat SDK's messaging constructor calls getApp()
+//   internally — but because the script is being re-evaluated from scratch,
+//   initializeApp() hasn't run yet in that pass, so getApp() throws.
 //
-//   FIX: Add a raw self.addEventListener('push', ...) block BEFORE the
-//   Firebase SDK import. The raw listener handles DevTools simulations and
-//   any non-Firebase push servers. Firebase's onBackgroundMessage() continues
-//   to handle real FCM production pushes automatically (it intercepts the push
-//   event internally before your raw listener would fire for FCM messages).
-//
-// DEPLOYMENT CHECKLIST:
-//   ✅ File must be at the ROOT of your domain — /firebase-messaging-sw.js
-//   ✅ Must be served over HTTPS (GitHub Pages = fine)
-//   ✅ SDK version below must match the version used in your HTML pages (10.8.0)
-//   ✅ After any edit: DevTools → Application → Service Workers → "Update"
-//      OR open a new incognito tab to force-reload the SW.
+//   THREE-PART FIX applied below:
+//     1. importScripts() at the very top  (compat SDK requirement — always first)
+//     2. initializeApp() wrapped in a try/catch guard that handles both
+//        "first run" and "duplicate app already exists" cases
+//     3. firebase.messaging() also wrapped, result stored in `messaging` var
+//        which is checked before use (so a failure doesn't break the whole SW)
 // ─────────────────────────────────────────────────────────────────────────────
 
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// §1. SERVICE WORKER LIFECYCLE
+// §1  SDK IMPORTS
 //
-// skipWaiting() + clients.claim() make the NEW version of this file take
-// control immediately on every deploy, rather than waiting for the user
-// to close all tabs. Without these, a stale SW can persist for 24+ hours
-// and your push handler changes won't take effect.
-// ─────────────────────────────────────────────────────────────────────────────
-self.addEventListener('install', function (event) {
-    console.log('[SW] install — skipWaiting() called. New SW will activate immediately.');
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', function (event) {
-    console.log('[SW] activate — claiming all clients.');
-    event.waitUntil(clients.claim());
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// §2. RAW PUSH EVENT LISTENER  ← THE FIX FOR YOUR DEVTOOLS SIMULATION BUG
-//
-// This block runs for:
-//   • Chrome DevTools "simulate push" (the exact scenario you described)
-//   • Any Web Push server that sends pushes WITHOUT going through Firebase
-//   • Fallback when Firebase SDK fails to parse the payload
-//
-// For real FCM pushes in production, Firebase intercepts the push event
-// internally before it reaches this listener (when the SDK is loaded below),
-// so there is NO double-notification risk in production.
-//
-// HOW TO TEST IN DEVTOOLS:
-//   Application → Service Workers → Push
-//   Paste ANY of these payload shapes:
-//
-//   Shape A — flat:
-//   {"title": "Alert!", "body": "Lalalalaalaaaa"}
-//
-//   Shape B — FCM notification:
-//   {"notification": {"title": "Alert!", "body": "Lalalalaalaaaa"}}
-//
-//   Shape C — FCM data:
-//   {"data": {"title": "Alert!", "body": "Lalalalaalaaaa", "click_action": "/profile.html"}}
-//
-//   Shape D — combined:
-//   {"notification": {"title": "New Message"}, "data": {"body": "You have a new update", "click_action": "/profile.html"}}
-// ─────────────────────────────────────────────────────────────────────────────
-self.addEventListener('push', function (event) {
-    console.log('[SW §2] ── RAW push event fired ──');
-    console.log('[SW §2] event.data present?', !!event.data);
-
-    // ── §2a. Check for empty payload ──────────────────────────────────────────
-    // DevTools "Push" with an empty text box, or a push server sending
-    // a ping-only notification, will have a null event.data.
-    if (!event.data) {
-        console.warn('[SW §2a] event.data is NULL — push was sent with no payload.');
-        console.warn('[SW §2a] Showing fallback notification.');
-        event.waitUntil(
-            self.registration.showNotification('Kamayega Bharat', {
-                body:  'You have a new update on your application.',
-                icon:  '/favicon.png',
-                badge: '/favicon.png',
-                tag:   'kb-fallback-empty'
-            })
-        );
-        return; // nothing more we can do — bail out early
-    }
-
-    // ── §2b. Log the raw string BEFORE attempting to parse ───────────────────
-    // If this log shows your JSON but the notification still shows fallback
-    // text, the bug is in §2c parse logic. If this log shows garbage or an
-    // empty string, the push server is not encoding the payload correctly.
-    var rawText = event.data.text();
-    console.log('[SW §2b] Raw event.data.text() →', rawText);
-
-    // ── §2c. Parse the payload — handles all known FCM shapes ────────────────
-    var payload    = {};
-    var parseError = null;
-
-    try {
-        payload = JSON.parse(rawText);
-        console.log('[SW §2c] Parsed payload object →', JSON.stringify(payload, null, 2));
-    } catch (err) {
-        parseError = err;
-        console.warn('[SW §2c] JSON.parse() failed. Raw text was not valid JSON:', rawText);
-        console.warn('[SW §2c] Parse error →', err.message);
-        // payload stays as {} — the field extraction below will use fallbacks.
-    }
-
-    // ── §2d. Extract fields — works for ALL four payload shapes ──────────────
-    //
-    // Priority order for each field:
-    //   1. payload.notification.X  (Firebase notification message)
-    //   2. payload.data.X          (Firebase data message / custom)
-    //   3. payload.X               (flat JSON — the DevTools simulation shape)
-    //   4. hard fallback string
-    //
-    var notif = payload.notification || {};
-    var data  = payload.data         || {};
-
-    var title    = notif.title    || data.title    || payload.title    || 'Kamayega Bharat';
-    var body     = notif.body     || data.body     || payload.body     || 'You have a new update on your application.';
-    var icon     = notif.icon     || data.icon     || payload.icon     || '/favicon.png';
-    var clickUrl = notif.click_action
-                || data.click_action
-                || payload.click_action
-                || '/profile.html';
-    var tag      = data.tag       || payload.tag   || 'kb-notification';
-    var requireInteraction = (data.requireInteraction === 'true') || (payload.requireInteraction === true) || false;
-
-    console.log('[SW §2d] Resolved display values →', { title, body, icon, clickUrl, tag });
-
-    // ── §2e. Show the notification ────────────────────────────────────────────
-    var notificationOptions = {
-        body:  body,
-        icon:  icon,
-        badge: '/favicon.png',
-        tag:   tag,
-        data:  { url: clickUrl },
-        actions: [
-            { action: 'open',    title: '📋 Open Dashboard' },
-            { action: 'dismiss', title: '✕ Dismiss'         }
-        ],
-        requireInteraction: requireInteraction
-    };
-
-    console.log('[SW §2e] Calling showNotification() with →', JSON.stringify(notificationOptions, null, 2));
-
-    event.waitUntil(
-        self.registration.showNotification(title, notificationOptions)
-            .then(function () {
-                console.log('[SW §2e] showNotification() resolved successfully.');
-            })
-            .catch(function (err) {
-                console.error('[SW §2e] showNotification() REJECTED →', err);
-            })
-    );
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// §3. FIREBASE SDK IMPORT
-//
-// These MUST come AFTER the raw push listener (§2) so that the listener
-// is registered synchronously before the SW enters its evaluation phase.
-//
-// Do NOT move these to the top of the file — in some Chrome versions, calling
-// importScripts() first can cause the SW to miss the 'install' event because
-// the synchronous script evaluation hasn't returned yet.
+// MUST be the very first executable lines. importScripts() is synchronous
+// in a SW context — `firebase` is available on the global scope immediately
+// after these two lines complete. Nothing Firebase-related may appear above.
 // ─────────────────────────────────────────────────────────────────────────────
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// §4. FIREBASE APP INIT
+// §2  FIREBASE INIT GUARD
+//
+// Chrome evaluates this script on:
+//   • First SW install
+//   • SW byte-change update (GitHub Pages deploy)
+//   • Browser restart if a SW was already active
+//   • DevTools → Application → Service Workers → "Update"
+//
+// Calling initializeApp() a second time throws "app/duplicate-app".
+// Calling messaging() before initializeApp() throws "app/no-app".
+// The IIFE below handles both cases so neither error can crash the SW.
 // ─────────────────────────────────────────────────────────────────────────────
-firebase.initializeApp({
-    apiKey:            'AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk',
-    authDomain:        'kamayega-bharat.firebaseapp.com',
-    projectId:         'kamayega-bharat',
-    storageBucket:     'kamayega-bharat.appspot.com',
-    messagingSenderId: '595460672260',
-    appId:             '1:595460672260:web:6584856313e2d740805e51'
+var messaging = null;
+
+(function initFirebase() {
+    var config = {
+        apiKey:            'AIzaSyBjXP4yQWDyCu4p78iA5aKrqICZLt_yxtk',
+        authDomain:        'kamayega-bharat.firebaseapp.com',
+        projectId:         'kamayega-bharat',
+        storageBucket:     'kamayega-bharat.appspot.com',
+        messagingSenderId: '595460672260',
+        appId:             '1:595460672260:web:6584856313e2d740805e51'
+    };
+
+    // Step A — get or create the [DEFAULT] app
+    try {
+        firebase.initializeApp(config);
+        console.log('[SW §2] initializeApp() — new app created.');
+    } catch (e) {
+        if (e.code === 'app/duplicate-app') {
+            // Already initialised from a previous evaluation — safe to continue.
+            console.log('[SW §2] initializeApp() — app already exists, continuing with existing instance.');
+        } else {
+            // Something genuinely unexpected — log and abort so we don't
+            // call messaging() on a broken app state.
+            console.error('[SW §2] initializeApp() unexpected error:', e.code, e.message);
+            return; // messaging stays null; §5 guard will skip onBackgroundMessage
+        }
+    }
+
+    // Step B — get the messaging instance (always after initializeApp succeeds)
+    try {
+        messaging = firebase.messaging();
+        console.log('[SW §2] firebase.messaging() instance ready.');
+    } catch (e) {
+        console.error('[SW §2] firebase.messaging() failed:', e.code, e.message);
+        // messaging stays null — §4 raw listener will still handle all pushes
+    }
+}());
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §3  SERVICE WORKER LIFECYCLE
+// ─────────────────────────────────────────────────────────────────────────────
+self.addEventListener('install', function (event) {
+    // skipWaiting() forces the new SW version to activate immediately,
+    // rather than waiting for all existing tabs to close first.
+    // Without this, a stale SW can persist for 24+ hours after a deploy.
+    console.log('[SW §3] install event — calling skipWaiting().');
+    self.skipWaiting();
 });
 
-var messaging = firebase.messaging();
-
-// ─────────────────────────────────────────────────────────────────────────────
-// §5. FIREBASE onBackgroundMessage — PRODUCTION FCM HANDLER
-//
-// This handles real FCM pushes sent from:
-//   • Firebase Console → Cloud Messaging → Send test message
-//   • Your Cloud Functions (functions/index.js)
-//   • Any server using the Firebase Admin SDK
-//
-// Firebase's internal SW router intercepts the raw push event BEFORE §2
-// for genuine FCM messages, so this block handles production and §2 handles
-// DevTools simulations. There is NO overlap in normal operation.
-//
-// If you want to also capture detailed logs in production, this is where
-// to add them.
-// ─────────────────────────────────────────────────────────────────────────────
-messaging.onBackgroundMessage(function (payload) {
-    console.log('[SW §5] Firebase onBackgroundMessage() fired — production FCM payload →', payload);
-
-    var notification = payload.notification || {};
-    var data         = payload.data         || {};
-
-    var title    = notification.title    || data.title    || 'Kamayega Bharat';
-    var body     = notification.body     || data.body     || 'You have a new update on your application.';
-    var icon     = notification.icon     || data.icon     || '/favicon.png';
-    var clickUrl = notification.click_action
-                || data.click_action
-                || '/profile.html';
-    var tag      = data.tag || 'kb-notification';
-
-    console.log('[SW §5] Resolved values →', { title, body, clickUrl, tag });
-
-    return self.registration.showNotification(title, {
-        body:  body,
-        icon:  icon,
-        badge: '/favicon.png',
-        tag:   tag,
-        data:  { url: clickUrl },
-        actions: [
-            { action: 'open',    title: '📋 Open Dashboard' },
-            { action: 'dismiss', title: '✕ Dismiss'         }
-        ],
-        requireInteraction: data.requireInteraction === 'true'
-    });
+self.addEventListener('activate', function (event) {
+    console.log('[SW §3] activate event — claiming all clients.');
+    event.waitUntil(clients.claim());
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// §6. NOTIFICATION CLICK HANDLER
+// §4  RAW PUSH LISTENER  ← fixes the DevTools simulation showing fallback text
 //
-// Fires when the user taps the notification or one of its action buttons.
-// Focuses an existing tab if the app is already open, opens a new one if not.
+// WHY THIS IS NEEDED:
+//   DevTools → Application → Service Workers → "Push" sends a raw browser
+//   push event. Firebase's onBackgroundMessage() (§5) only runs for pushes
+//   that go through Firebase's internal SW router — DevTools bypasses it.
+//   This raw listener catches everything DevTools sends.
+//
+// PRODUCTION SAFETY:
+//   For real FCM pushes, Firebase intercepts the push event INTERNALLY before
+//   it ever reaches this addEventListener handler. So in production, §5 runs
+//   for FCM messages and §4 runs for DevTools tests. No double-notification.
+//
+// ── DEVTOOLS TEST PAYLOADS ────────────────────────────────────────────────
+//   Paste any of these in DevTools → Application → Service Workers → Push:
+//
+//   Flat JSON (simplest):
+//   {"title":"Hello","body":"Testing 1 2 3"}
+//
+//   FCM notification shape:
+//   {"notification":{"title":"Hello","body":"Testing 1 2 3"}}
+//
+//   FCM data shape:
+//   {"data":{"title":"Hello","body":"Testing 1 2 3","click_action":"/profile.html"}}
+//
+//   Combined:
+//   {"notification":{"title":"New Message"},"data":{"body":"You have a chat","click_action":"/profile.html"}}
 // ─────────────────────────────────────────────────────────────────────────────
-self.addEventListener('notificationclick', function (event) {
-    console.log('[SW §6] notificationclick — action:', event.action || '(body tap)');
+self.addEventListener('push', function (event) {
+    console.log('[SW §4] ── raw push event fired ──');
+    console.log('[SW §4] event.data present?', !!event.data);
 
-    event.notification.close();
-
-    if (event.action === 'dismiss') {
-        console.log('[SW §6] Dismissed — no navigation.');
+    // §4a — Empty payload guard
+    if (!event.data) {
+        console.warn('[SW §4a] event.data is null — push sent with no payload body.');
+        console.warn('[SW §4a] Fix: ensure your push server sends a JSON body, or type a payload into the DevTools Push text box.');
+        event.waitUntil(
+            self.registration.showNotification('Kamayega Bharat', {
+                body:  'You have a new update on your application.',
+                icon:  '/favicon.png',
+                badge: '/favicon.png',
+                tag:   'kb-empty-payload'
+            })
+        );
         return;
     }
 
-    var clickUrl = (event.notification.data && event.notification.data.url)
-                 || '/profile.html';
+    // §4b — Read raw string (log BEFORE parse so you can see exactly what arrived)
+    var rawText = '';
+    try {
+        rawText = event.data.text();
+    } catch (e) {
+        console.error('[SW §4b] event.data.text() threw:', e);
+    }
+    console.log('[SW §4b] Raw payload string →', rawText);
 
+    // §4c — Parse JSON
+    var payload = {};
+    try {
+        payload = JSON.parse(rawText);
+        console.log('[SW §4c] Parsed payload →', JSON.stringify(payload, null, 2));
+    } catch (e) {
+        console.warn('[SW §4c] JSON.parse() failed — raw text is not valid JSON:', e.message);
+        console.warn('[SW §4c] Raw text was:', rawText);
+        // payload stays {} — field extraction below falls through to hardcoded defaults
+    }
+
+    // §4d — Extract fields from all FCM payload shapes
+    //
+    // Priority for each field:
+    //   payload.notification.X  (FCM notification message)
+    //   payload.data.X          (FCM data-only message)
+    //   payload.X               (flat JSON — DevTools default shape)
+    //   'hardcoded fallback'
+    var n = (payload.notification && typeof payload.notification === 'object') ? payload.notification : {};
+    var d = (payload.data         && typeof payload.data         === 'object') ? payload.data         : {};
+
+    var title    = n.title        || d.title        || payload.title        || 'Kamayega Bharat';
+    var body     = n.body         || d.body         || payload.body         || 'You have a new update on your application.';
+    var icon     = n.icon         || d.icon         || payload.icon         || '/favicon.png';
+    var clickUrl = n.click_action || d.click_action || payload.click_action || '/profile.html';
+    var tag      =                   d.tag          || payload.tag          || 'kb-notification';
+    var persist  = (d.requireInteraction === 'true') || (payload.requireInteraction === true) || false;
+
+    console.log('[SW §4d] Resolved values → title:', title, '| body:', body, '| clickUrl:', clickUrl, '| tag:', tag);
+
+    // §4e — Display the notification
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body:               body,
+            icon:               icon,
+            badge:              '/favicon.png',
+            tag:                tag,
+            data:               { url: clickUrl },
+            requireInteraction: persist,
+            actions: [
+                { action: 'open',    title: '📋 Open Dashboard' },
+                { action: 'dismiss', title: '✕ Dismiss'         }
+            ]
+        })
+        .then(function () {
+            console.log('[SW §4e] showNotification() succeeded.');
+        })
+        .catch(function (e) {
+            console.error('[SW §4e] showNotification() failed:', e);
+        })
+    );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §5  FIREBASE onBackgroundMessage — real FCM production pushes only
+//
+// Handles pushes sent via:
+//   • Firebase Console → Cloud Messaging → "Send test message"
+//   • Cloud Functions (your functions/index.js triggers)
+//   • Any server using the firebase-admin SDK
+//
+// Firebase intercepts the raw push event for FCM messages before §4 sees it,
+// so there is no execution overlap between §4 and §5 in production.
+// ─────────────────────────────────────────────────────────────────────────────
+if (messaging) {
+    messaging.onBackgroundMessage(function (payload) {
+        console.log('[SW §5] onBackgroundMessage() — production FCM payload:', payload);
+
+        var n = payload.notification || {};
+        var d = payload.data         || {};
+
+        var title    = n.title        || d.title        || 'Kamayega Bharat';
+        var body     = n.body         || d.body         || 'You have a new update on your application.';
+        var icon     = n.icon         || d.icon         || '/favicon.png';
+        var clickUrl = n.click_action || d.click_action || '/profile.html';
+        var tag      =                   d.tag          || 'kb-notification';
+
+        console.log('[SW §5] Resolved → title:', title, '| body:', body, '| url:', clickUrl);
+
+        return self.registration.showNotification(title, {
+            body:               body,
+            icon:               icon,
+            badge:              '/favicon.png',
+            tag:                tag,
+            data:               { url: clickUrl },
+            requireInteraction: d.requireInteraction === 'true',
+            actions: [
+                { action: 'open',    title: '📋 Open Dashboard' },
+                { action: 'dismiss', title: '✕ Dismiss'         }
+            ]
+        });
+    });
+} else {
+    console.warn('[SW §5] messaging is null — onBackgroundMessage() skipped. Real FCM pushes will fall through to §4 raw listener as a backup.');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// §6  NOTIFICATION CLICK HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+self.addEventListener('notificationclick', function (event) {
+    console.log('[SW §6] notificationclick — action:', event.action || '(body tap)');
+    event.notification.close();
+
+    if (event.action === 'dismiss') {
+        console.log('[SW §6] Dismiss action — no navigation.');
+        return;
+    }
+
+    var clickUrl = (event.notification.data && event.notification.data.url) || '/profile.html';
     console.log('[SW §6] Navigating to:', clickUrl);
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then(function (clientList) {
                 for (var i = 0; i < clientList.length; i++) {
-                    var client = clientList[i];
-                    if (client.url.indexOf(self.location.origin) === 0 && 'focus' in client) {
-                        console.log('[SW §6] Found existing tab — navigating + focusing.');
-                        return client.navigate(clickUrl).then(function (c) { return c.focus(); });
+                    var c = clientList[i];
+                    if (c.url.indexOf(self.location.origin) === 0 && 'focus' in c) {
+                        console.log('[SW §6] Existing tab found — navigating + focusing.');
+                        return c.navigate(clickUrl).then(function (tab) { return tab.focus(); });
                     }
                 }
                 console.log('[SW §6] No existing tab — opening new window.');
-                if (clients.openWindow) {
-                    return clients.openWindow(clickUrl);
-                }
+                return clients.openWindow ? clients.openWindow(clickUrl) : null;
             })
-            .catch(function (err) {
-                console.error('[SW §6] notificationclick handler error →', err);
+            .catch(function (e) {
+                console.error('[SW §6] Navigation error:', e);
             })
     );
 });
