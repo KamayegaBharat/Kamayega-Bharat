@@ -1303,10 +1303,42 @@ window.updateStatus = function (appId, selectEl) {
 
     // Non-hire statuses: simple single-field update, no extra work needed
     if (newStatus !== 'Hired') {
-        db.collection('applications').doc(appId).update({ status: newStatus })
-            .then(function () { window.toast('✅ Status updated to "' + newStatus + '"'); })
+       db.collection('applications').doc(appId).update({ status: newStatus })
+            .then(function () {
+                window.toast('✅ Status updated to "' + newStatus + '"');
+                // ── Debug: verify what's actually on the doc after update ──
+                db.collection('applications').doc(appId).get().then(function(doc) {
+                    if (!doc.exists) { alert('DEBUG: Document not found!'); return; }
+                    var d = doc.data();
+                    alert(
+                        'DEBUG — Application doc fields:\n\n' +
+                        'seekerId: "' + (d.seekerId || 'MISSING') + '"\n' +
+                        'seekerUid: "' + (d.seekerUid || 'MISSING') + '"\n' +
+                        'status: "' + (d.status || 'MISSING') + '"\n' +
+                        'jobId: "' + (d.jobId || 'MISSING') + '"\n' +
+                        'companyName: "' + (d.companyName || 'MISSING') + '"\n\n' +
+                        'Now checking seeker user doc...'
+                    );
+                    // ── Check seeker's user doc for FCM token ──
+                    var sid = d.seekerId || d.seekerUid;
+                    if (!sid) { alert('DEBUG: No seekerId or seekerUid on application doc — Cloud Function exits here!'); return; }
+                    db.collection('users').doc(sid).get().then(function(uDoc) {
+                        if (!uDoc.exists) { alert('DEBUG: Seeker user doc NOT FOUND for uid: ' + sid); return; }
+                        var u = uDoc.data();
+                        alert(
+                            'DEBUG — Seeker user doc fields:\n\n' +
+                            'fcmToken: "' + (u.fcmToken || 'MISSING — this is why no notification!') + '"\n' +
+                            'notificationsEnabled: "' + (u.notificationsEnabled === undefined ? 'MISSING' : u.notificationsEnabled) + '"\n\n' +
+                            (u.fcmToken
+                                ? '✅ Token exists — Cloud Function should send notification.\nIf still not working, the function may not be deployed correctly.'
+                                : '❌ No FCM token — seeker never enabled notifications, or token was cleared.')
+                        );
+                    });
+                });
+            })
             .catch(function (err) {
                 console.error('[updateStatus]', err);
+                alert('DEBUG ERROR: ' + err.message + '\nCode: ' + err.code);
                 window.toast('⚠️ Could not update status — check Firestore rules.');
             });
         return;
