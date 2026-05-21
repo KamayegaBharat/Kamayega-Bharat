@@ -289,7 +289,7 @@ exports.onApplicationStatusChange = functions
 // }
 // ─────────────────────────────────────────────────────────────────────────────
 exports.onNewJobPosted = functions
-    
+    .region('us-central1')
     .firestore
     .document('jobs/{jobId}')
     .onCreate(async (snap, context) => {
@@ -310,9 +310,13 @@ exports.onNewJobPosted = functions
             return null;
         }
 
-        const sendPromises = [];
+const sendPromises = [];
         seekersSnap.forEach(doc => {
-            const tokens = Array.isArray(doc.data().fcmTokens) ? doc.data().fcmTokens : [];
+            const d = doc.data();
+            // Support both single string field and legacy array field
+            const tokens = new Set();
+            if (typeof d.fcmToken === 'string' && d.fcmToken.trim()) tokens.add(d.fcmToken.trim());
+            if (Array.isArray(d.fcmTokens)) d.fcmTokens.forEach(t => { if (t) tokens.add(t); });
             tokens.forEach(token => {
                 sendPromises.push(
                     sendToToken(
@@ -325,7 +329,6 @@ exports.onNewJobPosted = functions
                 );
             });
         });
-
         console.log(`Sending new-job notifications to ${sendPromises.length} tokens.`);
         return Promise.all(sendPromises);
     });
@@ -445,7 +448,36 @@ exports.sendNotification = functions
             return res.status(500).json({ error: error.message });
         }
     });
+// ─────────────────────────────────────────────────────────────────────────────
+// TRIGGER 5: Notification Queue Processor
+//
+// Firestore path: notification_queue/{docId}
+// Fires when employer.html queues a push notification by writing a doc here.
+// This avoids CORS issues with calling FCM directly from the browser.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.processNotificationQueue = functions
+    .region('us-central1')
+    .firestore
+    .document('notification_queue/{docId}')
+    .onCreate(async (snap, context) => {
+        const data = snap.data();
+        if (!data || !data.fcmToken || data.status !== 'pending') return null;
 
+        const success = await sendToToken(
+            data.fcmToken,
+            data.title || 'Kamayega Bharat',
+            data.body  || 'You have an update.',
+            { tag: 'kb-notification' },
+            data.clickUrl || '/profile.html'
+        );
+
+        await snap.ref.update({
+            status:     success ? 'sent' : 'failed',
+            processedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return null;
+    });
 // ─────────────────────────────────────────────────────────────────────────────
 // TOPIC MESSAGING (optional, for large-scale broadcasts)
 //
