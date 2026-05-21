@@ -1286,7 +1286,6 @@ function buildStatusOptions(current) {
    UPDATE STATUS — matches seeker-side status field values exactly
    ───────────────────────────────────────────────────────────────── */
 // ── FCM Server Key — Firebase Console → Project Settings → Cloud Messaging → Server Key
-var FCM_SERVER_KEY = 'BMUZXGCttN0MKdOP1qhQw8mHR07ym5LihceUUTc5qYbXvx3VvJQKOpS8vkI5UApgOKQVbrOo9DeyPg7ChNkpzwk';
 
 var STATUS_NOTIF_MESSAGES = {
     'applied':   function(job, co) { return '📋 Your application for ' + job + ' at ' + co + ' was received.'; },
@@ -1297,42 +1296,30 @@ var STATUS_NOTIF_MESSAGES = {
 };
 
 function sendNotificationToSeeker(seekerId, title, body) {
-    db.collection('users').doc(seekerId).get().then(function(userDoc) {
-        if (!userDoc.exists) return;
-        var u = userDoc.data();
-        var token = u.fcmToken;
-        if (!token) return;
-        if (u.notificationsEnabled === false) return;
+    if (!seekerId) return;
+    db.collection('users').doc(seekerId).get()
+        .then(function (userDoc) {
+            if (!userDoc || !userDoc.exists) return;
+            var u = userDoc.data() || {};
+            if (!u.fcmToken) return;
+            if (u.notificationsEnabled === false) return;
 
-        fetch('https://fcm.googleapis.com/fcm/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'key=' + FCM_SERVER_KEY
-            },
-            body: JSON.stringify({
-                to: token,
-                notification: {
-                    title: title,
-                    body:  body,
-                    icon:  '/favicon.png'
-                },
-                webpush: {
-                    notification: {
-                        title: title,
-                        body:  body,
-                        icon:  '/favicon.png'
-                    },
-                    fcm_options: { link: '/profile.html' }
-                },
-                data: { url: '/profile.html' }
-            })
-        }).then(function(r) { return r.json(); })
-          .then(function(result) { console.log('[FCM] Result:', result); })
-          .catch(function(err)   { console.error('[FCM] Error:', err); });
-    }).catch(function(err) {
-        console.error('[FCM] Could not read seeker doc:', err);
-    });
+            db.collection('notification_queue').add({
+                seekerId:  seekerId,
+                fcmToken:  u.fcmToken,
+                title:     title,
+                body:      body,
+                icon:      '/favicon.png',
+                clickUrl:  '/profile.html',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status:    'pending'
+            }).catch(function (err) {
+                console.error('[notification_queue] write failed:', err);
+            });
+        })
+        .catch(function (err) {
+            console.error('[sendNotificationToSeeker] user fetch failed:', err);
+        });
 }
 
 function buildAndSendNotif(appId, newStatus) {
