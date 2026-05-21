@@ -257,7 +257,7 @@ async function handleStatusChange(appId, before, after) {
 }
 
 exports.onApplicationStatusChange = functions
-    .region('asia-south1')
+    .region('us-central1')
     .firestore
     .document('applications/{applicationId}')
     .onWrite(async (change, context) => {
@@ -289,7 +289,7 @@ exports.onApplicationStatusChange = functions
 // }
 // ─────────────────────────────────────────────────────────────────────────────
 exports.onNewJobPosted = functions
-    .region('asia-south1')
+    
     .firestore
     .document('jobs/{jobId}')
     .onCreate(async (snap, context) => {
@@ -346,7 +346,7 @@ exports.onNewJobPosted = functions
 // }
 // ─────────────────────────────────────────────────────────────────────────────
 exports.onProfileViewed = functions
-    .region('asia-south1')
+    .region('us-central1')
     .firestore
     .document('profileViews/{viewId}')
     .onCreate(async (snap, context) => {
@@ -387,7 +387,7 @@ exports.onProfileViewed = functions
 // backend using a secret header check or Firebase Auth verification.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.sendNotification = functions
-    .region('asia-south1')
+    .region('us-central1')
     .https
     .onRequest(async (req, res) => {
         // Basic method guard
