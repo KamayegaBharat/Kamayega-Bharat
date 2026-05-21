@@ -440,7 +440,7 @@
                     <div id="meetInviteBox">
                         <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:4px;">🎥 Send Google Meet Interview Invite</div>
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            <input type="url" id="meetLinkInput" placeholder="https://meet.google.com/…" style="margin:0;flex:1;min-width:200px;">                             
+                            <input type="" id="meetLinkInput" placeholder="https://meet.google.com/…" style="margin:0;flex:1;min-width:200px;">                             
                             <button onclick="window.open('https://meet.google.com/new','_blank','noopener,noreferrer')" class="btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;" title="Opens a brand-new Google Meet in a new tab — copy the link and paste it here">🎥 Generate Instant Meet Link</button>                            
                             <input type="text" id="meetMsgInput" placeholder="Optional note to candidate" style="margin:0;flex:1;min-width:160px;">
                             <button class="btn-green btn-sm" onclick="window.sendMeetInvite()" style="white-space:nowrap;">Send Invite</button>
@@ -987,7 +987,7 @@ window.deleteJob = function (jobId, title) {
    Two-layer defence:
    Layer A — Firestore query: .where('status','!=','withdrawn')
              (requires composite index on employerId + status — Firestore
-              logs a clickable URL to create it automatically).
+              logs a clickable  to create it automatically).
    Layer B — Frontend filter: belt-and-suspenders check on every
              doc before it enters allApplications, in case the index
              is still building or data arrives from cache.
@@ -1285,25 +1285,158 @@ function buildStatusOptions(current) {
 /* ─────────────────────────────────────────────────────────────────
    UPDATE STATUS — matches seeker-side status field values exactly
    ───────────────────────────────────────────────────────────────── */
+// ── FCM Server Key — Firebase Console → Project Settings → Cloud Messaging → Server Key
+var FCM_SERVER_KEY = 'BMUZXGCttN0MKdOP1qhQw8mHR07ym5LihceUUTc5qYbXvx3VvJQKOpS8vkI5UApgOKQVbrOo9DeyPg7ChNkpzwk';
+
+var STATUS_NOTIF_MESSAGES = {
+    'applied':   function(job, co) { return '📋 Your application for ' + job + ' at ' + co + ' was received.'; },
+    'review':    function(job, co) { return '🔍 ' + co + ' is reviewing your application for ' + job + '.'; },
+    'interview': function(job, co) { return '🎤 Interview scheduled! ' + co + ' wants to interview you for ' + job + '. Check Messages!'; },
+    'hired':     function(job, co) { return '🎉 Congratulations! You have been selected for ' + job + ' at ' + co + '!'; },
+    'rejected':  function(job, co) { return 'Your application for ' + job + ' at ' + co + ' was not selected this time. Keep applying!'; }
+};
+
+function sendNotificationToSeeker(seekerId, title, body) {
+    db.collection('users').doc(seekerId).get().then(function(userDoc) {
+        if (!userDoc.exists) return;
+        var u = userDoc.data();
+        var token = u.fcmToken;
+        if (!token) return;
+        if (u.notificationsEnabled === false) return;
+
+        fetch('https://fcm.googleapis.com/fcm/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'key=' + FCM_SERVER_KEY
+            },
+            body: JSON.stringify({
+                to: token,
+                notification: {
+                    title: title,
+                    body:  body,
+                    icon:  '/favicon.png'
+                },
+                webpush: {
+                    notification: {
+                        title: title,
+                        body:  body,
+                        icon:  '/favicon.png'
+                    },
+                    fcm_options: { link: '/profile.html' }
+                },
+                data: { url: '/profile.html' }
+            })
+        }).then(function(r) { return r.json(); })
+          .then(function(result) { console.log('[FCM] Result:', result); })
+          .catch(function(err)   { console.error('[FCM] Error:', err); });
+    }).catch(function(err) {
+        console.error('[FCM] Could not read seeker doc:', err);
+    });
+}
+
+function buildAndSendNotif(appId, newStatus) {
+    db.collection('applications').doc(appId).get().then(function(doc) {
+        if (!doc.exists) return;
+        var a        = doc.data();
+        var seekerId = a.seekerId || a.seekerUid;
+        if (!seekerId) return;
+
+        var jobTitle    = a.jobTitle || 'your position';
+        var companyName = a.companyName || a.company || null;
+
+        function doSend(co) {
+            var msgFn = STATUS_NOTIF_MESSAGES[newStatus.toLowerCase()];
+            var body  = msgFn
+                ? msgFn(jobTitle, co)
+                : co + ' updated your application for ' + jobTitle + ' to: ' + newStatus;
+            sendNotificationToSeeker(seekerId, 'Application Update — Kamayega Bharat', body);
+        }
+
+        if (companyName) {
+            doSend(companyName);
+        } else if (a.jobId) {
+            db.collection('jobs').doc(a.jobId).get().then(function(jobDoc) {
+                var co = jobDoc.exists
+                    ? (jobDoc.data().companyName || jobDoc.data().company || 'the Employer')
+                    : 'the Employer';
+                doSend(co);
+            }).catch(function() { doSend('the Employer'); });
+        } else {
+            doSend('the Employer');
+        }
+    }).catch(function(err) {
+        console.error('[buildAndSendNotif]', err);
+    });
+}
+
 window.updateStatus = function (appId, selectEl) {
     if (!appId || !selectEl) return;
     var newStatus = selectEl.value;
     selectEl.className = 'status-select st-' + newStatus.toLowerCase();
 
-    // Non-hire statuses: simple single-field update, no extra work needed
+    // ── Non-hire statuses ─────────────────────────────────────────────
     if (newStatus !== 'Hired') {
-       db.collection('applications').doc(appId).update({ status: newStatus })
+        db.collection('applications').doc(appId).update({ status: newStatus })
             .then(function () {
                 window.toast('✅ Status updated to "' + newStatus + '"');
-window.toast('✅ Status updated to "' + newStatus + '"');
+                buildAndSendNotif(appId, newStatus);
             })
             .catch(function (err) {
                 console.error('[updateStatus]', err);
-                alert('DEBUG ERROR: ' + err.message + '\nCode: ' + err.code);
                 window.toast('⚠️ Could not update status — check Firestore rules.');
             });
         return;
     }
+
+    // ── Hired path ────────────────────────────────────────────────────
+    db.collection('applications').doc(appId).get()
+        .then(function (docSnap) {
+            if (!docSnap || !docSnap.exists) {
+                window.toast('⚠️ Application document not found.');
+                return;
+            }
+            var appData = docSnap.data() || {};
+            var refNum  = 'KB-' + appId.substring(0, 8).toUpperCase();
+            var coName  = (employerDoc && (employerDoc.companyName || employerDoc.fullName))
+                       || (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email))
+                       || 'Kamayega Bharat Employer';
+            var seeker  = appData.seekerName || '—';
+            var jobTtl  = appData.jobTitle   || '—';
+            var ts      = firebase.firestore.FieldValue.serverTimestamp();
+
+            var batch = db.batch();
+            batch.update(db.collection('applications').doc(appId), {
+                status:          'Hired',
+                referenceNumber: refNum,
+                companyName:     coName,
+                hiredAt:         ts
+            });
+            batch.set(db.collection('selection_letters').doc(refNum), {
+                referenceNumber: refNum,
+                seekerName:      seeker,
+                jobTitle:        jobTtl,
+                companyName:     coName,
+                status:          'Hired',
+                hiredAt:         ts
+            });
+            return batch.commit().then(function() {
+                window.toast('🎉 Hired! Reference: ' + refNum);
+                var seekerId = appData.seekerId || appData.seekerUid;
+                if (seekerId) {
+                    sendNotificationToSeeker(
+                        seekerId,
+                        '🎉 Congratulations! — Kamayega Bharat',
+                        'You have been selected for ' + jobTtl + ' at ' + coName + '! Download your selection letter.'
+                    );
+                }
+            });
+        })
+        .catch(function (err) {
+            console.error('[updateStatus hired]', err);
+            window.toast('⚠️ Could not save hire record — check Firestore rules.');
+        });
+};
 
     // ── HIRED PATH ────────────────────────────────────────────────────
     // Step 1: Read the application doc fresh from Firestore so we have
