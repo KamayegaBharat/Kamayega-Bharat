@@ -79,20 +79,38 @@ async function sendToToken(token, title, body, data = {}, clickUrl = '/profile.h
 // ─────────────────────────────────────────────────────────────────────────────
 async function removeStaleToken(staleToken) {
     try {
-        const usersSnap = await db.collection('users')
+        const batch = db.batch();
+        let found = false;
+
+        // Check the string `fcmToken` field first (current dashboard format)
+        const stringFieldSnap = await db.collection('users')
+            .where('fcmToken', '==', staleToken)
+            .get();
+        stringFieldSnap.forEach(doc => {
+            batch.update(doc.ref, {
+                fcmToken:             admin.firestore.FieldValue.delete(),
+                notificationsEnabled: false
+            });
+            found = true;
+        });
+
+        // Also check the legacy array field
+        const arrayFieldSnap = await db.collection('users')
             .where('fcmTokens', 'array-contains', staleToken)
             .get();
-
-        const batch = db.batch();
-        usersSnap.forEach(doc => {
+        arrayFieldSnap.forEach(doc => {
             batch.update(doc.ref, {
                 fcmTokens: admin.firestore.FieldValue.arrayRemove(staleToken)
             });
+            found = true;
         });
-        await batch.commit();
-        console.log('Removed stale token:', staleToken);
+
+        if (found) {
+            await batch.commit();
+            console.log('[FCM] Removed stale token:', staleToken);
+        }
     } catch (err) {
-        console.error('Failed to remove stale token:', err.message);
+        console.error('[FCM] Failed to remove stale token:', err.message);
     }
 }
 
@@ -103,7 +121,25 @@ async function getTokensForUser(uid) {
     const userDoc = await db.collection('users').doc(uid).get();
     if (!userDoc.exists) return [];
     const data = userDoc.data();
-    return Array.isArray(data.fcmTokens) ? data.fcmTokens : [];
+
+    // Dashboard saves a single string field `fcmToken`.
+    // Support both the old array field and the new string field
+    // so nothing breaks if you migrate later.
+    const tokens = new Set();
+
+    if (typeof data.fcmToken === 'string' && data.fcmToken.trim()) {
+        tokens.add(data.fcmToken.trim());
+    }
+    if (Array.isArray(data.fcmTokens)) {
+        data.fcmTokens.forEach(function(t) {
+            if (t && t.trim()) tokens.add(t.trim());
+        });
+    }
+
+    // Respect the toggle the seeker set in the dashboard
+    if (data.notificationsEnabled === false) return [];
+
+    return Array.from(tokens);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -122,52 +158,116 @@ async function getTokensForUser(uid) {
 //   status:      "Shortlisted" | "Rejected" | "Interview Scheduled" | ...
 // }
 // ─────────────────────────────────────────────────────────────────────────────
+// Status values written by seeker-dashboard.html and employer dashboard
+const STATUS_MESSAGES = {
+    // exact strings your dashboards write → notification copy
+    'applied':              (job, co) => `📋 Your application for ${job} at ${co} was received successfully.`,
+    'pending':              (job, co) => `⏳ Your application for ${job} at ${co} is pending review.`,
+    'review':               (job, co) => `🔍 ${co} is reviewing your application for ${job}.`,
+    'interview':            (job, co) => `🎤 Interview scheduled! ${co} wants to interview you for ${job}. Check Messages for the link.`,
+    'hired':                (job, co) => `🎉 Congratulations! You've been selected for ${job} at ${co}. Download your selection letter!`,
+    'rejected':             (job, co) => `Your application for ${job} at ${co} was not selected this time. Keep applying!`,
+    'withdrawn':            (job, co) => `↩️ Your application for ${job} at ${co} has been withdrawn.`,
+    'on hold':              (job, co) => `⏸️ Your application for ${job} at ${co} is currently on hold.`,
+    // legacy / employer-side values kept for backward compatibility
+    'shortlisted':          (job, co) => `🎉 You've been shortlisted for ${job} at ${co}!`,
+    'interview scheduled':  (job, co) => `📅 Interview scheduled for ${job} at ${co}. Check your profile for details.`,
+};
+
+// ── Shared core logic — used by both onUpdate and onCreate ────────────────
+async function handleStatusChange(appId, before, after) {
+    const newStatus = (after.status || '').toLowerCase().trim();
+    const oldStatus = (before.status || '').toLowerCase().trim();
+
+    if (newStatus === oldStatus) return null;
+
+    // Read seekerId — dashboard writes seekerId, older docs may use seekerUid
+    const seekerId = after.seekerId || after.seekerUid;
+    if (!seekerId) {
+        console.warn('[FCM] Application missing seekerId/seekerUid:', appId);
+        return null;
+    }
+
+    const jobTitle  = after.jobTitle    || after.title      || 'your position';
+
+    // Company name: denormalized on app doc is fastest (zero extra reads).
+    // Fall back to fetching the job document if not present.
+    let companyName = after.companyName || after.company || null;
+    if (!companyName && after.jobId) {
+        try {
+            const jobSnap = await db.collection('jobs').doc(after.jobId).get();
+            if (jobSnap.exists) {
+                const j = jobSnap.data();
+                companyName = j.companyName || j.company || null;
+            }
+        } catch (e) {
+            console.warn('[FCM] Could not fetch job doc for company name:', e.message);
+        }
+    }
+    companyName = companyName || 'the Employer';
+
+    const msgFn = STATUS_MESSAGES[newStatus];
+    const body  = msgFn
+        ? msgFn(jobTitle, companyName)
+        : `${companyName} updated your application for ${jobTitle} to: ${after.status}`;
+
+    const tokens = await getTokensForUser(seekerId);
+    if (tokens.length === 0) {
+        console.log('[FCM] No tokens for seeker:', seekerId, '— skipping.');
+        return null;
+    }
+
+    console.log(`[FCM] Sending status="${newStatus}" notification to ${tokens.length} token(s) for seeker ${seekerId}`);
+
+    const sendPromises = tokens.map(token =>
+        sendToToken(
+            token,
+            'Application Update — Kamayega Bharat',
+            body,
+            {
+                tag:           'application-update',
+                applicationId: appId,
+                status:        newStatus,
+                company:       companyName,
+                jobTitle:      jobTitle,
+                clickAction:   'OPEN_APPLICATIONS_TAB',
+            },
+            '/seeker-dashboard.html'
+        )
+    );
+
+    // Log notification for in-app notification history
+    try {
+        await db.collection('users').doc(seekerId)
+            .collection('notifications').add({
+                title:     'Application Update — Kamayega Bharat',
+                body:      body,
+                appId:     appId,
+                jobId:     after.jobId || '',
+                status:    newStatus,
+                company:   companyName,
+                read:      false,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+    } catch (e) {
+        console.warn('[FCM] Could not log notification to Firestore:', e.message);
+    }
+
+    return Promise.all(sendPromises);
+}
+
 exports.onApplicationStatusChange = functions
-    .region('asia-south1')          // Mumbai — lowest latency for India
+    .region('asia-south1')
     .firestore
     .document('applications/{applicationId}')
-    .onUpdate(async (change, context) => {
-        const before = change.before.data();
+    .onWrite(async (change, context) => {
+        // Ignore hard deletes
+        if (!change.after.exists) return null;
+
+        const before = change.before.exists ? change.before.data() : {};
         const after  = change.after.data();
 
-        // Only fire when the status field actually changed
-        if (before.status === after.status) return null;
-
-        const { seekerUid, jobTitle, companyName, status } = after;
-        if (!seekerUid) {
-            console.warn('Application doc missing seekerUid:', context.params.applicationId);
-            return null;
-        }
-
-        // Build a human-friendly message based on the new status
-        const statusMessages = {
-            'Shortlisted':          `🎉 Great news! You've been shortlisted for ${jobTitle} at ${companyName}.`,
-            'Interview Scheduled':  `📅 Interview scheduled for ${jobTitle} at ${companyName}. Check your profile for details.`,
-            'Rejected':             `Your application for ${jobTitle} at ${companyName} was not selected this time. Keep applying!`,
-            'Hired':                `🥳 Congratulations! You've been hired for ${jobTitle} at ${companyName}!`,
-            'On Hold':              `Your application for ${jobTitle} at ${companyName} is currently on hold.`,
-        };
-
-        const body = statusMessages[status]
-                  || `Your application for ${jobTitle} at ${companyName} has been updated to: ${status}`;
-
-        const tokens = await getTokensForUser(seekerUid);
-        if (tokens.length === 0) {
-            console.log('No FCM tokens for seeker:', seekerUid);
-            return null;
-        }
-
-        const sendPromises = tokens.map(token =>
-            sendToToken(
-                token,
-                'Application Update — Kamayega Bharat',
-                body,
-                { tag: 'application-update', applicationId: context.params.applicationId },
-                '/profile.html'
-            )
-        );
-
-        return Promise.all(sendPromises);
+        return handleStatusChange(context.params.applicationId, before, after);
     });
 
 // ─────────────────────────────────────────────────────────────────────────────
