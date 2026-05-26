@@ -81,8 +81,6 @@ Whether you are looking for your first job or hiring your next team member, Kama
 
 - 🌐 Hindi and regional language support
 - 📱 Android app
-- 📲 SMS notifications for users without smartphones
-
 ---
 
 © 2026 Kamayega Bharat. Built with ❤️ for Bharat by Sourav Bagchi.
