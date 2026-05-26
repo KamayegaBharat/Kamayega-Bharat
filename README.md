@@ -73,7 +73,7 @@ Whether you are looking for your first job or hiring your next team member, Kama
 - ✅ Real-time chat — no delays, no waiting
 - ✅ Verified employer badges so you know who you are dealing with
 - ✅ Official selection letters that can be verified by anyone
-- ✅ Built specifically for India's workforce — not a copy of a foreign platform
+- ✅ Built specifically for India's workforce
 
 ---
 
