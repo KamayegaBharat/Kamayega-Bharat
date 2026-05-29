@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works | Kamayega Bharat - India's Free Job Portal</title>
+    <meta name="description" content="Learn how Kamayega Bharat works for job seekers and employers. Create a profile, browse jobs, chat directly and get hired — completely free. Built for India.">
+    <link rel="canonical" href="https://kamayegabharat.github.io/how-it-works.html">
+    <link rel="icon" type="image/png" href="favicon.png" sizes="512x512">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to use Kamayega Bharat",
+      "description": "Step-by-step guide to finding a job or hiring on Kamayega Bharat, India's free job portal.",
+      "step": [
+        { "@type": "HowToStep", "name": "Sign up", "text": "Go to kamayegabharat.github.io and sign up with your email." },
+        { "@type": "HowToStep", "name": "Create your profile", "text": "Fill in your skills, city, and a little about yourself." },
+        { "@type": "HowToStep", "name": "Browse and apply", "text": "Browse jobs and apply to the ones that fit you with a single click." },
+        { "@type": "HowToStep", "name": "Connect directly", "text": "Chat with the employer and track your application progress in real time." }
+      ]
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+            --green: #16a34a;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: white; color: var(--text-main); line-height: 1.6; }
+
+        /* Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 5%; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; background: white; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.03em; }
+        .login-btn { background: var(--primary); color: white; padding: 0.7rem 1.6rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: 0.3s; }
+        .login-btn:hover { background: #1e3a8a; }
+
+        /* Hero */
+        .hero { padding: 80px 5% 100px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; }
+        .hero h1 { font-size: clamp(2rem, 6vw, 3.2rem); margin: 0 0 1rem; font-weight: 800; letter-spacing: -0.03em; }
+        .hero p { font-size: 1.15rem; opacity: 0.9; max-width: 600px; margin-inline: auto; }
+
+        /* Sections */
+        .section { padding: 80px 5%; max-width: 1100px; margin: 0 auto; }
+        .section-alt { background: var(--bg-light); }
+        .section-alt .section { background: transparent; }
+
+        .section-label { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--secondary); margin-bottom: 0.5rem; }
+        .section h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 0.5rem; }
+        .section > p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2.5rem; }
+
+        /* Steps */
+        .steps { display: grid; gap: 1.5rem; }
+        .step { display: flex; gap: 1.5rem; align-items: flex-start; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; transition: 0.2s; }
+        .step:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.07); transform: translateY(-2px); }
+        .step-num { min-width: 44px; height: 44px; background: var(--primary); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+        .step-body h3 { margin: 0 0 0.4rem; font-size: 1.1rem; font-weight: 700; }
+        .step-body p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
+
+        /* Feature lists */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .feature-box { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 2rem; }
+        .feature-box h3 { font-size: 1.3rem; font-weight: 800; margin: 0 0 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .feature-box ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+        .feature-box li { display: flex; gap: 0.75rem; align-items: flex-start; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        .feature-box li::before { content: "✓"; color: var(--green); font-weight: 800; min-width: 18px; }
+
+        /* Why section */
+        .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .why-item { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; text-align: center; }
+        .why-item .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .why-item p { margin: 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+
+        /* Coming soon */
+        .coming-soon { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .badge { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; border-radius: 999px; padding: 0.5rem 1.2rem; font-weight: 600; font-size: 0.9rem; }
+
+        /* CTA */
+        .cta-section { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; padding: 80px 5%; }
+        .cta-section h2 { font-size: 2rem; font-weight: 800; margin: 0 0 1rem; }
+        .cta-section p { opacity: 0.9; margin-bottom: 2rem; }
+        .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn { padding: 1rem 2.2rem; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 1rem; transition: 0.2s; }
+        .btn-white { background: white; color: var(--primary); }
+        .btn-outline { border: 2px solid rgba(255,255,255,0.5); color: white; }
+        .btn-white:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+
+        /* Footer */
+        footer { background: var(--bg-light); padding: 60px 5% 30px; border-top: 1px solid #e2e8f0; text-align: center; }
+        .footer-nav { margin-bottom: 2rem; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .footer-nav a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+        .footer-nav a:hover { color: var(--primary); }
+        .footer-copy { font-size: 0.85rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .two-col { grid-template-columns: 1fr; }
+            .section { padding: 60px 5%; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="index.html" class="logo">Kamayega Bharat</a>
+    <a href="login.html" class="login-btn">Login / Signup</a>
+</nav>
+
+<main>
+
+    <section class="hero">
+        <h1>How Kamayega Bharat Works</h1>
+        <p>Simple, fast, and completely free. Connecting India's workers and employers — no middlemen, no hidden fees.</p>
+    </section>
+
+    <!-- What is it -->
+    <div style="padding: 80px 5%;">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <p class="section-label">About the Platform</p>
+            <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 1rem;">Built for every worker in India</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8;">Most job portals are built for corporate India. Kamayega Bharat is built for everyone else — the millions of hardworking people across every state and city who deserve a simple and reliable way to find work and get hired. Whether you are looking for your first job or hiring your next team member, Kamayega Bharat gets it done in minutes — for free.</p>
+        </div>
+    </div>
+
+    <!-- For Job Seekers & Employers -->
+    <div class="section-alt">
+        <div class="section">
+            <p class="section-label">Features</p>
+            <h2>Everything you need, nothing you don't</h2>
+            <p>Powerful tools for both job seekers and employers — all in one place.</p>
+            <div class="two-col">
+                <div class="feature-box">
+                    <h3>🔍 For Job Seekers</h3>
+                    <ul>
+                        <li>Search and filter jobs by city, job type, and work mode</li>
+                        <li>See which jobs match your skills best</li>
+                        <li>Apply to any job with a single click</li>
+                        <li>Track your application — Applied, Review, Interview, Hired</li>
+                        <li>Chat directly with employers in real time</li>
+                        <li>Join interview calls through Google Meet</li>
+                        <li>Download your official hiring letter as a PDF</li>
+                        <li>Upload your resume and certificates via Google Drive link</li>
+                        <li>Get notified instantly when your application status changes</li>
+                    </ul>
+                </div>
+                <div class="feature-box">
+                    <h3>🏢 For Employers</h3>
+                    <ul>
+                        <li>Post a job listing in under 2 minutes — for free</li>
+                        <li>Receive and manage all applications in one place</li>
+                        <li>View each applicant's skills, experience, and resume</li>
+                        <li>Chat directly with candidates</li>
+                        <li>Schedule interviews by sharing a Google Meet link</li>
+                        <li>System issues a verifiable selection letter automatically on hire</li>
+                        <li>Verify any selection letter using its reference number</li>
+                        <li>Get a Verified Employer badge to build trust with job seekers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to get started -->
+    <div class="section">
+        <p class="section-label">Get Started</p>
+        <h2>As a Job Seeker</h2>
+        <p>From signup to your first application in under 2 minutes.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <h3>Visit the portal</h3>
+                    <p>Go to <a href="https://kamayegabharat.github.io" style="color: var(--primary); font-weight: 600;">kamayegabharat.github.io</a> on your phone or computer.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <h3>Sign up with your email</h3>
+                    <p>Create your free account in seconds. No verification delays.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <h3>Fill in your profile</h3>
+                    <p>Add your skills, city, and a short intro about yourself. Takes about 2 minutes.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                    <h3>Browse jobs and apply</h3>
+                    <p>Filter by your city and job type. Apply to matching jobs with one click.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                    <h3>Chat and get hired</h3>
+                    <p>Talk directly to the employer, attend your interview, and track your status live.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-alt">
+        <div class="section">
+            <p class="section-label">Get Started</p>
+            <h2>As an Employer</h2>
+            <p>Post your first job and start receiving applications today.</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <h3>Visit the portal</h3>
+                        <p>Go to <a href="https://kamayegabharat.github.io" style="color: var(--primary); font-weight: 600;">kamayegabharat.github.io</a> on your phone or computer.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <h3>Sign up with your email</h3>
+                        <p>Create your free employer account. No subscription, no credit card.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <h3>Post your first job</h3>
+                        <p>Fill in the role, location, and requirements. Your listing goes live in under 2 minutes.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                        <h3>Review applicants</h3>
+                        <p>See profiles, skills, resumes, and certificates for every person who applies.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                        <h3>Chat, interview, and hire</h3>
+                        <p>Connect directly via chat, schedule a Google Meet interview, and issue a hiring letter with one click.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why -->
+    <div class="section">
+        <p class="section-label">Why Us</p>
+        <h2>Why Kamayega Bharat?</h2>
+        <p>Built with India's workforce in mind, from day one.</p>
+        <div class="why-grid">
+            <div class="why-item"><div class="icon">🆓</div><p>Completely free to use</p></div>
+            <div class="why-item"><div class="icon">📱</div><p>Works on mobile and desktop</p></div>
+            <div class="why-item"><div class="icon">💬</div><p>Real-time chat, no delays</p></div>
+            <div class="why-item"><div class="icon">🛡️</div><p>Verified employer badges</p></div>
+            <div class="why-item"><div class="icon">📄</div><p>Official, verifiable hiring letters</p></div>
+            <div class="why-item"><div class="icon">🇮🇳</div><p>Built for India's workforce</p></div>
+        </div>
+    </div>
+
+    <!-- Coming soon -->
+    <div class="section-alt">
+        <div class="section">
+            <p class="section-label">Roadmap</p>
+            <h2>Coming Soon</h2>
+            <p>We are constantly building to serve you better.</p>
+            <div class="coming-soon">
+                <span class="badge">🌐 Hindi & regional language support</span>
+                <span class="badge">📱 Android app</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+        <h2>Ready to get started?</h2>
+        <p>Join hundreds of workers and employers already on Kamayega Bharat — for free.</p>
+        <div class="cta-btns">
+            <a href="login.html" class="btn btn-white">Find a Job</a>
+            <a href="login.html" class="btn btn-outline">Post a Vacancy</a>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <nav class="footer-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:kamayegabharat@gmail.com">Contact Support</a>
+    </nav>
+    <p class="footer-copy">&copy; 2026 Kamayega Bharat. Developed with integrity by Sourav Bagchi.</p>
+</footer>
+
+</body>
+</html>
