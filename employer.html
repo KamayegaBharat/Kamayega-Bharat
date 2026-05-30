@@ -500,7 +500,7 @@
         </div>
         <div>
             <h4 style="margin-bottom:.75rem;font-size:.9rem;">Quick Links</h4>
-            <a href="legal.html" style="color:var(--primary);text-decoration:none;font-weight:700;font-size:.875rem;margin-right:20px;">Terms &amp; Privacy</a>
+            <a href="legal" style="color:var(--primary);text-decoration:none;font-weight:700;font-size:.875rem;margin-right:20px;">Terms &amp; Privacy</a>
             <p style="margin-top:.75rem;font-size:.8rem;">Support: <a href="mailto:kamayegabharat@gmail.com" style="color:var(--primary);font-weight:700;text-decoration:none;">kamayegabharat@gmail.com</a></p>
         </div>
     </footer>
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
     db   = firebase.firestore();
 
     auth.onAuthStateChanged(function (user) {
-        if (!user) { window.location.href = 'index.html'; return; }
+        if (!user) { window.location.href = 'index'; return; }
 
         // FIX 4: safe string access before split() — email may be null
         var displayName = user.displayName ||
@@ -1317,7 +1317,7 @@ function sendNotificationToSeeker(seekerId, title, body) {
                 title:     title,
                 body:      body,
                 icon:      '/favicon.png',
-                clickUrl:  '/profile.html',
+                clickUrl:  '/profile',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 status:    'pending'
             }).catch(function (err) {
