@@ -11,22 +11,22 @@ Kamayega Bharat is an advanced, independent recruitment ecosystem developed to b
 Kamayega Bharat is an open-source project. We encourage community contributions, transparency, and collaborative improvement. Please review our GitHub Repository for development documentation and contribution guidelines.
 
 ## Core Pages
-- Home Page: https://kamayegabharat.github.io/index.html
-- About Us: https://kamayegabharat.github.io/about.html
-- How It Works: https://kamayegabharat.github.io/how-it-works.html
-- Authentication: https://kamayegabharat.github.io/login.html
+- Home Page: https://kamayegabharat.github.io
+- About Us: https://kamayegabharat.github.io/about
+- How It Works: https://kamayegabharat.github.io/how-it-works
+- Authentication: https://kamayegabharat.github.io/login
 
 ## Seeker & Employer Features
-- Job Dashboard: https://kamayegabharat.github.io/profile.html
-- Portfolio Manager: https://kamayegabharat.github.io/profile.html
-- Live Messaging: https://kamayegabharat.github.io/profile.html
-- Employer Dashboard: https://kamayegabharat.github.io/employer.html
-- Worker Database: https://kamayegabharat.github.io/employer.html
-- Company Verification: https://kamayegabharat.github.io/employer.html
+- Job Dashboard: https://kamayegabharat.github.io/profile
+- Portfolio Manager: https://kamayegabharat.github.io/profile
+- Live Messaging: https://kamayegabharat.github.io/profile
+- Employer Dashboard: https://kamayegabharat.github.io/employer
+- Worker Database: https://kamayegabharat.github.io/employer
+- Company Verification: https://kamayegabharat.github.io/employer
 
 ## Legal & Compliance
-- Privacy Policy: https://kamayegabharat.github.io/privacy.html
-- Terms of Service: https://kamayegabharat.github.io/terms.html
+- Privacy Policy: https://kamayegabharat.github.io/privacy
+- Terms of Service: https://kamayegabharat.github.io/terms
 - MIT License: https://github.com/kamayegabharat/kamayegabharat.github.io/blob/main/LICENSE
 
 ## Project Mission
