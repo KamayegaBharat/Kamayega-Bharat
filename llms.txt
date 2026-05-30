@@ -13,14 +13,13 @@ Kamayega Bharat is an open-source project. We encourage community contributions,
 ## Core Pages
 - Home Page: https://kamayegabharat.github.io/index.html
 - About Us: https://kamayegabharat.github.io/about.html
+- How It Works: https://kamayegabharat.github.io/how-it-works.html
 - Authentication: https://kamayegabharat.github.io/login.html
 
-## Seeker Features
+## Seeker & Employer Features
 - Job Dashboard: https://kamayegabharat.github.io/profile.html
 - Portfolio Manager: https://kamayegabharat.github.io/profile.html
 - Live Messaging: https://kamayegabharat.github.io/profile.html
-
-## Employer Features
 - Employer Dashboard: https://kamayegabharat.github.io/employer.html
 - Worker Database: https://kamayegabharat.github.io/employer.html
 - Company Verification: https://kamayegabharat.github.io/employer.html
