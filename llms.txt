@@ -1,27 +1,34 @@
 # Kamayega Bharat - Local Employment & Talent Marketplace
-**Developer:** Sourav Bagchi
+**Developer:** Sourav Bagchi  
+**License:** MIT License (https://github.com/kamayegabharat/kamayegabharat.github.io/blob/main/LICENSE)  
+**Repository:** https://github.com/kamayegabharat/kamayegabharat.github.io
 
 > A high-performance, dual-sided job platform built to connect local talent with verified employers in India, featuring real-time data synchronization and professional verification.
 
-Kamayega Bharat is an advanced recruitment ecosystem developed to bridge the gap between job seekers and employers. The platform utilizes Firebase for real-time messaging and status updates, ensuring a seamless experience for users in Jharkhand and across Bharat. It features a unique verification system for companies to establish trust.
+Kamayega Bharat is an advanced, independent recruitment ecosystem developed to bridge the gap between job seekers and employers. The platform utilizes Firebase for real-time messaging and status updates, ensuring a seamless experience for users across India. It features a unique verification system for companies to establish trust.
+
+## Open Source & Contribution
+Kamayega Bharat is an open-source project. We encourage community contributions, transparency, and collaborative improvement. Please review our GitHub Repository for development documentation and contribution guidelines.
 
 ## Core Pages
-- [Home Page](https://kamayegabharat.github.io/index.html): Entry point with role redirection.
-- [Authentication](https://kamayegabharat.github.io/login.html): Secure login and registration for Seekers and Employers.
+- Home Page: https://kamayegabharat.github.io/index.html
+- About Us: https://kamayegabharat.github.io/about.html
+- Authentication: https://kamayegabharat.github.io/login.html
 
 ## Seeker Features
-- [Job Dashboard](https://kamayegabharat.github.io/profile.html): Search and filter verified "Golden Frame" jobs.
-- [Portfolio Manager](https://kamayegabharat.github.io/profile.html): Centralized skill and document management.
-- [Live Messaging](https://kamayegabharat.github.io/profile.html): Real-time chat with prospective employers.
+- Job Dashboard: https://kamayegabharat.github.io/profile.html
+- Portfolio Manager: https://kamayegabharat.github.io/profile.html
+- Live Messaging: https://kamayegabharat.github.io/profile.html
 
 ## Employer Features
-- [Employer Dashboard](https://kamayegabharat.github.io/employer.html): Job posting and application management.
-- [Worker Database](https://kamayegabharat.github.io/employer.html): Talent search filtered by specific technical skills.
-- [Company Verification](https://kamayegabharat.github.io/employer.html): Process for obtaining professional verification status.
+- Employer Dashboard: https://kamayegabharat.github.io/employer.html
+- Worker Database: https://kamayegabharat.github.io/employer.html
+- Company Verification: https://kamayegabharat.github.io/employer.html
 
-## Legal
-- [Terms of Service](https://kamayegabharat.github.io/terms.html): Usage guidelines for the platform.
-- [Privacy Policy](https://kamayegabharat.github.io/privacy.html): Data protection and privacy standards.
+## Legal & Compliance
+- Privacy Policy: https://kamayegabharat.github.io/privacy.html
+- Terms of Service: https://kamayegabharat.github.io/terms.html
+- MIT License: https://github.com/kamayegabharat/kamayegabharat.github.io/blob/main/LICENSE
 
 ## Project Mission
-To empower the Indian workforce by providing a fast, secure, and transparent bridge between skill and opportunity.
+To empower the Indian workforce by providing a fast, secure, and transparent bridge between skill and opportunity, aligned with national digital growth initiatives.
