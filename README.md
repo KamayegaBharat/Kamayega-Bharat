@@ -83,4 +83,14 @@ Whether you are looking for your first job or hiring your next team member, Kama
 - 📱 Android app
 ---
 
-© 2026 Kamayega Bharat. Built with ❤️ for Bharat by Sourav Bagchi.
+## 📖 Project Documentation
+
+Looking for detailed operational manuals or setup guides? Check out our official repository Wiki:
+* 🔍 **[Job Seeker & Candidate Guide](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki/User%E2%80%90Seeker%E2%80%90Guide)**
+* 🏢 **[Employer & Recruiter Guide](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki/User%E2%80%90Employer%E2%80%90Guide)**
+* 💻 **[Developer Setup & Contribution Space](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki)**
+
+---
+<p align="center">
+  © 2026 <b>Kamayega Bharat</b>. Built with ❤️ for Bharat by <a href="https://github.com/KamayegaBharat">Sourav Bagchi</a>.
+</p>
