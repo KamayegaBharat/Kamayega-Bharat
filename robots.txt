@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://kamayegabharat.github.io/sitemap.xml
-
+LLMS: https://kamayegabharat.github.io/llms.txt
