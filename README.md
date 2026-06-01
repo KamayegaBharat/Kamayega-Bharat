@@ -1,96 +1,98 @@
 # Kamayega Bharat 🇮🇳
 
-**A free job portal built for every worker in India.**
-
-Kamayega Bharat connects job seekers and employers across Bharat — making it simple, fast, and trustworthy to find work or hire talent, no matter where you are.
-
-🌐 **Visit:** [kamayegabharat.github.io](https://kamayegabharat.github.io)
-📧 **Support:** kamayegabharat@gmail.com
-👨‍💻 **Built by:** Sourav Bagchi
+A free and open-source job portal designed to connect job seekers and employers across India.
 
 ---
 
-## What is Kamayega Bharat?
+## 📌 Overview
 
-Most job portals are built for corporate India. Kamayega Bharat is built for **everyone else** — the millions of hardworking people across every state and city who deserve a simple and reliable way to find work and get hired.
+Kamayega Bharat is a web-based job portal that enables users to create profiles, post jobs, apply for jobs, and communicate in real time.
 
-Whether you are looking for your first job or hiring your next team member, Kamayega Bharat gets it done in minutes — for free.
-
----
-
-## For Job Seekers 🔍
-
-**Create a profile → Browse jobs → Apply → Get hired**
-
-- Search and filter jobs by city, job type, and work mode
-- See which jobs match your skills best
-- Apply to any job with a single click
-- Track your application — Applied, Review, Interview, Hired
-- Chat directly with employers in real time
-- Join interview calls through Google Meet
-- Download your official hiring letter as a PDF when you get the job
-- Upload your resume and certificates using your **Google Drive link** — no file size limits, no complicated uploads
-- Get notified instantly when your application status changes
+The system is built to simplify the hiring process and make employment access more transparent and accessible.
 
 ---
 
-## For Employers 🏢
+## ⚙️ System Architecture
 
-**Post a job → Review applicants → Chat → Hire**
+Kamayega Bharat consists of:
 
-- Post a job listing in under 2 minutes — for free
-- Receive and manage all your applications in one place
-- View each applicant's skills, experience, resume, and certificates
-- Chat directly with candidates
-- Schedule interviews by sharing a Google Meet link in the chat
-- Mark someone as Hired and the system issues a verifiable selection letter automatically
-- Verify any selection letter instantly using its reference number
-- Get a **Verified Employer** badge to build trust with job seekers
+* Frontend: Responsive web interface (mobile-first design)
+* Backend: Firebase Authentication + Firestore database
+* Communication Layer: Real-time chat system
+* Hosting: GitHub Pages
 
 ---
 
-## How to Get Started
+## 📥 Input / Output Model
 
-### As a Job Seeker
-1. Go to [kamayegabharat.github.io](https://kamayegabharat.github.io)
-2. Sign up with your email
-3. Fill in your profile — your skills, city, and a little about yourself
-4. Browse jobs and apply to the ones that fit you
-5. Chat with the employer and track your progress
+### Input
 
-### As an Employer
-1. Go to [kamayegabharat.github.io](https://kamayegabharat.github.io)
-2. Sign up with your email
-3. Post your first job — it takes under 2 minutes
-4. Review who applies, chat with them, and hire the right person
+* User registration data (email, profile, skills)
+* Job postings (title, description, requirements)
+* Applications submitted by job seekers
+* Messages between users
 
----
+### Output
 
-## Why Kamayega Bharat?
-
-- ✅ Completely free to use
-- ✅ Works on mobile and desktop
-- ✅ Real-time chat — no delays, no waiting
-- ✅ Verified employer badges so you know who you are dealing with
-- ✅ Official selection letters that can be verified by anyone
-- ✅ Built specifically for India's workforce
+* Job listings and search results
+* Application status updates (Applied → Interview → Hired)
+* Real-time chat communication
+* Verified hiring/selection letters (PDF format)
 
 ---
 
-## Coming Soon
+## 👤 User Roles
 
-- 🌐 Hindi and regional language support
-- 📱 Android app
+### Job Seekers
+
+* Create profile
+* Search and apply for jobs
+* Track application status
+* Chat with employers
+
+### Employers
+
+* Post job listings
+* Review applicants
+* Conduct interviews via chat/Google Meet
+* Mark candidates as hired
+
 ---
 
-## 📖 Project Documentation
+## 🔐 Core Features
 
-Looking for detailed operational manuals or setup guides? Check out our official repository Wiki:
-* 🔍 **[Job Seeker & Candidate Guide](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki/User%E2%80%90Seeker%E2%80%90Guide)**
-* 🏢 **[Employer & Recruiter Guide](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki/User%E2%80%90Employer%E2%80%90Guide)**
-* 💻 **[Developer Setup & Contribution Space](https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki)**
+* Firebase Authentication system
+* Real-time Firestore database
+* Job search and filtering system
+* Messaging and notification system
+* Verified employer system
+* Automated selection letter generation
 
 ---
-<p align="center">
-  © 2026 <b>Kamayega Bharat</b>. Built with ❤️ for Bharat by <a href="https://github.com/KamayegaBharat">Sourav Bagchi</a>.
-</p>
+
+## 📘 Documentation
+
+User and developer documentation is available here:
+
+https://github.com/KamayegaBharat/kamayegabharat.github.io/wiki
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions via pull requests.
+
+See contributing guidelines:
+https://github.com/KamayegaBharat/kamayegabharat.github.io/blob/main/Contributing.md
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 🌐 Live Project
+
+https://kamayegabharat.github.io
