@@ -1839,14 +1839,22 @@ window.closeMeet = function() {
 // ═══════════════════════════════════════════════════════
 // RESUME GENERATOR (HTML→PDF, no Firebase storage)
 // ═══════════════════════════════════════════════════════
+    function escapeHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 window.generateResume = function() {
     var d = userData;
-    var name   = d.fullName  || (auth.currentUser && auth.currentUser.displayName) || 'Your Name';
-    var email  = (auth.currentUser && auth.currentUser.email) || '';
-    var skills = d.skills    || 'Not specified';
-    var city   = d.city      || 'Not specified';
-    var exp    = d.experience || 'Not specified';
-    var bio    = d.bio        || 'A dedicated professional seeking opportunities to grow.';
+   var name   = escapeHtml(d.fullName || (auth.currentUser && auth.currentUser.displayName) || 'Your Name');
+var email  = (auth.currentUser && auth.currentUser.email) || '';
+var skills = escapeHtml(d.skills || 'Not specified');
+var city   = escapeHtml(d.city || 'Not specified');
+var exp    = escapeHtml(d.experience || 'Not specified');
+var bio    = escapeHtml(d.bio || 'A dedicated professional seeking opportunities to grow.');
     var resume = d.resumeUrl || '';
     var cert   = d.certUrl   || '';
 
