@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Kamayega Bharat</title>
+    <link rel="icon" type="image/png" href="favicon.png" sizes="512x512">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- ===================== NAVBAR ===================== -->
+    <nav class="dashboard-nav">
+        <a href="index" class="logo">Kamayega Bharat</a>
+
+        <ul class="dash-nav-links" id="dashNavLinks">
+            <li><a href="jobs" class="dash-nav-link">Jobs</a></li>
+            <li><a href="internships" class="dash-nav-link">Internships</a></li>
+            <li>
+                <a href="notifications" class="dash-nav-link dash-nav-notif" id="notifLink">
+                    Notifications
+                    <span class="notif-dot" id="notifDot" aria-label="3 unread notifications">3</span>
+                </a>
+            </li>
+            <li><a href="profile" class="dash-nav-link">Profile</a></li>
+        </ul>
+
+        <div class="nav-right">
+            <button class="avatar-btn" id="avatarBtn" aria-haspopup="true" aria-expanded="false" aria-label="User menu">
+                <span class="avatar-initials" id="avatarInitials">RK</span>
+            </button>
+            <div class="avatar-dropdown" id="avatarDropdown" role="menu">
+                <a href="profile" role="menuitem">My Profile</a>
+                <a href="settings" role="menuitem">Settings</a>
+                <a href="become-employer.html" role="menuitem">Become an Employer</a>
+                <hr>
+                <a href="login" role="menuitem" class="logout-link">Logout</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="dash-main">
+
+        <!-- ===================== SAFETY NOTICE ===================== -->
+        <div class="safety-banner" role="alert">
+            <span class="safety-icon">🛡️</span>
+            <p><strong>Kamayega Bharat never charges job seekers for jobs.</strong> Never pay money to get hired. <a href="mailto:kamayegabharat@gmail.com" class="safety-link">Report suspicious activity immediately.</a></p>
+        </div>
+
+        <div class="dash-container">
+
+            <!-- ===================== WELCOME SECTION ===================== -->
+            <section class="welcome-section" aria-labelledby="welcomeHeading">
+                <div class="welcome-text">
+                    <h1 id="welcomeHeading">Welcome back, <span id="userName">Rahul Kumar</span> 👋</h1>
+                    <p class="welcome-sub">Track your applications, discover opportunities, and take the next step in your career.</p>
+                </div>
+
+                <!-- Profile Completion Card -->
+                <div class="profile-completion-card" aria-label="Profile completion status">
+                    <div class="completion-header">
+                        <span class="completion-title">Profile Completion</span>
+                        <span class="completion-pct" id="completionPct">70%</span>
+                    </div>
+                    <div class="completion-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
+                        <div class="completion-fill" id="completionFill" style="width: 70%;"></div>
+                    </div>
+                    <p class="completion-hint">Complete your profile to get noticed by top employers.</p>
+                    <div class="completion-actions">
+                        <a href="profile#resume" class="completion-action-btn">📄 Upload Resume</a>
+                        <a href="profile#skills" class="completion-action-btn">🛠️ Add Skills</a>
+                        <a href="profile#education" class="completion-action-btn">🎓 Add Education</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== DASHBOARD CARDS ===================== -->
+            <section class="dash-cards-section" aria-labelledby="dashCardsHeading">
+                <h2 id="dashCardsHeading" class="sr-only">Overview</h2>
+                <div class="dash-cards-grid">
+
+                    <!-- My Applications -->
+                    <article class="dash-card" aria-label="My Applications">
+                        <div class="dash-card-icon" aria-hidden="true">📋</div>
+                        <div class="dash-card-body">
+                            <h3 class="dash-card-title">My Applications</h3>
+                            <p class="dash-card-count" id="appCount">12</p>
+                            <p class="dash-card-label">Total submitted</p>
+                        </div>
+                        <a href="applications" class="dash-card-btn">View Applications</a>
+                    </article>
+
+                    <!-- Saved Jobs -->
+                    <article class="dash-card" aria-label="Saved Jobs">
+                        <div class="dash-card-icon" aria-hidden="true">🔖</div>
+                        <div class="dash-card-body">
+                            <h3 class="dash-card-title">Saved Jobs</h3>
+                            <p class="dash-card-count" id="savedCount">5</p>
+                            <p class="dash-card-label">Jobs bookmarked</p>
+                        </div>
+                        <a href="saved-jobs" class="dash-card-btn">View Saved Jobs</a>
+                    </article>
+
+                    <!-- Resume -->
+                    <article class="dash-card" aria-label="Resume Status">
+                        <div class="dash-card-icon" aria-hidden="true">📄</div>
+                        <div class="dash-card-body">
+                            <h3 class="dash-card-title">Resume</h3>
+                            <p class="resume-status resume-status--uploaded" id="resumeStatus">✅ Uploaded</p>
+                            <p class="dash-card-label">Last updated 3 days ago</p>
+                        </div>
+                        <a href="profile#resume" class="dash-card-btn">Update Resume</a>
+                    </article>
+
+                    <!-- Notifications -->
+                    <article class="dash-card" aria-label="Notifications">
+                        <div class="dash-card-icon" aria-hidden="true">🔔</div>
+                        <div class="dash-card-body">
+                            <h3 class="dash-card-title">Notifications</h3>
+                            <p class="dash-card-count" id="notifCount">3</p>
+                            <p class="dash-card-label">Unread messages</p>
+                        </div>
+                        <a href="notifications" class="dash-card-btn">View Notifications</a>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- ===================== RECENT APPLICATIONS ===================== -->
+            <section class="recent-apps-section" aria-labelledby="recentAppsHeading">
+                <div class="section-header">
+                    <h2 id="recentAppsHeading" class="section-heading">Recent Applications</h2>
+                    <a href="applications" class="section-link">View all →</a>
+                </div>
+
+                <div class="table-wrapper" role="region" aria-label="Recent applications table" tabindex="0">
+                    <table class="apps-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Job Title</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Applied Date</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTableBody">
+                            <tr>
+                                <td>Frontend Developer</td>
+                                <td>TechNova Pvt. Ltd.</td>
+                                <td>8 Jun 2026</td>
+                                <td><span class="status-badge status-review">Under Review</span></td>
+                            </tr>
+                            <tr>
+                                <td>Marketing Executive</td>
+                                <td>BrandCraft India</td>
+                                <td>5 Jun 2026</td>
+                                <td><span class="status-badge status-shortlisted">Shortlisted</span></td>
+                            </tr>
+                            <tr>
+                                <td>Data Analyst Intern</td>
+                                <td>FinServe Analytics</td>
+                                <td>1 Jun 2026</td>
+                                <td><span class="status-badge status-interview">Interview Scheduled</span></td>
+                            </tr>
+                            <tr>
+                                <td>Operations Associate</td>
+                                <td>LogiWave Logistics</td>
+                                <td>28 May 2026</td>
+                                <td><span class="status-badge status-applied">Applied</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sales Manager</td>
+                                <td>GrowthForce Solutions</td>
+                                <td>20 May 2026</td>
+                                <td><span class="status-badge status-rejected">Rejected</span></td>
+                            </tr>
+                            <tr>
+                                <td>Product Manager</td>
+                                <td>BuildRight Technologies</td>
+                                <td>15 May 2026</td>
+                                <td><span class="status-badge status-selected">Selected 🎉</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===================== RECOMMENDED OPPORTUNITIES ===================== -->
+            <section class="recommended-section" aria-labelledby="recommendedHeading">
+                <div class="section-header">
+                    <h2 id="recommendedHeading" class="section-heading">Recommended for You</h2>
+                    <a href="jobs" class="section-link">Browse all jobs →</a>
+                </div>
+
+                <div class="job-cards-grid">
+
+                    <!-- Job Card 1 -->
+                    <article class="job-card">
+                        <div class="job-card-top">
+                            <div class="job-company-logo" aria-hidden="true">TN</div>
+                            <div class="job-meta">
+                                <h3 class="job-title">Full Stack Developer</h3>
+                                <p class="job-company">TechNova Pvt. Ltd. <span class="verified-badge" title="Verified Employer">✅ Verified</span></p>
+                            </div>
+                            <button class="save-job-btn" aria-label="Save Full Stack Developer job" data-saved="false">🔖</button>
+                        </div>
+                        <div class="job-details">
+                            <span class="job-detail-tag">📍 Bengaluru</span>
+                            <span class="job-detail-tag">💰 ₹8–14 LPA</span>
+                            <span class="job-detail-tag">💼 Full-time</span>
+                        </div>
+                        <div class="job-card-actions">
+                            <a href="job-detail?id=1" class="btn-apply">Apply Now</a>
+                        </div>
+                    </article>
+
+                    <!-- Job Card 2 -->
+                    <article class="job-card">
+                        <div class="job-card-top">
+                            <div class="job-company-logo" aria-hidden="true">FS</div>
+                            <div class="job-meta">
+                                <h3 class="job-title">Business Analyst</h3>
+                                <p class="job-company">FinServe Analytics <span class="verified-badge" title="Verified Employer">✅ Verified</span></p>
+                            </div>
+                            <button class="save-job-btn" aria-label="Save Business Analyst job" data-saved="false">🔖</button>
+                        </div>
+                        <div class="job-details">
+                            <span class="job-detail-tag">📍 Mumbai</span>
+                            <span class="job-detail-tag">💰 ₹6–10 LPA</span>
+                            <span class="job-detail-tag">💼 Full-time</span>
+                        </div>
+                        <div class="job-card-actions">
+                            <a href="job-detail?id=2" class="btn-apply">Apply Now</a>
+                        </div>
+                    </article>
+
+                    <!-- Job Card 3 -->
+                    <article class="job-card">
+                        <div class="job-card-top">
+                            <div class="job-company-logo" aria-hidden="true">BC</div>
+                            <div class="job-meta">
+                                <h3 class="job-title">Digital Marketing Manager</h3>
+                                <p class="job-company">BrandCraft India <span class="verified-badge" title="Verified Employer">✅ Verified</span></p>
+                            </div>
+                            <button class="save-job-btn" aria-label="Save Digital Marketing Manager job" data-saved="false">🔖</button>
+                        </div>
+                        <div class="job-details">
+                            <span class="job-detail-tag">📍 Delhi</span>
+                            <span class="job-detail-tag">💰 ₹5–9 LPA</span>
+                            <span class="job-detail-tag">💼 Full-time</span>
+                        </div>
+                        <div class="job-card-actions">
+                            <a href="job-detail?id=3" class="btn-apply">Apply Now</a>
+                        </div>
+                    </article>
+
+                    <!-- Job Card 4 -->
+                    <article class="job-card">
+                        <div class="job-card-top">
+                            <div class="job-company-logo" aria-hidden="true">GF</div>
+                            <div class="job-meta">
+                                <h3 class="job-title">Sales Executive</h3>
+                                <p class="job-company">GrowthForce Solutions <span class="verified-badge" title="Verified Employer">✅ Verified</span></p>
+                            </div>
+                            <button class="save-job-btn" aria-label="Save Sales Executive job" data-saved="false">🔖</button>
+                        </div>
+                        <div class="job-details">
+                            <span class="job-detail-tag">📍 Hyderabad</span>
+                            <span class="job-detail-tag">💰 ₹3–6 LPA</span>
+                            <span class="job-detail-tag">💼 Full-time</span>
+                        </div>
+                        <div class="job-card-actions">
+                            <a href="job-detail?id=4" class="btn-apply">Apply Now</a>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- ===================== BECOME AN EMPLOYER CARD ===================== -->
+            <section class="become-employer-section" aria-labelledby="employerHeading">
+                <div class="become-employer-card">
+                    <div class="employer-card-text">
+                        <h2 id="employerHeading">Looking to Hire?</h2>
+                        <p>Post jobs and connect with talented candidates across India. Get a Verified Employer badge and attract top talent for free.</p>
+                    </div>
+                    <div class="employer-card-visual" aria-hidden="true">🏢</div>
+                    <a href="become-employer.html" class="btn-employer">Become an Employer →</a>
+                </div>
+            </section>
+
+        </div>
+        <!-- end .dash-container -->
+
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer>
+        <nav class="footer-nav">
+            <a href="index">Home</a>
+            <a href="about">About Us</a>
+            <a href="privacy">Privacy Policy</a>
+            <a href="terms">Terms</a>
+            <a href="how-it-works">How It Works</a>
+            <a href="mailto:kamayegabharat@gmail.com">Contact Support</a>
+        </nav>
+        <div class="contact-box">
+            24/7 Support: <a href="mailto:kamayegabharat@gmail.com" class="support-link">Contact Support</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 Kamayega Bharat. Developed with integrity by Sourav Bagchi.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
