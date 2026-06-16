@@ -1862,6 +1862,18 @@ function buildResumeSection(titleText, bodyEl) {
     return section;
 }
 
+function sanitizeDriveHref(urlValue) {
+    try {
+        var parsed = new URL(urlValue);
+        var host = parsed.hostname.toLowerCase();
+        if (parsed.protocol !== 'https:') return null;
+        if (host !== 'drive.google.com' && host !== 'docs.google.com') return null;
+        return parsed.toString();
+    } catch (e) {
+        return null;
+    }
+}
+
 window.generateResume = function() {
     var d = userData;
     var name   = d.fullName || (auth.currentUser && auth.currentUser.displayName) || 'Your Name';
@@ -1937,17 +1949,20 @@ window.generateResume = function() {
     }
 
     if (cert && isAllowedDriveUrl(cert)) {
-        var certP = document.createElement('p');
-        certP.style.fontSize = '0.9rem';
-        var certA = document.createElement('a');
-        certA.href   = cert;
-        certA.target = '_blank';
-        certA.rel    = 'noopener noreferrer';
-        certA.style.color      = '#1e40af';
-        certA.style.fontWeight = '700';
-        certA.textContent = 'View Certificates on Google Drive →';
-        certP.appendChild(certA);
-        doc.appendChild(buildResumeSection('Certificates', certP));
+        var safeCertHref = sanitizeDriveHref(cert);
+        if (safeCertHref) {
+            var certP = document.createElement('p');
+            certP.style.fontSize = '0.9rem';
+            var certA = document.createElement('a');
+            certA.href   = safeCertHref;
+            certA.target = '_blank';
+            certA.rel    = 'noopener noreferrer';
+            certA.style.color      = '#1e40af';
+            certA.style.fontWeight = '700';
+            certA.textContent = 'View Certificates on Google Drive →';
+            certP.appendChild(certA);
+            doc.appendChild(buildResumeSection('Certificates', certP));
+        }
     }
 
     var watermark = document.createElement('div');
