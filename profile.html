@@ -1909,11 +1909,24 @@ window.generateResume = function() {
     expP.textContent = exp;
     doc.appendChild(buildResumeSection('Experience Level', expP));
 
-    if (resume && isAllowedDriveUrl(resume)) {
+    var safeResumeUrl = '';
+    if (resume) {
+        try {
+            var parsedResume = new URL(resume.trim());
+            if (
+                parsedResume.protocol === 'https:' &&
+                (parsedResume.hostname === 'drive.google.com' || parsedResume.hostname.endsWith('.drive.google.com'))
+            ) {
+                safeResumeUrl = parsedResume.href;
+            }
+        } catch (_) {}
+    }
+
+    if (safeResumeUrl) {
         var resumeP = document.createElement('p');
         resumeP.style.fontSize = '0.9rem';
         var resumeA = document.createElement('a');
-        resumeA.href   = resume;
+        resumeA.href   = safeResumeUrl;
         resumeA.target = '_blank';
         resumeA.rel    = 'noopener noreferrer';
         resumeA.style.color      = '#1e40af';
